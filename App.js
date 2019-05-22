@@ -8,6 +8,8 @@
 
 import React, {Component} from 'react';
 import {Platform, StyleSheet, Text, View} from 'react-native';
+import SplashScreen from './src/components/SplashScreen';
+
 
 const instructions = Platform.select({
   ios: 'Press Cmd+R to reload,\n' + 'Cmd+D or shake for dev menu',
@@ -16,9 +18,36 @@ const instructions = Platform.select({
     'Shake or press menu button for dev menu',
 });
 
-type Props = {};
-export default class App extends Component<Props> {
+export default class App extends Component{
+  constructor(props){
+    super(props);
+    this.state = { isLoading: true };
+  }
+
+  // performTimeConsumingTask = async() => {
+  //   return new Promise((resolve) =>
+  //     setTimeout(
+  //       () => { resolve('result') },
+  //       3000
+  //     )
+  //   );
+  // }
+
+  // async componentDidMount() {
+  //   // Preload data from an external API
+  //   // Preload data using AsyncStorage
+  //   const data = await this.performTimeConsumingTask();
+  
+  //   if (data !== null) {
+  //     this.setState({ isLoading: false });
+  //   }
+  // }
+
   render() {
+    if(this.state.isLoading){
+      return <SplashScreen />;
+    }
+
     return (
       <View style={styles.container}>
         <Text style={styles.welcome}>Welcome to React Native!</Text>
