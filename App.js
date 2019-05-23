@@ -8,6 +8,7 @@
 
 import React, {Component} from 'react';
 import {Platform, StyleSheet, Text, View} from 'react-native';
+import Username from './src/components/Username';
 import SplashScreen from './src/components/SplashScreen';
 
 
@@ -24,24 +25,24 @@ export default class App extends Component{
     this.state = { isLoading: true };
   }
 
-  // performTimeConsumingTask = async() => {
-  //   return new Promise((resolve) =>
-  //     setTimeout(
-  //       () => { resolve('result') },
-  //       3000
-  //     )
-  //   );
-  // }
+  performTimeConsumingTask = async() => {
+    return new Promise((resolve) =>
+      setTimeout(
+        () => { resolve('result') },
+        3000
+      )
+    );
+  }
 
-  // async componentDidMount() {
-  //   // Preload data from an external API
-  //   // Preload data using AsyncStorage
-  //   const data = await this.performTimeConsumingTask();
+  async componentDidMount() {
+    // Preload data from an external API
+    // Preload data using AsyncStorage
+    const data = await this.performTimeConsumingTask();
   
-  //   if (data !== null) {
-  //     this.setState({ isLoading: false });
-  //   }
-  // }
+    if (data !== null) {
+      this.setState({ isLoading: false });
+    }
+  }
 
   render() {
     if(this.state.isLoading){
@@ -49,11 +50,7 @@ export default class App extends Component{
     }
 
     return (
-      <View style={styles.container}>
-        <Text style={styles.welcome}>Welcome to React Native!</Text>
-        <Text style={styles.instructions}>To get started, edit App.js</Text>
-        <Text style={styles.instructions}>{instructions}</Text>
-      </View>
+      <Username />
     );
   }
 }
