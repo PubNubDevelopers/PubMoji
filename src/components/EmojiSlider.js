@@ -1,13 +1,12 @@
 import React from 'react';
 import { PixelRatio, StyleSheet, Text, View, PanResponder, Animated, TouchableOpacity } from 'react-native';
-import PubNubReact from 'pubnub-react';
 
 const REACTIONS = [
-  { label: "Worried", src: require('./src/assets/worried.png'), bigSrc: require('./src/assets/worried_big.png') },
-  { label: "Sad", src: require('./src/assets/sad.png'), bigSrc: require('./src/assets/sad_big.png') },
-  { label: "Strong", src: require('./src/assets/ambitious.png'), bigSrc: require('./src/assets/ambitious_big.png') },
-  { label: "Happy", src: require('./src/assets/smile.png'), bigSrc: require('./src/assets/smile_big.png') },
-  { label: "Surprised", src: require('./src/assets/surprised.png'), bigSrc: require('./src/assets/surprised_big.png') },
+  { label: "Worried", src: require('../assets/worried.png'), bigSrc: require('../assets/worried_big.png') },
+  { label: "Sad", src: require('../assets/sad.png'), bigSrc: require('../assets/sad_big.png') },
+  { label: "Strong", src: require('../assets/ambitious.png'), bigSrc: require('../assets/ambitious_big.png') },
+  { label: "Happy", src: require('../assets/smile.png'), bigSrc: require('../assets/smile_big.png') },
+  { label: "Surprised", src: require('../assets/surprised.png'), bigSrc: require('../assets/surprised_big.png') },
 ];
 const WIDTH = 320;
 const DISTANCE =  WIDTH / REACTIONS.length;
@@ -16,24 +15,7 @@ const END = WIDTH - DISTANCE;
 export default class App extends React.Component {
   constructor(props) {
     super(props);
-        this.pubnub = new PubNubReact({
-        publishKey: 'pubKey',
-        subscribeKey: 'subKey'
-    });
     this._pan = new Animated.Value(2 * DISTANCE);
-        //Base State
-    this.pubnub.init(this);
-//          this.pubnub.hereNow(
-//     {
-//         channels: ["channel1"],
-//         includeUUIDs: true,
-//         includeState: true
-//     },
-//     (status, response) => {
-//         console.log(status);
-//         console.log(response);
-//     }
-// );
   }
 
   componentWillMount() {
@@ -58,19 +40,11 @@ export default class App extends React.Component {
         this.updatePan(offset);
       }
     });
-          this.pubnub.subscribe({
-          channels: ['channel1'],
-          withPresence: true       
-      });
   }
-  componentWillUnmount() {
-      this.pubnub.unsubscribe({
-          channels: ['channel1']
-      });
-  }
+
   updatePan(toValue) {
     Animated.spring(this._pan, { toValue, friction: 7 }).start();
-                this.pubnub.publish({
+            this.pubnub.publish({
           message: {latitude: '39', longitude: '133', uuid: 'emoji'},
           channel: 'channel1'
         });
@@ -81,7 +55,7 @@ export default class App extends React.Component {
       <View style={styles.container}>
         <View style={styles.wrap}>
           <Text style={styles.welcome}>
-            PubMoji Bar
+            How are you feeling?
           </Text>
           
           <View style={styles.line} />
