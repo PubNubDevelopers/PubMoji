@@ -28,20 +28,32 @@ export default class App extends React.Component {
     this.pubnub.getMessage('channel1', (msg) => {
         console.log("Message Receioved: ",msg);
 
-        const oldUser = this.state.users.find(element => element.uuid === msg.message.uuid);
+          let oldUser =  null;
+          let oldIndex = -1;
+        if (this.state.users !== undefined || this.state.users.length !== 0) {
+          console.log("users: ", this.state.users)
+           oldUser = this.state.users.find(element => element.uuid === msg.message.uuid);
+           oldIndex = this.state.users.findIndex(element => element.uuid === msg.message.uuid);
+        }
+        console.log(this.state.users)
+
+
         const newUser = {uuid: msg.message.uuid, lat: msg.message.latitude, lon: msg.message.longitude };
+        console.log(oldUser)
         if(!this.isEquivalent(oldUser, newUser)){
           let tempArray = this.state.users;
-          const oldIndex = this.state.users.findIndex(element => element.uuid === msg.message.uuid);
+
           if(oldIndex === -1 && !msg.message.hideUser){
             console.log("adds in for first time")
             tempArray.push(newUser);
-          }else if(!msg.message.hideUser){
+          }else if(msg.message.hideUser){
+            console.log("deletes old")
+            if(oldIndex !== -1){
+              delete tempArray[oldIndex]
+            }
+          }else{
             console.log("deletes old and adds new")
             tempArray[oldIndex] = newUser;
-          }else{
-            console.log("deletes old")
-            delete tempArray[oldIndex]
           }
           this.setState({
             users: tempArray
@@ -55,10 +67,12 @@ export default class App extends React.Component {
     //Get Stationary Coordinate
     navigator.geolocation.getCurrentPosition(
       position => {
-        this.pubnub.publish({
-          message: {latitude: position.coords.latitude, longitude: position.coords.longitude, uuid: this.pubnub.getUUID()},
-          channel: 'channel1'
-        });
+        if(this.state.allowGPS){
+          this.pubnub.publish({
+            message: {latitude: position.coords.latitude, longitude: position.coords.longitude, uuid: this.pubnub.getUUID()},
+            channel: 'channel1'
+          });
+        }
       },
       error => this.setState({ error: error.message }),
       { enableHighAccuracy: true, timeout: 200000, maximumAge: 1000 }
@@ -89,10 +103,25 @@ export default class App extends React.Component {
   componentDidUpdate(prevProps,prevState){
     if(prevState.allowGPS != this.state.allowGPS){
       console.log("allow GPS: ",this.state.allowGPS)
-      this.pubnub.publish({
-        message: {latitude: -1, longitude: -1, uuid: this.pubnub.getUUID(), hideUser: true},
-        channel: 'channel1'
-      });
+      if(this.state.allowGPS === false){
+        this.pubnub.publish({
+          message: {latitude: -1, longitude: -1, uuid: this.pubnub.getUUID(), hideUser: true},
+          channel: 'channel1'
+        });
+      }else{
+        navigator.geolocation.getCurrentPosition(
+          position => {
+            if(this.state.allowGPS){
+              this.pubnub.publish({
+                message: {latitude: position.coords.latitude, longitude: position.coords.longitude, uuid: this.pubnub.getUUID()},
+                channel: 'channel1'
+              });
+            }
+          },
+          error => this.setState({ error: error.message }),
+          { enableHighAccuracy: true, timeout: 200000, maximumAge: 1000 }
+        );
+      }
     }
 
   }
