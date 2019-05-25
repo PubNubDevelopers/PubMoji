@@ -9,13 +9,15 @@ export default class App extends React.Component {
     this.pubnub = new PubNubReact({
         publishKey: 'pub-c-a64b528c-0749-416f-bf75-50abbfa905f9',
         subscribeKey: 'sub-c-8a8e493c-f876-11e6-80ea-0619f8945a4f',
-        uuid: "pizza boiii"
     });
+
     //Base State
     this.state = {
-      region: {lat: 37.43376254, lon: -122.2412125},
-      error:null,
-      users: [],
+      currentLoc: {
+        latitude: -1,
+        longitude : -1
+      },
+      users: new Map(),
       allowGPS: true,
       showAbout: false
     };
@@ -25,39 +27,24 @@ export default class App extends React.Component {
   //Track User GPS Data
   componentDidMount() {
     //PubNub
+
     this.pubnub.getMessage('channel1', (msg) => {
         console.log("Message Receioved: ",msg);
 
-          let oldUser =  null;
-          let oldIndex = -1;
-        if (this.state.users !== undefined || this.state.users.length !== 0) {
-          console.log("users: ", this.state.users)
-           oldUser = this.state.users.find(element => element.uuid === msg.message.uuid);
-           oldIndex = this.state.users.findIndex(element => element.uuid === msg.message.uuid);
-        }
-        console.log(this.state.users)
-
-
-        const newUser = {uuid: msg.message.uuid, lat: msg.message.latitude, lon: msg.message.longitude };
-        console.log(oldUser)
+        let oldUser = this.state.users.get(msg.message.uuid)
+        let newUser = {uuid: msg.message.uuid, latitude: msg.message.latitude, longitude: msg.message.longitude };
         if(!this.isEquivalent(oldUser, newUser)){
-          let tempArray = this.state.users;
+          let tempMap = this.state.users;
 
-          if(oldIndex === -1 && !msg.message.hideUser){
-            console.log("adds in for first time")
-            tempArray.push(newUser);
-          }else if(msg.message.hideUser){
-            console.log("deletes old")
-            if(oldIndex !== -1){
-              delete tempArray[oldIndex]
-            }
+          if(msg.message.hideUser){
+              tempMap.delete(newUser.uuid)
           }else{
-            console.log("deletes old and adds new")
-            tempArray[oldIndex] = newUser;
+            tempMap.set(newUser.uuid, newUser);
           }
+
           this.setState({
-            users: tempArray
-          })
+            users: tempMap
+          },()=>{console.log(this.state.users)})
         }
     });
     this.pubnub.subscribe({
@@ -72,9 +59,12 @@ export default class App extends React.Component {
             message: {latitude: position.coords.latitude, longitude: position.coords.longitude, uuid: this.pubnub.getUUID()},
             channel: 'channel1'
           });
+          this.setState({
+            currentLoc: position.coords
+          })
         }
       },
-      error => this.setState({ error: error.message }),
+      error => console.log("Maps Error: ",error),
       { enableHighAccuracy: true, timeout: 200000, maximumAge: 1000 }
     );
     //Track motional Coordinates
@@ -85,14 +75,17 @@ export default class App extends React.Component {
             message: {latitude: position.coords.latitude, longitude: position.coords.longitude, uuid: this.pubnub.getUUID()},
             channel: 'channel1'
           });
+          this.setState({
+            currentLoc: position.coords
+          })
         }
       },
-      error => console.log("Error: ",error),
+      error => console.log("Maps Error: ",error),
       {
         enableHighAccuracy: true,
         timeout: 20000,
         maximumAge: 1000,
-        distanceFilter: 100
+        distanceFilter: 1
       }
     );
   }
@@ -103,24 +96,23 @@ export default class App extends React.Component {
   componentDidUpdate(prevProps,prevState){
     if(prevState.allowGPS != this.state.allowGPS){
       console.log("allow GPS: ",this.state.allowGPS)
-      if(this.state.allowGPS === false){
+      if(this.state.allowGPS){
+        let tempMap = this.state.users;
+        let tempUser = {latitude: this.state.currentLoc.latitude, longitude: this.state.currentLoc.longitude, uuid: this.pubnub.getUUID()}
+        tempMap.set(tempUser.uuid, tempUser)
+        this.setState({
+          users: tempMap
+        },()=>{
+          this.pubnub.publish({
+            message: tempUser,
+            channel: 'channel1'
+          });
+        })
+      }else{
         this.pubnub.publish({
           message: {latitude: -1, longitude: -1, uuid: this.pubnub.getUUID(), hideUser: true},
           channel: 'channel1'
         });
-      }else{
-        navigator.geolocation.getCurrentPosition(
-          position => {
-            if(this.state.allowGPS){
-              this.pubnub.publish({
-                message: {latitude: position.coords.latitude, longitude: position.coords.longitude, uuid: this.pubnub.getUUID()},
-                channel: 'channel1'
-              });
-            }
-          },
-          error => this.setState({ error: error.message }),
-          { enableHighAccuracy: true, timeout: 200000, maximumAge: 1000 }
-        );
       }
     }
 
@@ -156,16 +148,10 @@ export default class App extends React.Component {
     return true;
   }
     //Coordinate Setter
-  setRegion = () => ({
-   latitude: this.state.region.lat,
-   longitude: this.state.region.lon,
-   latitudeDelta: 0,
-   longitudeDelta: 0
-  });
 
   toggleAbout = () =>{
     this.setState({
-      showAbout: true //!this.state.showAbout
+      showAbout: !this.state.showAbout
     })
   }
   handleMapPress = () => {
@@ -178,6 +164,7 @@ export default class App extends React.Component {
 
   render() {
     let about;
+    let usersArray = Array.from(this.state.users.values());
     if(this.state.showAbout){
       about = <AboutPage/>
     }else{
@@ -189,8 +176,8 @@ export default class App extends React.Component {
            <MapView style={styles.map}
              onPanDrag ={e => console.log(e.nativeEvent)}
              >
-              { this.state.users.map((item, index)=>(
-                <Marker key={index} coordinate={{latitude: item.lat, longitude: item.lon}}>
+              { usersArray.map((item, index)=>(
+                <Marker key={index} coordinate={{latitude: item.latitude, longitude: item.longitude}}>
                       <Image source={require('./boss.png')} style={{height: 35, width:35, }} />
                 </Marker>
               )) }
