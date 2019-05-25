@@ -1,6 +1,7 @@
 import React, {Component} from 'react';
 import Form from 'react-native-form';
 import {StyleSheet, Text, View, TextInput, Button} from 'react-native';
+import PictureSelection from './PictureSelection';
 
 export default class Username extends Component{
     constructor(props) {
@@ -14,7 +15,7 @@ export default class Username extends Component{
             alert('Username should be less than 16 characters');
         }
         else{
-            alert('Signed up');
+            return <PictureSelection />
         }
     }
 
@@ -37,7 +38,7 @@ export default class Username extends Component{
                     disabled={!isEnabled} 
                     type="button" 
                     name="myButton" 
-                    title="Submit"
+                    title="Next"
                     onPress={this.submitForm} 
                 />   
             </Form>            

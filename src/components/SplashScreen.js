@@ -15,10 +15,10 @@ render() {
 const styles = StyleSheet.create({
     container: {
       flex: 1,
-    //   flexDirection: 'column',
-      justifyContent: 'center',
+      justifyContent: 'space-around',
       alignItems: 'center',   
-      backgroundColor: 'rgb(208,33,41)'
+      backgroundColor: 'rgb(208,33,41)',
+      marginBottom: -140
     },
     text: {
       fontFamily: 'proxima-nova',
@@ -28,11 +28,8 @@ const styles = StyleSheet.create({
       fontWeight: 'bold',
     },
     bottom: {
-      marginBottom: -50,
       fontFamily: 'proxima-nova',
       color: 'white',  
       fontSize: 30,
-      justifyContent: 'center',
-    //   fontWeight: 'bold',
       }
 });

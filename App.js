@@ -10,7 +10,8 @@ import React, {Component} from 'react';
 import {Platform, StyleSheet, Text, View} from 'react-native';
 import Username from './src/components/Username';
 import SplashScreen from './src/components/SplashScreen';
-
+import PictureSelection from './src/components/PictureSelection';
+// import {createStackNavigator, createAppContainer} from 'react-navigation';
 
 const instructions = Platform.select({
   ios: 'Press Cmd+R to reload,\n' + 'Cmd+D or shake for dev menu',
@@ -45,12 +46,13 @@ export default class App extends Component{
   }
 
   render() {
+    
     if(this.state.isLoading){
       return <SplashScreen />;
     }
 
     return (
-      <Username />
+      <PictureSelection />
     );
   }
 }
