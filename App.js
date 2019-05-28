@@ -1,9 +1,10 @@
 import React, {Component} from 'react';
-import {Platform, StyleSheet, Text, View, Image} from 'react-native';
+import {Platform, StyleSheet, Text, View, Image, Button} from 'react-native';
 import MapView, {Marker} from 'react-native-maps';
 import hi from './boss.png';
 import PubNubReact from 'pubnub-react';
 import User from './Components/User.js';
+import * as Animatable from 'react-native-animatable';
 
 
 const instructions = Platform.select({
@@ -15,7 +16,6 @@ const instructions = Platform.select({
 
 export default class App extends React.Component {
 
-
   constructor(props) {
     super(props);
 
@@ -24,13 +24,16 @@ export default class App extends React.Component {
         subscribeKey: 'sub-c-8a8e493c-f876-11e6-80ea-0619f8945a4f'
     });
     
+       console.disableYellowBox = true;
+
 
     //Base State
     this.state = {
       latitude: -6.270565,
       longitude: 106.759550,
       error:null,
-      users: []
+      users: [],
+      show: false
     };
 
 
@@ -89,7 +92,7 @@ export default class App extends React.Component {
         const { latitude, longitude } = position.coords;
         this.setState({ latitude,longitude });  
         this.pubnub.publish({
-          message: {latitude: this.state.latitude, longitude: this.state.longitude, uuid: this.pubnub.getUUID()},
+          message: {latitude: this.state.latitude, longitude: this.state.longitude, uuid: this.pubnub.getUUID(), emoji: false},
           channel: 'channel1'
         });
 
@@ -114,7 +117,7 @@ export default class App extends React.Component {
         const temp = this.state.users.find(element => element.uuid === msg.message.uuid);
 
         if (!temp) {
-          var user = {uuid: msg.message.uuid, coords: coord};
+          var user = {uuid: msg.message.uuid, coords: coord, emoji: msg.message.emoji};
           this.setState({users: this.state.users.concat(user)})//this.state.users.concat(user)});
         }
         console.log("USERS: ");
@@ -192,42 +195,59 @@ export default class App extends React.Component {
   });
 
 
+  hideEmoji = () => {
+        this.pubnub.publish({
+          message: {latitude: this.state.latitude, longitude: this.state.longitude, emoji: false},
+          channel: 'channel1'
+        });
+  };
 
+   showEmoji = () => {
+        this.pubnub.publish({
+          message: {latitude: this.state.latitude, longitude: this.state.longitude, emoji: true},
+          channel: 'channel1'
+        });
+
+        this.pubnub.publish({
+          message: {latitude: this.state.latitude, longitude: this.state.longitude, emoji: false},
+          channel: 'channel1'
+        });
+  };
 
   render() {
 
-
     return ( 
  
-   <View style={styles.container}>
-  <MapView style={styles.map}
-           region={this.setRegion()}>
-             { this.state.users.map((item, index)=>(
-               <Marker key={index} coordinate={{latitude: item.coords[0], longitude: item.coords[1]}}>
-                     <Image source={require('./boss.png')} style={{height: 35, width:35, }} />
-               </Marker>
-             )) }
+    <View style={styles.container}>
+      <MapView style={styles.map}
+             region={this.setRegion()}>
+               { this.state.users.map((item, index)=>(
+                 <Marker key={index} coordinate={{latitude: item.coords[0], longitude: item.coords[1]}}>
+                       <Image source={require('./boss.png')} style={{height: 35, width:35, }} />
 
-          </MapView>
+                      <Button title="" onPress={this.showEmoji}/>
 
-   </View>
+
+                      {item.emoji ? (
+                       <Animatable.View animation="fadeOutUp" iterationCount={"infinite"} direction="normal" easing = "ease-out">
+                          <Image source={require('./heart.png')} style={{height: 35, width:35, }} />
+                       </Animatable.View>
+                      ) : null}
+
+
+                 </Marker>
+               )) }
+
+      </MapView>
+
+
+
+     </View>
 
   
    );
   }
 }
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
