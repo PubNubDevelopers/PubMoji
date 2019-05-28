@@ -1,5 +1,5 @@
 import React, {Component} from 'react';
-import {Platform, StyleSheet, Text, View,Image, Switch,TouchableOpacity,TouchableWithoutFeedback, Header} from 'react-native';
+import {Platform, StyleSheet, Text, View,FlatList, Image, Switch,TouchableOpacity,TouchableWithoutFeedback, Header} from 'react-native';
 import MapView, {Marker} from 'react-native-maps';
 import PubNubReact from 'pubnub-react';
 
@@ -17,6 +17,7 @@ export default class App extends React.Component {
         latitude: -1,
         longitude : -1
       },
+      selectedImage: 1,
       users: new Map(),
       allowGPS: true,
       showAbout: false
@@ -32,7 +33,7 @@ export default class App extends React.Component {
         console.log("Message Receioved: ",msg);
 
         let oldUser = this.state.users.get(msg.message.uuid)
-        let newUser = {uuid: msg.message.uuid, latitude: msg.message.latitude, longitude: msg.message.longitude };
+        let newUser = {uuid: msg.message.uuid, latitude: msg.message.latitude, longitude: msg.message.longitude, image: msg.message.image };
         if(!this.isEquivalent(oldUser, newUser)){
           let tempMap = this.state.users;
 
@@ -56,7 +57,7 @@ export default class App extends React.Component {
       position => {
         if(this.state.allowGPS){
           this.pubnub.publish({
-            message: {latitude: position.coords.latitude, longitude: position.coords.longitude, uuid: this.pubnub.getUUID()},
+            message: {latitude: position.coords.latitude, longitude: position.coords.longitude, uuid: this.pubnub.getUUID(), image: this.state.selectedImage},
             channel: 'channel1'
           });
           this.setState({
@@ -72,7 +73,7 @@ export default class App extends React.Component {
       position => {
         if(this.state.allowGPS){
           this.pubnub.publish({
-            message: {latitude: position.coords.latitude, longitude: position.coords.longitude, uuid: this.pubnub.getUUID()},
+            message: {latitude: position.coords.latitude, longitude: position.coords.longitude, uuid: this.pubnub.getUUID(), image: this.state.selectedImage},
             channel: 'channel1'
           });
           this.setState({
@@ -98,7 +99,7 @@ export default class App extends React.Component {
       console.log("allow GPS: ",this.state.allowGPS)
       if(this.state.allowGPS){
         let tempMap = this.state.users;
-        let tempUser = {latitude: this.state.currentLoc.latitude, longitude: this.state.currentLoc.longitude, uuid: this.pubnub.getUUID()}
+        let tempUser = {latitude: this.state.currentLoc.latitude, longitude: this.state.currentLoc.longitude, uuid: this.pubnub.getUUID(), image: this.state.selectedImage}
         tempMap.set(tempUser.uuid, tempUser)
         this.setState({
           users: tempMap
@@ -110,7 +111,7 @@ export default class App extends React.Component {
         })
       }else{
         this.pubnub.publish({
-          message: {latitude: -1, longitude: -1, uuid: this.pubnub.getUUID(), hideUser: true},
+          message: {latitude: -1, longitude: -1, uuid: this.pubnub.getUUID(),image: this.state.selectedImage, hideUser: true},
           channel: 'channel1'
         });
       }
@@ -147,7 +148,6 @@ export default class App extends React.Component {
     // are considered equivalent
     return true;
   }
-    //Coordinate Setter
 
   toggleAbout = () =>{
     this.setState({
@@ -173,11 +173,18 @@ export default class App extends React.Component {
     return (
       <TouchableWithoutFeedback onPress={this.handleMapPress}>
        <View style={styles.container}>
-           <MapView style={styles.map}
-             onPanDrag ={e => console.log(e.nativeEvent)}
-             >
+           <MapView style={styles.map} onPanDrag ={e => console.log(e.nativeEvent)}
+            >
               { usersArray.map((item, index)=>(
                 <Marker key={index} coordinate={{latitude: item.latitude, longitude: item.longitude}}>
+                  <FlatList
+                    data={[
+                      {key: 'Devin'},
+                      {key: 'Jackson'},
+                      {key: 'James'},
+
+                    ]}
+                    renderItem={({item}) => <Text style={styles.item}>{item.key}</Text>} />
                       <Image source={require('./boss.png')} style={{height: 35, width:35, }} />
                 </Marker>
               )) }
@@ -201,7 +208,7 @@ export default class App extends React.Component {
                 }
               }/>
            </View>
-         {about}
+           {about}
        </View>
      </TouchableWithoutFeedback>
 
