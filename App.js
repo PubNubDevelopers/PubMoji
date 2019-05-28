@@ -11,6 +11,8 @@ import {Platform, StyleSheet, Text, View} from 'react-native';
 import Username from './src/components/Username';
 import SplashScreen from './src/components/SplashScreen';
 import PictureSelection from './src/components/PictureSelection';
+import PicSelectionMain from './src/components/PicSelectionMain';
+
 // import {createStackNavigator, createAppContainer} from 'react-navigation';
 
 const instructions = Platform.select({
@@ -26,29 +28,29 @@ export default class App extends Component{
     this.state = { isLoading: true };
   }
 
-  performTimeConsumingTask = async() => {
-    return new Promise((resolve) =>
-      setTimeout(
-        () => { resolve('result') },
-        3000
-      )
-    );
-  }
+  // performTimeConsumingTask = async() => {
+  //   return new Promise((resolve) =>
+  //     setTimeout(
+  //       () => { resolve('result') },
+  //       3000
+  //     )
+  //   );
+  // }
 
-  async componentDidMount() {
-    // Preload data from an external API
-    // Preload data using AsyncStorage
-    const data = await this.performTimeConsumingTask();
+  // async componentDidMount() {
+  //   // Preload data from an external API
+  //   // Preload data using AsyncStorage
+  //   const data = await this.performTimeConsumingTask();
   
-    if (data !== null) {
-      this.setState({ isLoading: false });
-    }
-  }
+  //   if (data !== null) {
+  //     this.setState({ isLoading: false });
+  //   }
+  // }
 
   render() {
     
     if(this.state.isLoading){
-      return <SplashScreen />;
+      return <PicSelectionMain />;
     }
 
     return (

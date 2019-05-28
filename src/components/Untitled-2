@@ -32,30 +32,35 @@ const imgArrayRowOne = [img1, img2, img3];
 const imgArrayRowTwo = [img4, img5, img6];
 
 export default class PictureSelection extends Component{
-    // constructor(props) {
-    //     super(props);
-    //     this.state = { 
-    //         selectedIndexRowOne: -1,
-    //         selectedIndexRowTwo: -1,
-    //     };
-    //     this.updateIndexOne = this.updateIndexOne.bind(this);
-    //     this.updateIndexTwo = this.updateIndexTwo.bind(this);
-    //   }
+    constructor(props) {
+        super(props);
+        this.state = { 
+            selectedIndexRowOne: -1,
+            selectedIndexRowTwo: -1,
+        };
+        this.updateIndexOne = this.updateIndexOne.bind(this);
+        this.updateIndexTwo = this.updateIndexTwo.bind(this);
+      }
 
-    //   updateIndexOne (selectedIndexRowOne) {
-    //     if(this.state.selectedIndexRowTwo != -1){
-    //         this.setState({selectedIndexRowTwo: -1});;  
-    //     }  
-    //     console.log('hi ' + selectedIndexRowOne);
-    //     this.setState({selectedIndexRowOne});
-    // }
+      updateIndexOne (selectedIndexRowOne) {
+        if(this.state.selectedIndexRowTwo != -1){
+            this.setState({selectedIndexRowTwo: -1});;  
+        }  
+        console.log('hi ' + selectedIndexRowOne);
+        this.setState({selectedIndexRowOne});
+    }
 
-    //   updateIndexTwo (selectedIndexRowTwo) {
-    //     if(this.state.selectedIndexRowOne != -1){
-    //         this.setState({selectedIndexRowOne: -1});;  
-    //     }  
-    //     this.setState({selectedIndexRowTwo});
-    // }
+      updateIndexTwo (selectedIndexRowTwo) {
+        if(this.state.selectedIndexRowOne != -1){
+            this.setState({selectedIndexRowOne: -1});;  
+        }  
+        this.setState({selectedIndexRowTwo});
+    }
+
+       submitPic = () => {
+            console.log('in subitPic function');
+            alert('Submit picture');
+        }
 
     render() {
         const component1 = () => 
@@ -93,29 +98,42 @@ export default class PictureSelection extends Component{
 
         // console.log(buttonsOne[0].element);
 
-        // const { selectedIndexRowOne } = this.state;
-        // const { selectedIndexRowTwo } = this.state;
+        const { selectedIndexRowOne } = this.state;
+        const { selectedIndexRowTwo } = this.state;
         // console.log(selectedIndexRowOne);
         // console.log(selectedIndexRowTwo);
-        // const isRowOneEnabled = (selectedIndexRowOne  > -1) ? true: false;
-        // const isRowTwoEnabled = (selectedIndexRowTwo  > -1) ? true: false;
-        // const isEnabled = (isRowOneEnabled || isRowTwoEnabled) ? true: false;
+        const isRowOneEnabled = (selectedIndexRowOne  > -1) ? true: false;
+        const isRowTwoEnabled = (selectedIndexRowTwo  > -1) ? true: false;
+        const isEnabled = (isRowOneEnabled || isRowTwoEnabled) ? true: false;
 
         return (
         <View style={styles.container}>
+                <View>  
+                    <Image
+                    source={(isRowOneEnabled) ? imgArrayRowOne[selectedIndexRowOne]:
+                        imgArrayRowTwo[selectedIndexRowTwo] }
+                    />
+                </View>
                 <ButtonGroup
-                    selectedIndex={this.props.selectedIndexRowOne}
+                    selectedIndex={selectedIndexRowOne}
                     buttons={buttonsOne}
-                    onPress={this.props.updateIndexOne}
+                    onPress={this.updateIndexOne}
                     containerStyle={{height: 70}}
                     />   
 
                 <ButtonGroup
-                    selectedIndex={this.props.selectedIndexRowTwo}
+                    selectedIndex={selectedIndexRowTwo}
                     buttons={buttonsTwo}
-                    onPress={this.props.updateIndexTwo}
+                    onPress={this.updateIndexTwo}
                     containerStyle={{height: 70}}
                 />    
+                <Button 
+                    disabled={!isEnabled} 
+                    type="button" 
+                    name="myButton" 
+                    title="Nexts"
+                    onPress={this.submitPic} 
+                />  
         </View>
         );
     }
@@ -123,8 +141,42 @@ export default class PictureSelection extends Component{
 
 const styles = StyleSheet.create({
     container: {
+      flex: 1,
+      alignItems: 'center', 
+      justifyContent: 'center',
+      backgroundColor: 'rgb(208,33,41)'
+    },
+    rowPics:{
         alignItems: 'center', 
-        justifyContent: 'center',
+    },
+    textTitle: {
+        fontFamily: 'proxima-nova',
+      //   marginBottom: 250,
+        color: 'white',  
+        fontSize: 45,
+        fontWeight: 'bold',
+      },  
+      textMain: {
+        fontFamily: 'proxima-nova',
+        alignItems: 'center',   
+      //   marginBottom: 250,
+        color: 'white',  
+        fontSize: 30,
+      }, 
+      FacebookStyle: {
+        borderWidth: 1,
+        borderColor: '#333',    
+        backgroundColor: '#FFF',
+        height: 70,
+        width: 70
+      },
+      ImageIconStyle: {
+        padding: 10,
+        margin: 5,
+        height: 25,
+        width: 25,
+        alignItems: 'center',
+        resizeMode: 'stretch',
       },
 });
 

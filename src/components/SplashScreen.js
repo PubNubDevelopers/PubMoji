@@ -17,19 +17,19 @@ const styles = StyleSheet.create({
       flex: 1,
       justifyContent: 'space-around',
       alignItems: 'center',   
-      backgroundColor: 'rgb(208,33,41)',
+      backgroundColor: 'white',
       marginBottom: -140
     },
     text: {
       fontFamily: 'proxima-nova',
     //   marginBottom: 250,
-      color: 'white',  
+      color: 'rgb(208,33,41)',  
       fontSize: 80,
       fontWeight: 'bold',
     },
     bottom: {
       fontFamily: 'proxima-nova',
-      color: 'white',  
+      color: 'rgb(208,33,41)',  
       fontSize: 30,
       }
 });

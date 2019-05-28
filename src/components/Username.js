@@ -52,12 +52,12 @@ const styles = StyleSheet.create({
       flex: 1,
       justifyContent: 'center',
       alignItems: 'center',   
-      backgroundColor: 'rgb(208,33,41)'
+      backgroundColor: 'white'
     },
     text: {
         fontFamily: 'proxima-nova',
       //   marginBottom: 250,
-        color: 'white',  
+        color: 'rgb(208,33,41)',  
         fontSize: 80,
         fontWeight: 'bold',
       },  
