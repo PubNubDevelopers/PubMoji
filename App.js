@@ -32,33 +32,25 @@ export default class App extends React.Component {
       latitude: -6.270565,
       longitude: 106.759550,
       error:null,
-      users: [],
-      show: false
+      users: new Map(),
+      emoji: false
     };
 
 
 
     this.pubnub.init(this);
-//          this.pubnub.hereNow(
-//     {
-//         channels: ["channel1"],
-//         includeUUIDs: true,
-//         includeState: true
-//     },
-//     (status, response) => {
-//         console.log(status);
-//         console.log(response);
-//     }
-// );
+
   }
 
 
   //PubNub 
   componentWillMount() {
-      this.pubnub.subscribe({
+
+              this.pubnub.subscribe({
           channels: ['channel1'],
           withPresence: true       
       });
+
   }
  
   componentWillUnmount() {
@@ -70,6 +62,36 @@ export default class App extends React.Component {
 
   //Track User GPS Data
   componentDidMount() {
+
+
+
+    this.pubnub.getMessage('channel1', (msg) => {
+        //console.log("Message Receioved: ",msg);
+
+        coord = [msg.message.latitude,msg.message.longitude];
+        let oldUser = this.state.users.get(msg.message.uuid)
+        let newUser = {uuid: msg.message.uuid, coords: coord, emoji: msg.message.emoji };
+        if(!this.isEquivalent(oldUser, newUser)){
+          let tempMap = this.state.users;
+
+          if(msg.message.hideUser){
+              tempMap.delete(newUser.uuid)
+          }else{
+            tempMap.set(newUser.uuid, newUser);
+          }
+
+          this.setState({
+            users: tempMap
+          })
+
+
+        console.log("USERS: ");
+        console.log(this.state.users);
+        }
+    });
+
+
+
 
     //Get Stationary Coordinate
     navigator.geolocation.getCurrentPosition( 
@@ -110,20 +132,46 @@ export default class App extends React.Component {
 
 
 
-    this.pubnub.getMessage('channel1', (msg) => {
-        console.log(msg);
+    // this.pubnub.getMessage('channel1', (msg) => {
+    //     console.log(msg);
 
-        const coord = [msg.message.latitude,msg.message.longitude];
-        const temp = this.state.users.find(element => element.uuid === msg.message.uuid);
+    //     const coord = [msg.message.latitude,msg.message.longitude];
+    //     const temp = this.state.users.find(element => element.uuid === msg.message.uuid);
 
-        if (!temp) {
-          var user = {uuid: msg.message.uuid, coords: coord, emoji: msg.message.emoji};
-          this.setState({users: this.state.users.concat(user)})//this.state.users.concat(user)});
-        }
-        console.log("USERS: ");
-        console.log(this.state.users);
-        //getUserLocation(msg.uuid);
-    });
+    //     if (temp != msg.message.uuid) {
+
+    //       if(msg.message.uuid != undefined){
+    //       var user = {uuid: msg.message.uuid, coords: coord, emoji: msg.message.emoji};
+    //       this.setState({users: this.state.users.concat(user), emoji: msg.message.emoji})//this.state.users.concat(user)});
+    //     }
+    //     }else{
+
+    //       if(msg.message.uuid != undefined){
+    //       var newuser = [{uuid: msg.message.uuid, coords: coord, emoji: msg.message.emoji}];
+    //       olduser = this.state.users.splice(temp,1);
+    //       if(olduser.length === 0){
+    //         this.setState({users: newuser, emoji: msg.message.emoji})
+    //       }else{
+    //       this.setState({users: olduser.concat(newuser), emoji: msg.message.emoji})//this.state.users.concat(user)});
+    //     }
+    //     }
+
+
+    //     }
+    //     console.log("USERS: ");
+    //     console.log(this.state.users);
+    //     //getUserLocation(msg.uuid);
+    // });
+
+
+
+
+
+
+
+
+
+
 
   }
 
@@ -132,58 +180,6 @@ export default class App extends React.Component {
     navigator.geolocation.clearWatch(this.watchID);
   }
 
-  componentDidUpdate(){
-
-      // this.pubnub.setState(
-      //     {
-      //         state: this.state,
-      //         channels: ['channel1'],
-      //     },
-      //     function (status, response) {
-      //         // handle status, response
-      //     }
-      // );
-
-
-
-      // this.pubnub.hereNow(
-      //     {
-      //         channels: ["channel1"],
-      //         includeState: true
-      //     },
-      //     function (status, response) {
-      //         // console.log("hereNow: ");
-      //         // console.log(response);
-      //         this.setState({users: response.channels.channel1.occupants});
-      //         // console.log("occupants");
-      //         // console.log(this.state.users);
-      //         // console.log("----------");
-      //     }.bind(this)
-      // );
-
-
-      // this.pubnub.getState(
-      //     {
-      //         uuid: this.pubnub.getUUID(),
-      //         channels: ['channel1'],
-      //     },
-      //     function (status, response) {
-      //         // console.log("user state is: ");
-      //         // console.log(response);
-      //         // console.log("----------");
-      //     }
-      // );
-  }
-
-
-
-  getUserLocation(uuid){
-    const location = users.find(element => element.uuid === uuid);
-
-    if (location) {
-      return location.coordinates;
-    }
-  }
 
     //Coordinate Setter
   setRegion = () => ({
@@ -197,44 +193,80 @@ export default class App extends React.Component {
 
   hideEmoji = () => {
         this.pubnub.publish({
-          message: {latitude: this.state.latitude, longitude: this.state.longitude, emoji: false},
+          message: {latitude: this.state.latitude, longitude: this.state.longitude, uuid: this.pubnub.getUUID(), emoji: false},
           channel: 'channel1'
         });
   };
 
    showEmoji = () => {
         this.pubnub.publish({
-          message: {latitude: this.state.latitude, longitude: this.state.longitude, emoji: true},
+          message: {latitude: this.state.latitude, longitude: this.state.longitude, uuid: this.pubnub.getUUID(), emoji: true},
           channel: 'channel1'
         });
 
-        this.pubnub.publish({
-          message: {latitude: this.state.latitude, longitude: this.state.longitude, emoji: false},
-          channel: 'channel1'
-        });
   };
 
+  showText = () => {
+    if(this.state.show == true){
+      this.setState({show: false});
+    }else{
+      this.setState({show:true});
+    }
+   
+}
+
+isEquivalent = (a, b) => {
+
+    if(!a || !b){
+      if(a === b) return true;
+      return false
+    }
+    // Create arrays of property names
+    var aProps = Object.getOwnPropertyNames(a);
+    var bProps = Object.getOwnPropertyNames(b);
+
+    // If number of properties is different,
+    // objects are not equivalent
+    if (aProps.length != bProps.length) {
+        return false;
+    }
+
+    for (var i = 0; i < aProps.length; i++) {
+        var propName = aProps[i];
+
+        // If values of same property are not equal,
+        // objects are not equivalent
+        if (a[propName] !== b[propName]) {
+            return false;
+        }
+    }
+
+    // If we made it this far, objects
+    // are considered equivalent
+    return true;
+  }
+
+
   render() {
+
+       let usersArray = Array.from(this.state.users.values());
 
     return ( 
  
     <View style={styles.container}>
       <MapView style={styles.map}
              region={this.setRegion()}>
-               { this.state.users.map((item, index)=>(
+               { usersArray.map((item, index)=>(
                  <Marker key={index} coordinate={{latitude: item.coords[0], longitude: item.coords[1]}}>
                        <Image source={require('./boss.png')} style={{height: 35, width:35, }} />
 
-                      <Button title="" onPress={this.showEmoji}/>
+                      <Button title="show Emoji" onPress={() => this.showEmoji()}/>
+                      <Button title="hide Emoji" onPress={() => this.hideEmoji()}/>
 
-
-                      {item.emoji ? (
-                       <Animatable.View animation="fadeOutUp" iterationCount={"infinite"} direction="normal" easing = "ease-out">
+                       {item.emoji && <Animatable.View animation="fadeOutUp" iterationCount={1} direction="normal" easing = "ease-out">
                           <Image source={require('./heart.png')} style={{height: 35, width:35, }} />
-                       </Animatable.View>
-                      ) : null}
-
-
+                       </Animatable.View> }
+                    
                  </Marker>
                )) }
 
