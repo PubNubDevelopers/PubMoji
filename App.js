@@ -1,7 +1,8 @@
 import React, {Component} from 'react';
-import {Platform, StyleSheet, Text, View,FlatList, Image, Switch,TouchableOpacity,TouchableWithoutFeedback, Header} from 'react-native';
+import {Platform, StyleSheet, Text,Button, View, Image, Switch,TouchableOpacity,TouchableWithoutFeedback, Header} from 'react-native';
 import MapView, {Marker} from 'react-native-maps';
 import PubNubReact from 'pubnub-react';
+import Modal from "react-native-modal";
 
 export default class App extends React.Component {
   constructor(props) {
@@ -17,10 +18,13 @@ export default class App extends React.Component {
         latitude: -1,
         longitude : -1
       },
+      numUsers: 0,
       selectedImage: 1,
       users: new Map(),
+      messages: new Map(),
       allowGPS: true,
-      showAbout: false
+      showAbout: false,
+      bsState: false,
     };
     this.pubnub.init(this);
   }
@@ -28,9 +32,21 @@ export default class App extends React.Component {
   //Track User GPS Data
   componentDidMount() {
     //PubNub
+    this.pubnub.getMessage('channel1.messages',(msg) =>{
+      if(this.state.users.has(msg.message.uuid)){
+        let tempMap = this.state.messages;
+        if(this.state.messages.has(msg.message.uuid)){
+          this.stopMessageTimer(this.state.messages.get(msg.message.uuid).timerId)
+        }
+        let message = {uuid: msg.message.uuid, message: msg.message.message, timerId: setTimeout(this.clearMessage, 5000, msg.message.uuid) }
+        tempMap.set(msg.message.uuid, message)
+        this.setState({
+          messages: tempMap
+        })
+      }
+    })
 
     this.pubnub.getMessage('channel1', (msg) => {
-        console.log("Message Receioved: ",msg);
 
         let oldUser = this.state.users.get(msg.message.uuid)
         let newUser = {uuid: msg.message.uuid, latitude: msg.message.latitude, longitude: msg.message.longitude, image: msg.message.image };
@@ -45,12 +61,19 @@ export default class App extends React.Component {
 
           this.setState({
             users: tempMap
-          },()=>{console.log(this.state.users)})
+          })
         }
     });
     this.pubnub.subscribe({
         channels: ['channel1'],
         withPresence: true
+    });
+    this.pubnub.subscribe({
+        channels: ['channel1.messages'],
+        withPresence: true
+    });
+    this.pubnub.getPresence('channel1', (presence) => {
+        console.log(presence);
     });
     //Get Stationary Coordinate
     navigator.geolocation.getCurrentPosition(
@@ -86,11 +109,38 @@ export default class App extends React.Component {
         enableHighAccuracy: true,
         timeout: 20000,
         maximumAge: 1000,
-        distanceFilter: 1
+        distanceFilter: 100
       }
     );
+    //setInterval(this.publishMessage, 7000);
+    //this.publishMessage()
+
+  }
+  clearMessage = (uuid) =>{
+    let tempMap = this.state.messages;
+    console.log("deleted", tempMap.delete(uuid))
+    this.setState({
+      messages: tempMap
+    },()=>{console.log("piza",this.state.messages)})
+    //console.log("clearing message")
+  }
+  stopMessageTimer = (timerId) => {
+    console.log("clearing timeout")
+    clearTimeout(timerId)
+  }
+  publishMessage = () => {
+    const testMessage = "Testing messages";
+    this.pubnub.publish({
+      message: {message: Math.random( ), uuid: this.pubnub.getUUID()},
+      channel: 'channel1.messages'
+    });
+    console.log("publishing")
   }
   componentWillUnmount() {
+    this.pubnub.publish({
+      message: {latitude: -1, longitude: -1, uuid: this.pubnub.getUUID(),image: this.state.selectedImage, hideUser: true},
+      channel: 'channel1'
+    });
     this.pubnub.unsubscribeAll();
     navigator.geolocation.clearWatch(this.watchID);
   }
@@ -161,54 +211,83 @@ export default class App extends React.Component {
       })
     }
   }
+  focusLoc = () => {
+    console.log("Focusing")
+  }
 
   render() {
     let about;
-    let usersArray = Array.from(this.state.users.values());
-    if(this.state.showAbout){
-      about = <AboutPage/>
-    }else{
-      about = null;
+    let usersMap = this.state.users;
+    let messagesMap = this.state.messages;
+
+    for( let key of messagesMap.keys()){
+      let tempUser = usersMap.get(key)
+      if(tempUser){
+        tempUser.message = messagesMap.get(key).message
+        usersMap.set(key, tempUser)
+      }
     }
+    let usersArray = Array.from(usersMap.values());
+    // if(this.state.showAbout){
+    //   about = <AboutPage/>
+    // }else{
+    //   about = null;
+    // }
     return (
       <TouchableWithoutFeedback onPress={this.handleMapPress}>
        <View style={styles.container}>
            <MapView style={styles.map} onPanDrag ={e => console.log(e.nativeEvent)}
             >
               { usersArray.map((item, index)=>(
-                <Marker key={index} coordinate={{latitude: item.latitude, longitude: item.longitude}}>
-                  <FlatList
-                    data={[
-                      {key: 'Devin'},
-                      {key: 'Jackson'},
-                      {key: 'James'},
-
-                    ]}
-                    renderItem={({item}) => <Text style={styles.item}>{item.key}</Text>} />
-                      <Image source={require('./boss.png')} style={{height: 35, width:35, }} />
+                <Marker style={styles.marker} key={index} coordinate={{latitude: item.latitude, longitude: item.longitude}}>
+                  <Text style={styles.text}>{item.message}</Text>
+                  <Image source={require('./boss.png')} style={{height: 35, width:35, }} />
                 </Marker>
               )) }
 
            </MapView >
            <View style={styles.topBar}>
-            <TouchableOpacity onPress={this.toggleAbout}>
-              <Image
-                style={styles.button}
-                source={require('./info.png')}
-              />
-            </TouchableOpacity>
-            <Switch
-              value={this.state.allowGPS}
-              style={styles.locationSwitch}
-              onValueChange={
-                (value) => {
-                  this.setState({
-                    allowGPS: value
-                  })
-                }
-              }/>
+             <TouchableOpacity onPress={this.toggleAbout}>
+               <Image
+                 style={styles.profile}
+                 source={require('./profile.png')}
+               />
+             </TouchableOpacity>
+            <View style={styles.rightBar}>
+              <TouchableOpacity onPress={this.toggleAbout}>
+                <Image
+                  style={styles.info}
+                  source={require('./info.png')}
+                />
+              </TouchableOpacity>
+              <Switch
+                value={this.state.allowGPS}
+                style={styles.locationSwitch}
+                onValueChange={
+                  (value) => {
+                    this.setState({
+                      allowGPS: value
+                    })
+                    console.log("PENNNNIUS")
+                  }
+                }/>
+            </View>
            </View>
-           {about}
+           <View style={styles.bottom}>
+             <TouchableOpacity onPress={this.focusLoc}>
+               <Image
+                 style={styles.focusLoc}
+                 source={require('./notFixedGPS.png')}
+               />
+             </TouchableOpacity>
+           </View>
+
+         <Modal isVisible={this.state.showAbout}>
+           <View style={{ flex: 1 }}>
+            <Text>Hello!</Text>
+            <Button title="Hide modal" onPress={this.toggleAbout} />
+          </View>
+         </Modal>
        </View>
      </TouchableWithoutFeedback>
 
@@ -220,12 +299,25 @@ const styles = StyleSheet.create({
     backgroundColor: '#9FA8DA',
     flex: 0,
   },
+  marker:{
+    justifyContent: 'center',
+    alignSelf: 'center',
+  },
+  text:{
+    //fontFamily: "RuneScape-UF",
+    backgroundColor: '#9FA8DA',
+  },
   topBar:{
     top: 50,
     right: 10,
     flexDirection: 'row',
-   justifyContent: 'flex-end',
-   alignItems: 'center'
+    justifyContent: 'space-between',
+    alignItems: 'center'
+  },
+  rightBar:{
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    alignItems: 'center'
   },
   locationSwitch:{
     right: 10
@@ -235,30 +327,34 @@ const styles = StyleSheet.create({
     flex: 10,
 
   },
+  bottom:{
+    flex: 1,
+    justifyContent: 'flex-end',
+    alignSelf: 'flex-end',
+  },
+  focusLoc:{
+    width: 30,
+    height: 30,
+    marginHorizontal: 25,
+    marginVertical: 25,
+  },
   map: {
     ...StyleSheet.absoluteFillObject
   },
-  bubble: {
-    flex: 1,
-    backgroundColor: "rgba(255,255,255,0.7)",
-    paddingHorizontal: 18,
-    paddingVertical: 12,
-    borderRadius: 20
-  },
-  latlng: {
-    width: 200,
-    alignItems: "stretch"
-  },
-  button: {
+
+  info: {
     width: 30,
     height: 30,
-    marginHorizontal: 10,
+    marginHorizontal: 15,
   },
-  buttonContainer: {
-    flexDirection: "row",
-    marginVertical: 20,
-    backgroundColor: "transparent"
-  }
+  profile: {
+    width: 30,
+    height: 30,
+    marginHorizontal: 25,
+
+
+  },
+
 });
 
 const AboutPage = () => {
