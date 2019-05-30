@@ -23,7 +23,7 @@ export default class App extends React.Component {
         publishKey: 'pub-c-a64b528c-0749-416f-bf75-50abbfa905f9',
         subscribeKey: 'sub-c-8a8e493c-f876-11e6-80ea-0619f8945a4f'
     });
-    
+
        console.disableYellowBox = true;
 
 
@@ -33,7 +33,7 @@ export default class App extends React.Component {
       longitude: 106.759550,
       error:null,
       users: new Map(),
-      emoji: false
+      emoji: 0
     };
 
 
@@ -43,16 +43,16 @@ export default class App extends React.Component {
   }
 
 
-  //PubNub 
+  //PubNub
   componentWillMount() {
 
               this.pubnub.subscribe({
           channels: ['channel1'],
-          withPresence: true       
+          withPresence: true
       });
 
   }
- 
+
   componentWillUnmount() {
       this.pubnub.unsubscribe({
           channels: ['channel1']
@@ -63,17 +63,24 @@ export default class App extends React.Component {
   //Track User GPS Data
   componentDidMount() {
 
-
-
     this.pubnub.getMessage('channel1', (msg) => {
         //console.log("Message Receioved: ",msg);
 
         coord = [msg.message.latitude,msg.message.longitude];
-        let oldUser = this.state.users.get(msg.message.uuid)
+        let oldUser = this.state.users.get(msg.message.uuid);
+        let emojiCount;
+        if(oldUser){
+          emojiCount = oldUser.emoji + msg.message.emoji;
+          console.log("OldUser: ", oldUser);
+          console.log("Emoji Count: ", emojiCount);
+        }else{
+          emojiCount = msg.message.emoji;
+        }
+
         let newUser = {uuid: msg.message.uuid, coords: coord, emoji: msg.message.emoji };
         if(!this.isEquivalent(oldUser, newUser)){
           let tempMap = this.state.users;
-
+          newUser = {uuid: msg.message.uuid, coords: coord, emoji: emojiCount}; //add in the emoji count
           if(msg.message.hideUser){
               tempMap.delete(newUser.uuid)
           }else{
@@ -87,14 +94,15 @@ export default class App extends React.Component {
 
         console.log("USERS: ");
         console.log(this.state.users);
+
+        console.log("Message: ", msg.message.emoji);
+
         }
     });
 
 
-
-
     //Get Stationary Coordinate
-    navigator.geolocation.getCurrentPosition( 
+    navigator.geolocation.getCurrentPosition(
       position => {
        // console.log(position);
         this.setState({
@@ -112,9 +120,9 @@ export default class App extends React.Component {
     navigator.geolocation.watchPosition(
       position => {
         const { latitude, longitude } = position.coords;
-        this.setState({ latitude,longitude });  
+        this.setState({ latitude,longitude });
         this.pubnub.publish({
-          message: {latitude: this.state.latitude, longitude: this.state.longitude, uuid: this.pubnub.getUUID(), emoji: false},
+          message: {latitude: this.state.latitude, longitude: this.state.longitude, uuid: this.pubnub.getUUID(), emoji: this.state.emoji},
           channel: 'channel1'
         });
 
@@ -129,48 +137,6 @@ export default class App extends React.Component {
 
 
     );
-
-
-
-    // this.pubnub.getMessage('channel1', (msg) => {
-    //     console.log(msg);
-
-    //     const coord = [msg.message.latitude,msg.message.longitude];
-    //     const temp = this.state.users.find(element => element.uuid === msg.message.uuid);
-
-    //     if (temp != msg.message.uuid) {
-
-    //       if(msg.message.uuid != undefined){
-    //       var user = {uuid: msg.message.uuid, coords: coord, emoji: msg.message.emoji};
-    //       this.setState({users: this.state.users.concat(user), emoji: msg.message.emoji})//this.state.users.concat(user)});
-    //     }
-    //     }else{
-
-    //       if(msg.message.uuid != undefined){
-    //       var newuser = [{uuid: msg.message.uuid, coords: coord, emoji: msg.message.emoji}];
-    //       olduser = this.state.users.splice(temp,1);
-    //       if(olduser.length === 0){
-    //         this.setState({users: newuser, emoji: msg.message.emoji})
-    //       }else{
-    //       this.setState({users: olduser.concat(newuser), emoji: msg.message.emoji})//this.state.users.concat(user)});
-    //     }
-    //     }
-
-
-    //     }
-    //     console.log("USERS: ");
-    //     console.log(this.state.users);
-    //     //getUserLocation(msg.uuid);
-    // });
-
-
-
-
-
-
-
-
-
 
 
   }
@@ -193,14 +159,14 @@ export default class App extends React.Component {
 
   hideEmoji = () => {
         this.pubnub.publish({
-          message: {latitude: this.state.latitude, longitude: this.state.longitude, uuid: this.pubnub.getUUID(), emoji: false},
+          message: {latitude: this.state.latitude, longitude: this.state.longitude, uuid: this.pubnub.getUUID(), emoji: -1},
           channel: 'channel1'
         });
   };
 
    showEmoji = () => {
         this.pubnub.publish({
-          message: {latitude: this.state.latitude, longitude: this.state.longitude, uuid: this.pubnub.getUUID(), emoji: true},
+          message: {latitude: this.state.latitude, longitude: this.state.longitude, uuid: this.pubnub.getUUID(), emoji: 1},
           channel: 'channel1'
         });
 
@@ -212,7 +178,7 @@ export default class App extends React.Component {
     }else{
       this.setState({show:true});
     }
-   
+
 }
 
 isEquivalent = (a, b) => {
@@ -251,22 +217,52 @@ isEquivalent = (a, b) => {
 
        let usersArray = Array.from(this.state.users.values());
 
-    return ( 
- 
+    return (
+
     <View style={styles.container}>
       <MapView style={styles.map}
              region={this.setRegion()}>
                { usersArray.map((item, index)=>(
                  <Marker key={index} coordinate={{latitude: item.coords[0], longitude: item.coords[1]}}>
-                       <Image source={require('./boss.png')} style={{height: 35, width:35, }} />
 
-                      <Button title="show Emoji" onPress={() => this.showEmoji()}/>
-                      <Button title="hide Emoji" onPress={() => this.hideEmoji()}/>
 
-                       {item.emoji && <Animatable.View animation="fadeOutUp" iterationCount={1} direction="normal" easing = "ease-out">
+
+
+
+                       {(item.emoji > 0 ) && <Animatable.View animation="fadeOutUp" duration={2000} iterationCount={1} direction="normal" easing = "ease-out" onAnimationEnd={() => this.hideEmoji()}>
                           <Image source={require('./heart.png')} style={{height: 35, width:35, }} />
                        </Animatable.View> }
-                    
+
+                       {(item.emoji-1 > 0 ) && <Animatable.View animation="fadeOutUp" duration={1500} iterationCount={1} direction="normal" easing = "ease-out" onAnimationEnd={() => this.hideEmoji()}>
+                          <Image source={require('./heart.png')} style={{height: 35, width:35, }} />
+                       </Animatable.View> }
+
+                       {(item.emoji-2 > 0 ) && <Animatable.View animation="fadeOutUp" duration={1000} iterationCount={1} direction="normal" easing = "ease-out" onAnimationEnd={() => this.hideEmoji()}>
+                          <Image source={require('./heart.png')} style={{height: 35, width:35, }} />
+                       </Animatable.View> }
+
+                       {(item.emoji-3 > 0 ) && <Animatable.View animation="fadeOutUp" duration={2000} iterationCount={1} direction="normal" easing = "ease-out" onAnimationEnd={() => this.hideEmoji()}>
+                          <Image source={require('./heart.png')} style={{height: 35, width:35, }} />
+                       </Animatable.View> }
+
+                       {(item.emoji-4 > 0 ) && <Animatable.View animation="fadeOutUp" duration={1500} iterationCount={1} direction="normal" easing = "ease-out" onAnimationEnd={() => this.hideEmoji()}>
+                          <Image source={require('./heart.png')} style={{height: 35, width:35, }} />
+                       </Animatable.View> }
+
+                       {(item.emoji-5 > 0 ) && <Animatable.View animation="fadeOutUp" duration={2000} iterationCount={1} direction="normal" easing = "ease-out" onAnimationEnd={() => this.hideEmoji()}>
+                          <Image source={require('./heart.png')} style={{height: 35, width:35, }} />
+                       </Animatable.View> }
+
+                       {(item.emoji-6 > 0 ) && <Animatable.View animation="fadeOutUp" duration={2000} iterationCount={1} direction="normal" easing = "ease-out" onAnimationEnd={() => this.hideEmoji()}>
+                          <Image source={require('./heart.png')} style={{height: 35, width:35, }} />
+                       </Animatable.View> }
+
+                       {(item.emoji-7 > 0 ) && <Animatable.View animation="fadeOutUp" duration={2000} iterationCount={1} direction="normal" easing = "ease-out" onAnimationEnd={() => this.hideEmoji()}>
+                          <Image source={require('./heart.png')} style={{height: 35, width:35, }} />
+                       </Animatable.View> }
+
+                       <Image source={require('./boss.png')} style={{height: 35, width:35, }} />
+                      <Button title="show Emoji" onPress={() => this.showEmoji()}/>
                  </Marker>
                )) }
 
@@ -276,7 +272,7 @@ isEquivalent = (a, b) => {
 
      </View>
 
-  
+
    );
   }
 }
@@ -316,4 +312,3 @@ const styles = StyleSheet.create({
     backgroundColor: "transparent"
   }
 });
-
