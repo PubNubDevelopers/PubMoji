@@ -1,6 +1,6 @@
 import React, {Component} from 'react';
 import {Platform, StyleSheet, Text,Button, View, Image, Switch,TouchableOpacity,TouchableWithoutFeedback, Header} from 'react-native';
-import MapView, {Marker} from 'react-native-maps';
+import MapView, {Marker } from 'react-native-maps';
 import PubNubReact from 'pubnub-react';
 import Modal from "react-native-modal";
 
@@ -20,11 +20,12 @@ export default class App extends React.Component {
       },
       numUsers: 0,
       selectedImage: 1,
+      fixedOnUUID: "",
+      focusOnMe: false,
       users: new Map(),
       messages: new Map(),
       allowGPS: true,
       showAbout: false,
-      bsState: false,
     };
     this.pubnub.init(this);
   }
@@ -32,6 +33,7 @@ export default class App extends React.Component {
   //Track User GPS Data
   componentDidMount() {
     //PubNub
+
     this.pubnub.getMessage('channel1.messages',(msg) =>{
       if(this.state.users.has(msg.message.uuid)){
         let tempMap = this.state.messages;
@@ -47,22 +49,24 @@ export default class App extends React.Component {
     })
 
     this.pubnub.getMessage('channel1', (msg) => {
+      if(msg.message.uuid == this.state.fixedOnUUID){
+        this.animateToCurrent({latitude: msg.message.latitude, longitude: msg.message.longitude},400)
+      }
+      let oldUser = this.state.users.get(msg.message.uuid)
+      let newUser = {uuid: msg.message.uuid, latitude: msg.message.latitude, longitude: msg.message.longitude, image: msg.message.image };
+      if(!this.isEquivalent(oldUser, newUser)){
+        let tempMap = this.state.users;
 
-        let oldUser = this.state.users.get(msg.message.uuid)
-        let newUser = {uuid: msg.message.uuid, latitude: msg.message.latitude, longitude: msg.message.longitude, image: msg.message.image };
-        if(!this.isEquivalent(oldUser, newUser)){
-          let tempMap = this.state.users;
-
-          if(msg.message.hideUser){
-              tempMap.delete(newUser.uuid)
-          }else{
-            tempMap.set(newUser.uuid, newUser);
-          }
-
-          this.setState({
-            users: tempMap
-          })
+        if(msg.message.hideUser){
+            tempMap.delete(newUser.uuid)
+        }else{
+          tempMap.set(newUser.uuid, newUser);
         }
+
+        this.setState({
+          users: tempMap
+        })
+      }
     });
     this.pubnub.subscribe({
         channels: ['channel1'],
@@ -86,6 +90,7 @@ export default class App extends React.Component {
           this.setState({
             currentLoc: position.coords
           })
+
         }
       },
       error => console.log("Maps Error: ",error),
@@ -94,15 +99,19 @@ export default class App extends React.Component {
     //Track motional Coordinates
     navigator.geolocation.watchPosition(
       position => {
+        this.setState({
+          currentLoc: position.coords
+        })
         if(this.state.allowGPS){
           this.pubnub.publish({
             message: {latitude: position.coords.latitude, longitude: position.coords.longitude, uuid: this.pubnub.getUUID(), image: this.state.selectedImage},
             channel: 'channel1'
           });
-          this.setState({
-            currentLoc: position.coords
-          })
+          if(this.state.focusOnMe){
+            this.animateToCurrent(position.coords,1000)
+          }
         }
+
       },
       error => console.log("Maps Error: ",error),
       {
@@ -148,6 +157,9 @@ export default class App extends React.Component {
     if(prevState.allowGPS != this.state.allowGPS){
       console.log("allow GPS: ",this.state.allowGPS)
       if(this.state.allowGPS){
+        if(this.state.focusOnMe){
+          this.animateToCurrent(this.state.currentLoc,1000)
+        }
         let tempMap = this.state.users;
         let tempUser = {latitude: this.state.currentLoc.latitude, longitude: this.state.currentLoc.longitude, uuid: this.pubnub.getUUID(), image: this.state.selectedImage}
         tempMap.set(tempUser.uuid, tempUser)
@@ -198,27 +210,105 @@ export default class App extends React.Component {
     // are considered equivalent
     return true;
   }
+  animateToCurrent = (coords,speed) =>{
+    region = {
+      latitude: coords.latitude,
+      longitude: coords.longitude,
+      latitudeDelta: 0.01,
+      longitudeDelta: 0.01,
+    }
+    this.map.animateToRegion(region,speed)
+  }
+  animate() {
+    const { coordinate } = this.state;
+    const newCoordinate = {
+      latitude: LATITUDE + (Math.random() - 0.5) * (LATITUDE_DELTA / 2),
+      longitude: LONGITUDE + (Math.random() - 0.5) * (LONGITUDE_DELTA / 2),
+    };
 
+    if (Platform.OS === 'android') {
+      if (this.marker) {
+        this.marker._component.animateMarkerToCoordinate(newCoordinate, 500);
+      }
+    } else {
+      coordinate.timing(newCoordinate).start();
+    }
+  }
   toggleAbout = () =>{
     this.setState({
       showAbout: !this.state.showAbout
     })
   }
-  handleMapPress = () => {
-    if(this.state.showAbout){
+  // handleMapPress = () => {
+  //   if(this.state.showAbout){
+  //     this.setState({
+  //       showAbout: false
+  //     })
+  //
+  //   }
+  //   console.log("pressed map")
+  // }
+  toggleGPS = () => {
+    this.setState({
+      allowGPS: !this.state.allowGPS
+    })
+  }
+  focusLoc = () => {
+    if(this.state.focusOnMe || this.state.fixedOnUUID){
       this.setState({
-        showAbout: false
+        focusOnMe: false,
+        fixedOnUUID: "",
+      })
+    }else{
+      region = {
+        latitude: this.state.currentLoc.latitude,
+        longitude: this.state.currentLoc.longitude,
+        latitudeDelta: 0.01,
+        longitudeDelta: 0.01,
+      }
+      this.setState({
+        focusOnMe: true
+      })
+      this.map.animateToRegion(region,2000)
+    }
+  }
+  draggedMap = () =>{
+    this.setState({
+      focusOnMe: false,
+      fixedOnUUID: ""
+
+    })
+
+  }
+  touchUser = (uuid) =>{
+    if(uuid === this.pubnub.getUUID()){
+      this.focusLoc()
+    }else{
+      this.setState({
+        fixedOnUUID: uuid,
+        focusOnMe: false
       })
     }
   }
-  focusLoc = () => {
-    console.log("Focusing")
+  selectedStyle = (uuid) =>{
+    if((this.state.focusOnMe && uuid == this.pubnub.getUUID()) || this.state.fixedOnUUID == uuid)
+    {
+      return { height: 50, width:50}
+    }
+    return { height: 30, width:30}
   }
 
   render() {
     let about;
     let usersMap = this.state.users;
     let messagesMap = this.state.messages;
+    let gpsImage;
+    if(this.state.focusOnMe || this.state.fixedOnUUID)
+    {
+      gpsImage = require('./assets/images/fixedGPS.png')
+    }else{
+      gpsImage = require('./assets/images/notFixedGPS.png')
+    }
 
     for( let key of messagesMap.keys()){
       let tempUser = usersMap.get(key)
@@ -233,54 +323,71 @@ export default class App extends React.Component {
     // }else{
     //   about = null;
     // }
+
+
+
+    //MAKE SURE TO ADD NSLocationWhenInUseUsageDescription INTO INFO.PLST
+
     return (
-      <TouchableWithoutFeedback onPress={this.handleMapPress}>
        <View style={styles.container}>
-           <MapView style={styles.map} onPanDrag ={e => console.log(e.nativeEvent)}
+           <MapView
+             style={styles.map}
+             showsMyLocationButton={true}
+             showUserLocation={true}
+             ref={(ref) => this.map = ref}
+             onMoveShouldSetResponder={this.draggedMap}
+
             >
               { usersArray.map((item, index)=>(
-                <Marker style={styles.marker} key={index} coordinate={{latitude: item.latitude, longitude: item.longitude}}>
-                  <Text style={styles.text}>{item.message}</Text>
-                  <Image source={require('./boss.png')} style={{height: 35, width:35, }} />
-                </Marker>
-              )) }
 
+                  <Marker
+                    style={styles.marker}
+                    key={index}
+                    coordinate={{latitude: item.latitude, longitude: item.longitude}}
+                    ref={marker => {
+                      this.marker = marker;
+                    }}>
+                    <TouchableOpacity onPress={() =>{this.touchUser(item.uuid)}} >
+                      <Text style={styles.text}>{item.message}</Text>
+                      <View style={styles.selectedUserBackground}>
+                        <Image source={require('./assets/images/boss.png')} style={this.selectedStyle(item.uuid)} />
+                      </View>
+                    </TouchableOpacity>
+                </Marker>
+
+
+              )) }
            </MapView >
            <View style={styles.topBar}>
              <TouchableOpacity onPress={this.toggleAbout}>
                <Image
                  style={styles.profile}
-                 source={require('./profile.png')}
+                 source={require('./assets/images/profile.png')}
                />
              </TouchableOpacity>
             <View style={styles.rightBar}>
               <TouchableOpacity onPress={this.toggleAbout}>
                 <Image
                   style={styles.info}
-                  source={require('./info.png')}
+                  source={require('./assets/images/info.png')}
                 />
               </TouchableOpacity>
               <Switch
                 value={this.state.allowGPS}
                 style={styles.locationSwitch}
-                onValueChange={
-                  (value) => {
-                    this.setState({
-                      allowGPS: value
-                    })
-                    console.log("PENNNNIUS")
-                  }
-                }/>
+                onValueChange={this.toggleGPS}/>
             </View>
            </View>
+
            <View style={styles.bottom}>
              <TouchableOpacity onPress={this.focusLoc}>
                <Image
                  style={styles.focusLoc}
-                 source={require('./notFixedGPS.png')}
+                 source={gpsImage}
                />
              </TouchableOpacity>
-           </View>
+          </View>
+
 
          <Modal isVisible={this.state.showAbout}>
            <View style={{ flex: 1 }}>
@@ -289,7 +396,6 @@ export default class App extends React.Component {
           </View>
          </Modal>
        </View>
-     </TouchableWithoutFeedback>
 
    );
   }
@@ -297,7 +403,6 @@ export default class App extends React.Component {
 const styles = StyleSheet.create({
   aboutView:{
     backgroundColor: '#9FA8DA',
-    flex: 0,
   },
   marker:{
     justifyContent: 'center',
@@ -323,20 +428,19 @@ const styles = StyleSheet.create({
     right: 10
   },
   container: {
-    ...StyleSheet.absoluteFillObject,
-    flex: 10,
-
+    flex:1,
   },
   bottom:{
-    flex: 1,
+    position: "absolute", bottom: 0, right: 0,
     justifyContent: 'flex-end',
     alignSelf: 'flex-end',
+    marginHorizontal: 25,
+    marginVertical: 25,
   },
   focusLoc:{
     width: 30,
     height: 30,
-    marginHorizontal: 25,
-    marginVertical: 25,
+
   },
   map: {
     ...StyleSheet.absoluteFillObject
@@ -351,9 +455,8 @@ const styles = StyleSheet.create({
     width: 30,
     height: 30,
     marginHorizontal: 25,
-
-
   },
+
 
 });
 
