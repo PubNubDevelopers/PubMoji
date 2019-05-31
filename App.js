@@ -303,6 +303,17 @@ export default class App extends React.Component {
       )
     }
   }
+  selectUserImage = (imageNum) =>{
+    switch (imageNum) {
+      case 1:
+        return (require('./assets/images/boss.png'))
+
+        break;
+      default:
+        return (require('./assets/images/boss.png'))
+
+    }
+  }
 
   render() {
     let about;
@@ -315,6 +326,7 @@ export default class App extends React.Component {
     }else{
       gpsImage = require('./assets/images/notFixedGPS.png')
     }
+
 
     for( let key of messagesMap.keys()){
       let tempUser = usersMap.get(key)
@@ -337,7 +349,7 @@ export default class App extends React.Component {
 
             >
               { usersArray.map((item, index)=>(
-
+                  //TRY SWITCHING UP TO CALLOUTS
                   <Marker
                     style={styles.marker}
                     key={index}
@@ -348,7 +360,7 @@ export default class App extends React.Component {
                     <TouchableOpacity onPress={() =>{this.touchUser(item.uuid)}} >
                       {this.messageOutPut(item.message)}
                       <View style={styles.selectedUserBackground}>
-                        <Image source={require('./assets/images/boss.png')} style={this.selectedStyle(item.uuid)} />
+                        <Image source={this.selectUserImage(item.image)} style={this.selectedStyle(item.uuid)} />
                       </View>
                       {this.showUsername(item)}
                     </TouchableOpacity>
