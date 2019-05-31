@@ -2,8 +2,8 @@ import React, { Component } from 'react'
 import { Animated, BackHandler, Image, PanResponder, Text, TouchableOpacity, View } from 'react-native'
 import Sound from 'react-native-sound'
 
-import styles from './Animation.Style'
-import images from '../../Themes/Images.js'
+import styles from './AnimationStyle'
+import images from '../../Images/Images.js'
 
 import FastImage from 'react-native-fast-image'
 
@@ -470,55 +470,52 @@ export default class AnimationScreen extends Component {
 
       Animated.timing(this.pushIconLikeUp, {
         toValue: 0,
-        duration: 250 * this.timeDilation
+        duration: 250 * this.timeDilation,
+        delay: 250
       }),
       Animated.timing(this.zoomIconLike, {
-        toValue: 0.01,
+        toValue: 0.1,
         duration: 250 * this.timeDilation
       }),
 
       Animated.timing(this.pushIconLoveUp, {
         toValue: 0,
         duration: 250 * this.timeDilation,
-        delay: 50
+        delay: 250
       }),
       Animated.timing(this.zoomIconLove, {
         toValue: 0.01,
         duration: 250 * this.timeDilation,
-        delay: 50
       }),
 
       Animated.timing(this.pushIconHahaUp, {
         toValue: 0,
         duration: 250 * this.timeDilation,
-        delay: 100
+        delay: 250
       }),
       Animated.timing(this.zoomIconHaha, {
         toValue: 0.01,
         duration: 250 * this.timeDilation,
-        delay: 100
       }),
 
       Animated.timing(this.pushIconWowUp, {
         toValue: 0,
         duration: 250 * this.timeDilation,
-        delay: 150
+        delay: 250
       }),
       Animated.timing(this.zoomIconWow, {
         toValue: 0.01,
         duration: 250 * this.timeDilation,
-        delay: 150
       }),
 
       Animated.timing(this.pushIconSadUp, {
         toValue: 0,
         duration: 250 * this.timeDilation,
-        delay: 200
+        delay: 250
       }),
       Animated.timing(this.zoomIconSad, {
         toValue: 0.01,
         duration: 250 * this.timeDilation,
-        delay: 200
       }),
 
       Animated.timing(this.pushIconAngryUp, {
@@ -529,7 +526,6 @@ export default class AnimationScreen extends Component {
       Animated.timing(this.zoomIconAngry, {
         toValue: 0.01,
         duration: 250 * this.timeDilation,
-        delay: 250
       })
     ]).start(this.onAnimationLongTouchComplete)
   }
@@ -629,7 +625,7 @@ export default class AnimationScreen extends Component {
     this.moveUpDownIconWhenRelease.setValue(0)
     this.moveLeftIconLikeWhenRelease.setValue(20)
     this.moveLeftIconLoveWhenRelease.setValue(72)
-    this.moveLeftIconHahaWhenRelease.setValue(154)
+    this.moveLeftIconHahaWhenRelease.setValue(124)
     this.moveLeftIconWowWhenRelease.setValue(173)
     this.moveLeftIconSadWhenRelease.setValue(226)
     this.moveLeftIconAngryWhenRelease.setValue(278)
@@ -680,13 +676,13 @@ export default class AnimationScreen extends Component {
     return (
       <View style={styles.viewContainer}>
         {/* Toolbar */}
-        <View style={styles.toolbar}>
+{/*        <View style={styles.toolbar}>
           <TouchableOpacity onPress={() => this.handleBackPress()}>
             <Image style={styles.icBack} source={images.ic_back}/>
           </TouchableOpacity>
           <Text style={styles.titleToolbar}>PubNub Emoji Bar</Text>
           <View style={styles.icTrail}/>
-        </View>
+        </View>*/}
 
         {/* Body */}
         <View style={styles.viewBody} {...this.rootPanResponder.panHandlers} >
@@ -871,18 +867,17 @@ export default class AnimationScreen extends Component {
           }
           <Animated.View style={{
             marginBottom: this.pushIconLikeUp, transform: [{
-              scale: this.isDragging ?
+              scale:
                 (this.currentIconFocus === 1 ?
                   this.zoomIconChosen :
                   (this.previousIconFocus === 1 ?
                     this.zoomIconNotChosen :
-                    this.isJustDragInside ? this.zoomIconWhenDragInside : 0.8)) :
-                this.isDraggingOutside ? this.zoomIconWhenDragOutside : this.zoomIconLike
+                    this.isJustDragInside ? this.zoomIconWhenDragInside : 0.8))
             }],
           }}>
             <FastImage
               style={styles.imgIcon}
-              source={{uri: 'https://raw.githubusercontent.com/duytq94/facebook-reaction-animation2/master/App/Images/like.gif'}}/>
+              source={{uri: 'https://raw.githubusercontent.com/PubNubDevelopers/PubMoji/EmojiImplementation/src/Images/like.gif'}}/>
           </Animated.View>
         </View>
 
@@ -900,18 +895,17 @@ export default class AnimationScreen extends Component {
           }
           <Animated.View style={{
             marginBottom: this.pushIconLoveUp, transform: [{
-              scale: this.isDragging ?
+              scale:
                 (this.currentIconFocus === 2 ?
                   this.zoomIconChosen :
                   (this.previousIconFocus === 2 ?
                     this.zoomIconNotChosen :
-                    this.isJustDragInside ? this.zoomIconWhenDragInside : 0.8)) :
-                this.isDraggingOutside ? this.zoomIconWhenDragOutside : this.zoomIconLove
+                    this.isJustDragInside ? this.zoomIconWhenDragInside : 0.8))
             }]
           }}>
             <FastImage
               style={styles.imgIcon}
-              source={{uri: 'https://raw.githubusercontent.com/duytq94/facebook-reaction-animation2/master/App/Images/love.gif'}}/>
+              source={{uri: 'https://raw.githubusercontent.com/PubNubDevelopers/PubMoji/EmojiImplementation/src/Images/love.gif'}}/>
           </Animated.View>
         </View>
 
@@ -929,18 +923,17 @@ export default class AnimationScreen extends Component {
           }
           <Animated.View style={{
             marginBottom: this.pushIconHahaUp, transform: [{
-              scale: this.isDragging ?
+              scale:
                 (this.currentIconFocus === 3 ?
                   this.zoomIconChosen :
                   (this.previousIconFocus === 3 ?
                     this.zoomIconNotChosen :
-                    this.isJustDragInside ? this.zoomIconWhenDragInside : 0.8)) :
-                this.isDraggingOutside ? this.zoomIconWhenDragOutside : this.zoomIconHaha
+                    this.isJustDragInside ? this.zoomIconWhenDragInside : 0.8))
             }]
           }}>
             <FastImage
               style={styles.imgIcon}
-              source={{uri: 'https://raw.githubusercontent.com/duytq94/facebook-reaction-animation2/master/App/Images/haha.gif'}}/>
+              source={{uri: 'https://raw.githubusercontent.com/PubNubDevelopers/PubMoji/EmojiImplementation/src/Images/haha.gif'}}/>
           </Animated.View>
         </View>
 
@@ -958,18 +951,17 @@ export default class AnimationScreen extends Component {
           }
           <Animated.View style={{
             marginBottom: this.pushIconWowUp, transform: [{
-              scale: this.isDragging ?
+              scale:
                 (this.currentIconFocus === 4 ?
                   this.zoomIconChosen :
                   (this.previousIconFocus === 4 ?
                     this.zoomIconNotChosen :
-                    this.isJustDragInside ? this.zoomIconWhenDragInside : 0.8)) :
-                this.isDraggingOutside ? this.zoomIconWhenDragOutside : this.zoomIconWow
+                    this.isJustDragInside ? this.zoomIconWhenDragInside : 0.8))
             }]
           }}>
             <FastImage
               style={styles.imgIcon}
-              source={{uri: 'https://raw.githubusercontent.com/duytq94/facebook-reaction-animation2/master/App/Images/wow.gif'}}/>
+              source={{uri: 'https://raw.githubusercontent.com/PubNubDevelopers/PubMoji/EmojiImplementation/src/Images/wow.gif'}}/>
           </Animated.View>
         </View>
 
@@ -987,18 +979,17 @@ export default class AnimationScreen extends Component {
           }
           <Animated.View style={{
             marginBottom: this.pushIconSadUp, transform: [{
-              scale: this.isDragging ?
+              scale:
                 (this.currentIconFocus === 5 ?
                   this.zoomIconChosen :
                   (this.previousIconFocus === 5 ?
                     this.zoomIconNotChosen :
-                    this.isJustDragInside ? this.zoomIconWhenDragInside : 0.8)) :
-                this.isDraggingOutside ? this.zoomIconWhenDragOutside : this.zoomIconSad
+                    this.isJustDragInside ? this.zoomIconWhenDragInside : 0.8))
             }]
           }}>
             <FastImage
               style={styles.imgIcon}
-              source={{uri: 'https://raw.githubusercontent.com/duytq94/facebook-reaction-animation2/master/App/Images/sad.gif'}}/>
+              source={{uri: 'https://raw.githubusercontent.com/PubNubDevelopers/PubMoji/EmojiImplementation/src/Images/sad.gif'}}/>
           </Animated.View>
         </View>
 
@@ -1016,18 +1007,17 @@ export default class AnimationScreen extends Component {
           }
           <Animated.View style={{
             marginBottom: this.pushIconAngryUp, transform: [{
-              scale: this.isDragging ?
+              scale:
                 (this.currentIconFocus === 6 ?
                   this.zoomIconChosen :
                   (this.previousIconFocus === 6 ?
                     this.zoomIconNotChosen :
-                    this.isJustDragInside ? this.zoomIconWhenDragInside : 0.8)) :
-                this.isDraggingOutside ? this.zoomIconWhenDragOutside : this.zoomIconAngry
+                    this.isJustDragInside ? this.zoomIconWhenDragInside : 0.8))
             }]
           }}>
             <FastImage
               style={styles.imgIcon}
-              source={{uri: 'https://raw.githubusercontent.com/duytq94/facebook-reaction-animation2/master/App/Images/angry.gif'}}/>
+              source={{uri: 'https://raw.githubusercontent.com/PubNubDevelopers/PubMoji/EmojiImplementation/src/Images/angry.gif'}}/>
           </Animated.View>
         </View>
 
@@ -1057,7 +1047,7 @@ export default class AnimationScreen extends Component {
               }}>
               <FastImage
                 style={styles.imgIcon}
-                source={{uri: 'https://raw.githubusercontent.com/duytq94/facebook-reaction-animation2/master/App/Images/like.gif'}}/>
+                source={{uri: 'https://raw.githubusercontent.com/PubNubDevelopers/PubMoji/EmojiImplementation/src/Images/like.gif'}}/>
             </Animated.View> :
             null
         }
@@ -1076,7 +1066,7 @@ export default class AnimationScreen extends Component {
               }}>
               <FastImage
                 style={styles.imgIcon}
-                source={{uri: 'https://raw.githubusercontent.com/duytq94/facebook-reaction-animation2/master/App/Images/love.gif'}}/>
+                source={{uri: 'https://raw.githubusercontent.com/PubNubDevelopers/PubMoji/EmojiImplementation/src/Images/love.gif'}}/>
             </Animated.View> :
             null
         }
@@ -1114,7 +1104,7 @@ export default class AnimationScreen extends Component {
               }}>
               <FastImage
                 style={styles.imgIcon}
-                source={{uri: 'https://raw.githubusercontent.com/duytq94/facebook-reaction-animation2/master/App/Images/wow.gif'}}/>
+                source={{uri: 'https://raw.githubusercontent.com/PubNubDevelopers/PubMoji/EmojiImplementation/src/Images/wow.gif'}}/>
             </Animated.View> :
             null
         }
@@ -1133,7 +1123,7 @@ export default class AnimationScreen extends Component {
               }}>
               <FastImage
                 style={styles.imgIcon}
-                source={{uri: 'https://raw.githubusercontent.com/duytq94/facebook-reaction-animation2/master/App/Images/sad.gif'}}/>
+                source={{uri: 'https://raw.githubusercontent.com/PubNubDevelopers/PubMoji/EmojiImplementation/src/Images/sad.gif'}}/>
             </Animated.View> :
             null
         }
@@ -1152,7 +1142,7 @@ export default class AnimationScreen extends Component {
               }}>
               <FastImage
                 style={styles.imgIcon}
-                source={{uri: 'https://raw.githubusercontent.com/duytq94/facebook-reaction-animation2/master/App/Images/angry.gif'}}/>
+                source={{uri: 'https://raw.githubusercontent.com/PubNubDevelopers/PubMoji/EmojiImplementation/src/Images/angry.gif'}}/>
             </Animated.View> :
             null
         }

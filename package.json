@@ -8,7 +8,6 @@
   },
   "dependencies": {
     "@exponent/vector-icons": "^1.0.1",
-    "emoji-mart": "^2.11.1",
     "exponent": "^10.0.0",
     "pubnub-react": "^1.2.0",
     "react": "16.8.3",
