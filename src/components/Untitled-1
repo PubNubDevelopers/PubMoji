@@ -1,0 +1,33 @@
+            <Button containerViewStyle={{borderRadius:25}} 
+            buttonStyle={{width:145,height:45,borderRadius:25}} 
+            onPress={this.submitUsername}
+            color="#444444"
+            title="Submit"/>
+            <Button
+                onPress={this.submitUsername}
+                title="Submit"
+                color="#444444"
+                accessibilityLabel="Enter your username"
+                containerViewStyle={{width: '50%', marginLeft: 0, marginRight: 0}}
+            />
+
+                style = {(this.state.text != '') ? styles.buttonEnabled : styles.buttonDisabled}
+                disabled={true}
+
+                            </Form>
+            <Form onSubmit={this.submitForm}>
+                    disabled={!isEnabled}
+
+            </Form>
+
+                <TouchableOpacity
+                    type="TouchableOpacity" 
+                    name="myTouchableOpacity" 
+                    disabled={!isEnabled}
+                >
+                    <Text style = {styles.buttonEnabled}>Submit</Text>
+                </TouchableOpacity>
+
+                            <Image
+                    source={require('../img/check.png')}
+            />
