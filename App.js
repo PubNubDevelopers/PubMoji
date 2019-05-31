@@ -5,6 +5,7 @@ import hi from './boss.png';
 import PubNubReact from 'pubnub-react';
 import User from './Components/User.js';
 import * as Animatable from 'react-native-animatable';
+import Modal from "react-native-modal";
 
 
 const instructions = Platform.select({
@@ -69,14 +70,17 @@ export default class App extends React.Component {
         coord = [msg.message.latitude,msg.message.longitude];
         let oldUser = this.state.users.get(msg.message.uuid);
         let emojiCount;
-        if(oldUser){
-          emojiCount = oldUser.emoji + msg.message.emoji;
-          console.log("OldUser: ", oldUser);
-          console.log("Emoji Count: ", emojiCount);
+        if(msg.message.emoji != 2){
+          if(oldUser){
+            emojiCount = oldUser.emoji + msg.message.emoji;
+            console.log("OldUser: ", oldUser);
+            console.log("Emoji Count: ", emojiCount);
+          }else{
+            emojiCount = msg.message.emoji;
+          }
         }else{
-          emojiCount = msg.message.emoji;
+          emojiCount = 0;
         }
-
         let newUser = {uuid: msg.message.uuid, coords: coord, emoji: msg.message.emoji };
         if(!this.isEquivalent(oldUser, newUser)){
           let tempMap = this.state.users;
@@ -172,6 +176,14 @@ export default class App extends React.Component {
 
   };
 
+  killEmoji = () => {
+       this.pubnub.publish({
+         message: {latitude: this.state.latitude, longitude: this.state.longitude, uuid: this.pubnub.getUUID(), emoji: 2},
+         channel: 'channel1'
+       });
+
+ };
+
   showText = () => {
     if(this.state.show == true){
       this.setState({show: false});
@@ -220,8 +232,20 @@ isEquivalent = (a, b) => {
     return (
 
     <View style={styles.container}>
+
+    <View style={styles.view}>
+       <Modal isVisible={true}>
+         <View style={styles.modal}>
+           <Image style={styles.image} source={require('./Pubmoji.png')} style={{height: 180, width:250, }} />
+           <Text style={styles.text}>I am the modal content!</Text>
+         </View>
+       </Modal>
+     </View>
       <MapView style={styles.map}
              region={this.setRegion()}>
+
+
+
                { usersArray.map((item, index)=>(
                  <Marker key={index} coordinate={{latitude: item.coords[0], longitude: item.coords[1]}}>
 
@@ -257,7 +281,7 @@ isEquivalent = (a, b) => {
                           <Image source={require('./heart.png')} style={{height: 35, width:35, }} />
                        </Animatable.View> }
 
-                       {(item.emoji-7 > 0 ) && <Animatable.View animation="fadeOutUp" duration={2000} iterationCount={1} direction="normal" easing = "ease-out" onAnimationEnd={() => this.hideEmoji()}>
+                       {(item.emoji-7 > 0 ) && <Animatable.View animation="fadeOutUp" duration={2000} iterationCount={1} direction="normal" easing = "ease-out" onAnimationEnd={() => this.killEmoji()}>
                           <Image source={require('./heart.png')} style={{height: 35, width:35, }} />
                        </Animatable.View> }
 
@@ -265,6 +289,9 @@ isEquivalent = (a, b) => {
                       <Button title="show Emoji" onPress={() => this.showEmoji()}/>
                  </Marker>
                )) }
+
+
+
 
       </MapView>
 
@@ -309,6 +336,32 @@ const styles = StyleSheet.create({
   buttonContainer: {
     flexDirection: "row",
     marginVertical: 20,
-    backgroundColor: "transparent"
-  }
+    backgroundColor: "transparent",
+
+  },
+  modal: {
+    flex: 1,
+    alignItems: 'center',
+    backgroundColor: 'white',
+    padding: 100,
+    marginTop: 100,
+    marginBottom: 100,
+    marginLeft: 20,
+    marginRight: 20,
+  },
+  text: {
+      color: '#3f2949',
+      marginTop: 10,
+      alignItems: 'center',
+   },
+   view: {
+      alignItems: 'center',
+      // backgroundColor: '#ede3f2',
+      padding: 100,
+   },
+   image: {
+      alignItems: 'center',
+      // backgroundColor: '#ede3f2',
+      padding: 100,
+   },
 });
