@@ -1,9 +1,7 @@
 import React, {Component} from 'react';
 import {Platform, StyleSheet, Text, View, Image, Button} from 'react-native';
 import MapView, {Marker} from 'react-native-maps';
-import hi from './boss.png';
 import PubNubReact from 'pubnub-react';
-import User from './Components/User.js';
 import * as Animatable from 'react-native-animatable';
 import Modal from "react-native-modal";
 
