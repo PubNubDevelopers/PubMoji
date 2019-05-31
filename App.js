@@ -1,17 +1,18 @@
 // Modal implented with modifying profile pic in map
 
 import React, {Component} from 'react';
-import {Platform, StyleSheet, Text,Button, View, Image, Switch,TouchableOpacity,TouchableWithoutFeedback, Header, Alert} from 'react-native';
-import MapView, {Marker } from 'react-native-maps';
+import {Platform, StyleSheet, Text, TextInput, Button, View, Image, Switch,TouchableOpacity,TouchableWithoutFeedback, Header, Alert} from 'react-native';
+import MapView, {Marker} from 'react-native-maps';
 import PubNubReact from 'pubnub-react';
 import Modal from "react-native-modal";
+import {ButtonGroup} from 'react-native-elements';
 
-const img1 = require('../../img/favicon.png');
-const img2 = require('../../img/apple-logo.png');
-const img3 = require('../../img/twitter-logo.png');
-const img4 = require('../../img/linkedin-logo.png');
-const img5 = require('../../img/microsoft-logo.png');
-const img6 = require('../../img/chrome-logo.png');
+const img1 = require('./assets/images/favicon.png');
+const img2 = require('./assets/images/apple-logo.png');
+const img3 = require('./assets/images/twitter-logo.png');
+const img4 = require('./assets/images/linkedin-logo.png');
+const img5 = require('./assets/images/microsoft-logo.png');
+const img6 = require('./assets/images/chrome-logo.png');
 const imgArrayRowOne = [img1, img2, img3];
 const imgArrayRowTwo = [img4, img5, img6];
   
