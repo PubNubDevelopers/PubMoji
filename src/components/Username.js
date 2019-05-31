@@ -56,7 +56,7 @@ const styles = StyleSheet.create({
     },
     text: {
         fontFamily: 'proxima-nova',
-      //   marginBottom: 250,
+      //   ,
         color: 'rgb(208,33,41)',  
         fontSize: 80,
         fontWeight: 'bold',
