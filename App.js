@@ -8,24 +8,16 @@
 
 import React, {Component} from 'react';
 import {Platform, StyleSheet, Text, View} from 'react-native';
-import Username from './src/components/Username';
-import SplashScreen from './src/components/SplashScreen';
+// import Username from './src/components/Username';
+// import SplashScreen from './src/components/SplashScreen';
 import PictureSelection from './src/components/PictureSelection';
-import PicSelectionMain from './src/components/PicSelectionMain';
-
-// import {createStackNavigator, createAppContainer} from 'react-navigation';
-
-const instructions = Platform.select({
-  ios: 'Press Cmd+R to reload,\n' + 'Cmd+D or shake for dev menu',
-  android:
-    'Double tap R on your keyboard to reload,\n' +
-    'Shake or press menu button for dev menu',
-});
+// import PicSelectionMain from './src/components/PicSelectionMain';
+import ModalExample from './src/components/ModalExample';
 
 export default class App extends Component{
   constructor(props){
     super(props);
-    this.state = { isLoading: true };
+    // this.state = { isLoading: true };
   }
 
   // performTimeConsumingTask = async() => {
@@ -48,32 +40,15 @@ export default class App extends Component{
   // }
 
   render() {
-    
-    if(this.state.isLoading){
-      return <PicSelectionMain />;
-    }
-
+        // if(this.state.isLoading){
+    //   return <ModalExample />;
+    // }
     return (
-      <PictureSelection />
+      <ModalExample />
     );
   }
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#F5FCFF',
-  },
-  welcome: {
-    fontSize: 20,
-    textAlign: 'center',
-    margin: 10,
-  },
-  instructions: {
-    textAlign: 'center',
-    color: '#333333',
-    marginBottom: 5,
-  },
+
 });
