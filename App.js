@@ -1,6 +1,6 @@
 import React, {Component} from 'react';
 import {Platform, StyleSheet, Text,Button, View, Image, Switch,TouchableOpacity,TouchableWithoutFeedback, Header} from 'react-native';
-import MapView, {Marker } from 'react-native-maps';
+import MapView, {Marker, AnimatedRegion, } from 'react-native-maps';
 import PubNubReact from 'pubnub-react';
 import Modal from "react-native-modal";
 
@@ -19,6 +19,7 @@ export default class App extends React.Component {
         longitude : -1
       },
       numUsers: 0,
+      username: "A Naughty Moose",
       selectedImage: 1,
       fixedOnUUID: "",
       focusOnMe: false,
@@ -53,7 +54,7 @@ export default class App extends React.Component {
         this.animateToCurrent({latitude: msg.message.latitude, longitude: msg.message.longitude},400)
       }
       let oldUser = this.state.users.get(msg.message.uuid)
-      let newUser = {uuid: msg.message.uuid, latitude: msg.message.latitude, longitude: msg.message.longitude, image: msg.message.image };
+      let newUser = {uuid: msg.message.uuid, latitude: msg.message.latitude, longitude: msg.message.longitude, image: msg.message.image, username: msg.message.username };
       if(!this.isEquivalent(oldUser, newUser)){
         let tempMap = this.state.users;
 
@@ -67,6 +68,7 @@ export default class App extends React.Component {
           users: tempMap
         })
       }
+       //this.publishMessage()
     });
     this.pubnub.subscribe({
         channels: ['channel1'],
@@ -84,7 +86,7 @@ export default class App extends React.Component {
       position => {
         if(this.state.allowGPS){
           this.pubnub.publish({
-            message: {latitude: position.coords.latitude, longitude: position.coords.longitude, uuid: this.pubnub.getUUID(), image: this.state.selectedImage},
+            message: {latitude: position.coords.latitude, longitude: position.coords.longitude, uuid: this.pubnub.getUUID(), image: this.state.selectedImage, username: this.state.username},
             channel: 'channel1'
           });
           this.setState({
@@ -104,7 +106,7 @@ export default class App extends React.Component {
         })
         if(this.state.allowGPS){
           this.pubnub.publish({
-            message: {latitude: position.coords.latitude, longitude: position.coords.longitude, uuid: this.pubnub.getUUID(), image: this.state.selectedImage},
+            message: {latitude: position.coords.latitude, longitude: position.coords.longitude, uuid: this.pubnub.getUUID(), image: this.state.selectedImage, username: this.state.username},
             channel: 'channel1'
           });
           if(this.state.focusOnMe){
@@ -121,8 +123,8 @@ export default class App extends React.Component {
         distanceFilter: 100
       }
     );
-    //setInterval(this.publishMessage, 7000);
-    //this.publishMessage()
+    setInterval(this.publishMessage, 10000);
+
 
   }
   clearMessage = (uuid) =>{
@@ -161,7 +163,7 @@ export default class App extends React.Component {
           this.animateToCurrent(this.state.currentLoc,1000)
         }
         let tempMap = this.state.users;
-        let tempUser = {latitude: this.state.currentLoc.latitude, longitude: this.state.currentLoc.longitude, uuid: this.pubnub.getUUID(), image: this.state.selectedImage}
+        let tempUser = {latitude: this.state.currentLoc.latitude, longitude: this.state.currentLoc.longitude, uuid: this.pubnub.getUUID(), image: this.state.selectedImage, username: this.state.username}
         tempMap.set(tempUser.uuid, tempUser)
         this.setState({
           users: tempMap
@@ -219,35 +221,23 @@ export default class App extends React.Component {
     }
     this.map.animateToRegion(region,speed)
   }
-  animate() {
-    const { coordinate } = this.state;
-    const newCoordinate = {
-      latitude: LATITUDE + (Math.random() - 0.5) * (LATITUDE_DELTA / 2),
-      longitude: LONGITUDE + (Math.random() - 0.5) * (LONGITUDE_DELTA / 2),
-    };
-
-    if (Platform.OS === 'android') {
-      if (this.marker) {
-        this.marker._component.animateMarkerToCoordinate(newCoordinate, 500);
-      }
-    } else {
-      coordinate.timing(newCoordinate).start();
-    }
-  }
+  // animate(newCoords) {
+  //   const { coordinate } = new AnimatedRegion(this.state.coords),
+  //   const newCoordinate = newCoords;
+  //
+  //   if (Platform.OS === 'android') {
+  //     if (this.marker) {
+  //       this.marker._component.animateMarkerToCoordinate(newCoordinate, 500);
+  //     }
+  //   } else {
+  //     coordinate.timing(newCoordinate).start();
+  //   }
+  // }
   toggleAbout = () =>{
     this.setState({
       showAbout: !this.state.showAbout
     })
   }
-  // handleMapPress = () => {
-  //   if(this.state.showAbout){
-  //     this.setState({
-  //       showAbout: false
-  //     })
-  //
-  //   }
-  //   console.log("pressed map")
-  // }
   toggleGPS = () => {
     this.setState({
       allowGPS: !this.state.allowGPS
@@ -297,6 +287,22 @@ export default class App extends React.Component {
     }
     return { height: 30, width:30}
   }
+  messageOutPut = (message) => {
+    if(message){
+      return(
+        <Text style={styles.messagePopUp}>{message}</Text>
+      )
+    }
+  }
+  showUsername = (user) => {
+    if((this.state.focusOnMe && user.uuid == this.pubnub.getUUID()) || this.state.fixedOnUUID == user.uuid)
+    {
+      console.log(user.username)
+      return (
+        <Text>{user.username}</Text>
+      )
+    }
+  }
 
   render() {
     let about;
@@ -318,14 +324,6 @@ export default class App extends React.Component {
       }
     }
     let usersArray = Array.from(usersMap.values());
-    // if(this.state.showAbout){
-    //   about = <AboutPage/>
-    // }else{
-    //   about = null;
-    // }
-
-
-
     //MAKE SURE TO ADD NSLocationWhenInUseUsageDescription INTO INFO.PLST
 
     return (
@@ -348,10 +346,11 @@ export default class App extends React.Component {
                       this.marker = marker;
                     }}>
                     <TouchableOpacity onPress={() =>{this.touchUser(item.uuid)}} >
-                      <Text style={styles.text}>{item.message}</Text>
+                      {this.messageOutPut(item.message)}
                       <View style={styles.selectedUserBackground}>
                         <Image source={require('./assets/images/boss.png')} style={this.selectedStyle(item.uuid)} />
                       </View>
+                      {this.showUsername(item)}
                     </TouchableOpacity>
                 </Marker>
 
@@ -408,9 +407,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignSelf: 'center',
   },
-  text:{
-    //fontFamily: "RuneScape-UF",
-    backgroundColor: '#9FA8DA',
+  messagePopUp:{
+    backgroundColor: '#C5C8D7',
+
   },
   topBar:{
     top: 50,
