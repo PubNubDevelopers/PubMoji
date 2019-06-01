@@ -117,11 +117,15 @@ android {
         }
     }
     buildTypes {
+        debug {
+            resValue 'string', "api_key", Google_Maps_ApiKey
+        }
         release {
             minifyEnabled enableProguardInReleaseBuilds
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
+            resValue 'string', "api_key", Google_Maps_ApiKey
         }
-    }
+    }    
     // applicationVariants are e.g. debug, release
     applicationVariants.all { variant ->
         variant.outputs.each { output ->
