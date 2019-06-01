@@ -56,16 +56,17 @@ export default StyleSheet.create({
     flexDirection: 'column',
     height: 320,
     marginLeft: 10,
-    marginRight: 10
+    marginRight: 10,
+    marginTop: 375
   },
 
   // Box
   viewBox: {
     borderRadius: 30,
-    width: 320,
+    width: 340,
     height: 50,
-    marginTop: 100,
-    marginLeft: 20,
+    marginTop: 125,
+    marginLeft: 0,
     position: 'absolute',
     // Has to set color for elevation
     backgroundColor: 'white'
@@ -97,9 +98,9 @@ export default StyleSheet.create({
   // Group icon
   viewWrapGroupIcon: {
     flexDirection: 'row',
-    width: 320,
+    width: 340,
     height: 120,
-    marginTop: 90,
+    marginTop: 50,
     position: 'absolute',
     borderWidth: 0,
     borderColor: 'blue',

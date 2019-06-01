@@ -57,10 +57,10 @@ export default class AnimationScreen extends Component {
     this.zoomIconAnim2 = new Animated.Value(0)
     this.zoomTextAnim2 = new Animated.Value(0)
     // Animation of the box
-    this.fadeBoxAnim = new Animated.Value(0)
+    this.fadeBoxAnim = new Animated.Value(1)
 
     // Animation for emoticons
-    this.moveRightGroupIcon = new Animated.Value(10)
+    this.moveRightGroupIcon = new Animated.Value(0)
     // Like
     this.pushIconLikeUp = new Animated.Value(0)
     // I don't know why, but when I set to 0.0, it seem blink,
@@ -153,7 +153,7 @@ export default class AnimationScreen extends Component {
     // the margin top the box is 100
     // and plus the height of toolbar and the status bar
     // so the range we check is about 150 -> 450
-    if (gestureState.y0 + gestureState.dy >= 150 && gestureState.y0 + gestureState.dy <= 450) {
+    if (gestureState.y0 + gestureState.dy >= 500 && gestureState.y0 + gestureState.dy <= 600) {
 
       this.isDragging = true
       this.isDraggingOutside = false
@@ -298,9 +298,9 @@ export default class AnimationScreen extends Component {
     this.zoomIconAnim2.setValue(1)
     this.zoomTextAnim2.setValue(1)
 
-    this.fadeBoxAnim.setValue(0)
+    this.fadeBoxAnim.setValue(1)
 
-    this.moveRightGroupIcon.setValue(10)
+    this.moveRightGroupIcon.setValue(0)
 
     this.pushIconLikeUp.setValue(0)
     this.zoomIconLike.setValue(0.01)
@@ -348,64 +348,64 @@ export default class AnimationScreen extends Component {
         duration: this.durationAnimationBox * this.timeDilation
       }),
 
-      Animated.timing(this.pushIconLikeUp, {
-        toValue: 25,
-        duration: 250 * this.timeDilation
-      }),
+      // Animated.timing(this.pushIconLikeUp, {
+      //   toValue: 25,
+      //   duration: 250 * this.timeDilation
+      // }),
       Animated.timing(this.zoomIconLike, {
         toValue: 1,
         duration: 250 * this.timeDilation
       }),
 
-      Animated.timing(this.pushIconLoveUp, {
-        toValue: 25,
-        duration: 250 * this.timeDilation,
-        delay: 50
-      }),
+      // Animated.timing(this.pushIconLoveUp, {
+      //   toValue: 25,
+      //   duration: 250 * this.timeDilation,
+      //   delay: 50
+      // }),
       Animated.timing(this.zoomIconLove, {
         toValue: 1,
         duration: 250 * this.timeDilation,
         delay: 50
       }),
 
-      Animated.timing(this.pushIconHahaUp, {
-        toValue: 25,
-        duration: 250 * this.timeDilation,
-        delay: 100
-      }),
+      // Animated.timing(this.pushIconHahaUp, {
+      //   toValue: 25,
+      //   duration: 250 * this.timeDilation,
+      //   delay: 100
+      // }),
       Animated.timing(this.zoomIconHaha, {
         toValue: 1,
         duration: 250 * this.timeDilation,
         delay: 100
       }),
 
-      Animated.timing(this.pushIconWowUp, {
-        toValue: 25,
-        duration: 250 * this.timeDilation,
-        delay: 150
-      }),
+      // Animated.timing(this.pushIconWowUp, {
+      //   toValue: 25,
+      //   duration: 250 * this.timeDilation,
+      //   delay: 150
+      // }),
       Animated.timing(this.zoomIconWow, {
         toValue: 1,
         duration: 250 * this.timeDilation,
         delay: 150
       }),
 
-      Animated.timing(this.pushIconSadUp, {
-        toValue: 25,
-        duration: 250 * this.timeDilation,
-        delay: 200
-      }),
+      // Animated.timing(this.pushIconSadUp, {
+      //   toValue: 25,
+      //   duration: 250 * this.timeDilation,
+      //   delay: 200
+      // }),
       Animated.timing(this.zoomIconSad, {
         toValue: 1,
         duration: 250 * this.timeDilation,
         delay: 200
       }),
 
-      Animated.timing(this.pushIconAngryUp, {
-        toValue: 25,
-        duration: 250 * this.timeDilation,
-        delay: 250
-      }),
+      // Animated.timing(this.pushIconAngryUp, {
+      //   toValue: 25,
+      //   duration: 250 * this.timeDilation,
+      //   delay: 250
+      // }),
       Animated.timing(this.zoomIconAngry, {
         toValue: 1,
         duration: 250 * this.timeDilation,
@@ -421,24 +421,24 @@ export default class AnimationScreen extends Component {
 
     this.fadeBoxAnim.setValue(1)
 
-    this.moveRightGroupIcon.setValue(20)
+    this.moveRightGroupIcon.setValue(0)
 
-    this.pushIconLikeUp.setValue(25)
+    this.pushIconLikeUp.setValue(1)
     this.zoomIconLike.setValue(1)
 
-    this.pushIconLoveUp.setValue(25)
+    this.pushIconLoveUp.setValue(1)
     this.zoomIconLove.setValue(1)
 
-    this.pushIconHahaUp.setValue(25)
+    this.pushIconHahaUp.setValue(1)
     this.zoomIconHaha.setValue(1)
 
-    this.pushIconWowUp.setValue(25)
+    this.pushIconWowUp.setValue(1)
     this.zoomIconWow.setValue(1)
 
-    this.pushIconSadUp.setValue(25)
+    this.pushIconSadUp.setValue(1)
     this.zoomIconSad.setValue(1)
 
-    this.pushIconAngryUp.setValue(25)
+    this.pushIconAngryUp.setValue(1)
     this.zoomIconAngry.setValue(1)
 
     Animated.parallel([
@@ -458,71 +458,71 @@ export default class AnimationScreen extends Component {
 
       // Box
       Animated.timing(this.fadeBoxAnim, {
-        toValue: 0,
+        toValue: 1,
         duration: this.durationAnimationLongTouch * this.timeDilation
       }),
 
       // Group emoticon
-      Animated.timing(this.moveRightGroupIcon, {
-        toValue: 10,
-        duration: this.durationAnimationBox * this.timeDilation
-      }),
+      // Animated.timing(this.moveRightGroupIcon, {
+      //   toValue: 10,
+      //   duration: this.durationAnimationBox * this.timeDilation
+      // }),
 
-      Animated.timing(this.pushIconLikeUp, {
-        toValue: 0,
-        duration: 250 * this.timeDilation,
-        delay: 250
-      }),
+      // Animated.timing(this.pushIconLikeUp, {
+      //   toValue: 0,
+      //   duration: 250 * this.timeDilation,
+      //   delay: 0
+      // }),
       Animated.timing(this.zoomIconLike, {
         toValue: 0.1,
         duration: 250 * this.timeDilation
       }),
 
-      Animated.timing(this.pushIconLoveUp, {
-        toValue: 0,
-        duration: 250 * this.timeDilation,
-        delay: 250
-      }),
+      // Animated.timing(this.pushIconLoveUp, {
+      //   toValue: 0,
+      //   duration: 250 * this.timeDilation,
+      //   delay: 0
+      // }),
       Animated.timing(this.zoomIconLove, {
         toValue: 0.01,
         duration: 250 * this.timeDilation,
       }),
 
-      Animated.timing(this.pushIconHahaUp, {
-        toValue: 0,
-        duration: 250 * this.timeDilation,
-        delay: 250
-      }),
+      // Animated.timing(this.pushIconHahaUp, {
+      //   toValue: 0,
+      //   duration: 250 * this.timeDilation,
+      //   delay: 250
+      // }),
       Animated.timing(this.zoomIconHaha, {
         toValue: 0.01,
         duration: 250 * this.timeDilation,
       }),
 
-      Animated.timing(this.pushIconWowUp, {
-        toValue: 0,
-        duration: 250 * this.timeDilation,
-        delay: 250
-      }),
+      // Animated.timing(this.pushIconWowUp, {
+      //   toValue: 0,
+      //   duration: 250 * this.timeDilation,
+      //   delay: 250
+      // }),
       Animated.timing(this.zoomIconWow, {
         toValue: 0.01,
         duration: 250 * this.timeDilation,
       }),
 
-      Animated.timing(this.pushIconSadUp, {
-        toValue: 0,
-        duration: 250 * this.timeDilation,
-        delay: 250
-      }),
+      // Animated.timing(this.pushIconSadUp, {
+      //   toValue: 0,
+      //   duration: 250 * this.timeDilation,
+      //   delay: 250
+      // }),
       Animated.timing(this.zoomIconSad, {
         toValue: 0.01,
         duration: 250 * this.timeDilation,
       }),
 
-      Animated.timing(this.pushIconAngryUp, {
-        toValue: 0,
-        duration: 250 * this.timeDilation,
-        delay: 250
-      }),
+      // Animated.timing(this.pushIconAngryUp, {
+      //   toValue: 0,
+      //   duration: 250 * this.timeDilation,
+      //   delay: 250
+      // }),
       Animated.timing(this.zoomIconAngry, {
         toValue: 0.01,
         duration: 250 * this.timeDilation,
@@ -687,8 +687,8 @@ export default class AnimationScreen extends Component {
         {/* Body */}
         <View style={styles.viewBody} {...this.rootPanResponder.panHandlers} >
           {/* Top space */}
-          <View style={styles.viewTopSpace}/>
-
+{/*          <View style={styles.viewTopSpace}/>
+*/}
           {/* Content */}
           <View style={styles.viewContent}>
 
