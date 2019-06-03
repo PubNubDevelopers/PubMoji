@@ -17,7 +17,6 @@ const img6 = require('./assets/images/chrome-logo.png');
 const imgArrayRowOne = [img1, img2, img3];
 const imgArrayRowTwo = [img4, img5, img6];
   
-const firstTime = true;  
 export default class App extends Component {
   constructor(props) {
     super(props);
@@ -374,12 +373,7 @@ export default class App extends Component {
       console.log('show splashscreen');
       return <SplashScreen />;
     }
-
-    // console.log(firstTime);
-    // if(firstTime){
-    //   this.setState({ visibleModalStart: !this.state.visibleModalStart });    
-    // }
-
+    
     const component1 = () => 
     <Image
       source={img1}
