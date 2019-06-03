@@ -1,10 +1,11 @@
 import React, {Component} from 'react';
 import {Platform, StyleSheet, Text, View, Image, Button} from 'react-native';
 import MapView, {Marker} from 'react-native-maps';
+import hi from './boss.png';
 import PubNubReact from 'pubnub-react';
+import User from './Components/User.js';
 import * as Animatable from 'react-native-animatable';
 import Modal from "react-native-modal";
-
 
 const instructions = Platform.select({
   ios: 'Press Cmd+R to reload,\n' + 'Cmd+D or shake for dev menu',
@@ -13,18 +14,19 @@ const instructions = Platform.select({
     'Shake or press menu button for dev menu',
 });
 
+
 export default class App extends React.Component {
 
   constructor(props) {
     super(props);
 
+    //Pub Sub Keys
     this.pubnub = new PubNubReact({
         publishKey: 'pub-c-a64b528c-0749-416f-bf75-50abbfa905f9',
         subscribeKey: 'sub-c-8a8e493c-f876-11e6-80ea-0619f8945a4f'
     });
 
-       console.disableYellowBox = true;
-
+    console.disableYellowBox = true;
 
     //Base State
     this.state = {
@@ -35,56 +37,55 @@ export default class App extends React.Component {
       emoji: 0
     };
 
-
-
+    //Initialize PubNub Instance
     this.pubnub.init(this);
 
   }
 
 
-  //PubNub
+  //Subscribe to a PubNub Channel
   componentWillMount() {
-
-              this.pubnub.subscribe({
-          channels: ['channel1'],
-          withPresence: true
-      });
-
+    this.pubnub.subscribe({
+      channels: ['channel1'],
+      withPresence: true
+    });
   }
 
+  //Unsubscribe PubNub Channel
   componentWillUnmount() {
-      this.pubnub.unsubscribe({
-          channels: ['channel1']
-      });
+    this.pubnub.unsubscribe({
+      channels: ['channel1']
+    });
   }
-
 
   //Track User GPS Data
   componentDidMount() {
 
     this.pubnub.getMessage('channel1', (msg) => {
-        //console.log("Message Receioved: ",msg);
+        coord = [msg.message.latitude,msg.message.longitude]; //Format GPS Coordinates for Payload
+        let oldUser = this.state.users.get(msg.message.uuid); //Obtain User's Previous State Object
 
-        coord = [msg.message.latitude,msg.message.longitude];
-        let oldUser = this.state.users.get(msg.message.uuid);
+        //emojiCount
         let emojiCount;
-        if(msg.message.emoji != 2){
+        if(msg.message.emoji != 2){ //Add Payload Emoji Count to emojiCount
           if(oldUser){
             emojiCount = oldUser.emoji + msg.message.emoji;
-            console.log("OldUser: ", oldUser);
-            console.log("Emoji Count: ", emojiCount);
           }else{
             emojiCount = msg.message.emoji;
           }
         }else{
-          emojiCount = 0;
+          emojiCount = 0; //reset EmojiCount to 0
         }
-        let newUser = {uuid: msg.message.uuid, coords: coord, emoji: msg.message.emoji };
+
+
+        let newUser = {uuid: msg.message.uuid, coords: coord, emoji: msg.message.emoji }; //User's Updated State
+        //Check If State Has Changed With User
         if(!this.isEquivalent(oldUser, newUser)){
           let tempMap = this.state.users;
           newUser = {uuid: msg.message.uuid, coords: coord, emoji: emojiCount}; //add in the emoji count
+          //Add/Remove User depending on hideUser
           if(msg.message.hideUser){
-              tempMap.delete(newUser.uuid)
+            tempMap.delete(newUser.uuid)
           }else{
             tempMap.set(newUser.uuid, newUser);
           }
@@ -92,13 +93,6 @@ export default class App extends React.Component {
           this.setState({
             users: tempMap
           })
-
-
-        console.log("USERS: ");
-        console.log(this.state.users);
-
-        console.log("Message: ", msg.message.emoji);
-
         }
     });
 
@@ -136,20 +130,14 @@ export default class App extends React.Component {
         maximumAge: 1000,
         distanceFilter: 1000
       }
-
-
     );
-
-
   }
-
 
   componentWillUnmount() {
     navigator.geolocation.clearWatch(this.watchID);
   }
 
-
-    //Coordinate Setter
+  //Coordinate Setter
   setRegion = () => ({
    latitude: this.state.latitude,
    longitude: this.state.longitude,
@@ -158,7 +146,7 @@ export default class App extends React.Component {
 
   });
 
-
+  //Decrement Emoji Count
   hideEmoji = () => {
         this.pubnub.publish({
           message: {latitude: this.state.latitude, longitude: this.state.longitude, uuid: this.pubnub.getUUID(), emoji: -1},
@@ -166,7 +154,8 @@ export default class App extends React.Component {
         });
   };
 
-   showEmoji = () => {
+  //Increment Emoji Count
+  showEmoji = () => {
         this.pubnub.publish({
           message: {latitude: this.state.latitude, longitude: this.state.longitude, uuid: this.pubnub.getUUID(), emoji: 1},
           channel: 'channel1'
@@ -174,6 +163,7 @@ export default class App extends React.Component {
 
   };
 
+  //Reset Emoji Count
   killEmoji = () => {
        this.pubnub.publish({
          message: {latitude: this.state.latitude, longitude: this.state.longitude, uuid: this.pubnub.getUUID(), emoji: 2},
@@ -191,36 +181,36 @@ export default class App extends React.Component {
 
 }
 
-isEquivalent = (a, b) => {
+  isEquivalent = (a, b) => {
 
-    if(!a || !b){
-      if(a === b) return true;
-      return false
+      if(!a || !b){
+        if(a === b) return true;
+        return false
+      }
+      // Create arrays of property names
+      var aProps = Object.getOwnPropertyNames(a);
+      var bProps = Object.getOwnPropertyNames(b);
+
+      // If number of properties is different,
+      // objects are not equivalent
+      if (aProps.length != bProps.length) {
+          return false;
+      }
+
+      for (var i = 0; i < aProps.length; i++) {
+          var propName = aProps[i];
+
+          // If values of same property are not equal,
+          // objects are not equivalent
+          if (a[propName] !== b[propName]) {
+              return false;
+          }
+      }
+
+      // If we made it this far, objects
+      // are considered equivalent
+      return true;
     }
-    // Create arrays of property names
-    var aProps = Object.getOwnPropertyNames(a);
-    var bProps = Object.getOwnPropertyNames(b);
-
-    // If number of properties is different,
-    // objects are not equivalent
-    if (aProps.length != bProps.length) {
-        return false;
-    }
-
-    for (var i = 0; i < aProps.length; i++) {
-        var propName = aProps[i];
-
-        // If values of same property are not equal,
-        // objects are not equivalent
-        if (a[propName] !== b[propName]) {
-            return false;
-        }
-    }
-
-    // If we made it this far, objects
-    // are considered equivalent
-    return true;
-  }
 
 
   render() {
@@ -231,25 +221,17 @@ isEquivalent = (a, b) => {
 
     <View style={styles.container}>
 
-    <View style={styles.view}>
-       <Modal isVisible={true}>
-         <View style={styles.modal}>
-           <Image style={styles.image} source={require('./Pubmoji.png')} style={{height: 180, width:250, }} />
-           <Text style={styles.text}>I am the modal content!</Text>
-         </View>
-       </Modal>
-     </View>
-      <MapView style={styles.map}
-             region={this.setRegion()}>
-
-
-
+      <View style={styles.view}>
+         <Modal isVisible={true}>
+           <View style={styles.modal}>
+             <Image style={styles.image} source={require('./Pubmoji.png')} style={{height: 180, width:250, }} />
+             <Text style={styles.text}>I am the modal content!</Text>
+           </View>
+         </Modal>
+       </View>
+       <MapView style={styles.map} region={this.setRegion()}>
                { usersArray.map((item, index)=>(
                  <Marker key={index} coordinate={{latitude: item.coords[0], longitude: item.coords[1]}}>
-
-
-
-
 
                        {(item.emoji > 0 ) && <Animatable.View animation="fadeOutUp" duration={2000} iterationCount={1} direction="normal" easing = "ease-out" onAnimationEnd={() => this.hideEmoji()}>
                           <Image source={require('./heart.png')} style={{height: 35, width:35, }} />
@@ -287,23 +269,11 @@ isEquivalent = (a, b) => {
                       <Button title="show Emoji" onPress={() => this.showEmoji()}/>
                  </Marker>
                )) }
-
-
-
-
-      </MapView>
-
-
-
+       </MapView>
      </View>
-
-
    );
   }
 }
-
-
-
 
 const styles = StyleSheet.create({
   container: {
