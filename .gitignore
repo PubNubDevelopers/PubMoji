@@ -59,8 +59,4 @@ buck-out/
 
 ios/
 src/components/BitmojiName.js
-<<<<<<< HEAD
 src/components/ToastExample.js
-=======
-src/components/ToastExample.js
->>>>>>> a534d324d91a4d95dcb096d0dcbbd3a99f27c766

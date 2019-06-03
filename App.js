@@ -5,7 +5,8 @@ import {Platform, StyleSheet, Text, TextInput, Button, View, Image, Switch,Touch
 import MapView, {Marker, AnimatedRegion } from 'react-native-maps';
 import PubNubReact from 'pubnub-react';
 import Modal from "react-native-modal";
-import {ButtonGroup} from 'react-native-elements';
+import { ButtonGroup } from 'react-native-elements';
+import SplashScreen from './src/components/SplashScreen';
 
 const img1 = require('./assets/images/favicon.png');
 const img2 = require('./assets/images/apple-logo.png');
@@ -16,12 +17,13 @@ const img6 = require('./assets/images/chrome-logo.png');
 const imgArrayRowOne = [img1, img2, img3];
 const imgArrayRowTwo = [img4, img5, img6];
   
-// Get random image on app boot
-const randomInt = Math.floor(Math.random() * 2);
-const randomIndex= Math.floor(Math.random() * 3)
-const bootImage = (randomInt === 0) ? imgArrayRowOne[randomIndex] :
-  imgArrayRowTwo[randomIndex];
+// // Get random image on app boot
+// const randomInt = Math.floor(Math.random() * 2);
+// const randomIndex= Math.floor(Math.random() * 3)
+// const bootImage = (randomInt === 0) ? imgArrayRowOne[randomIndex] :
+//   imgArrayRowTwo[randomIndex];
 
+const firstTime = true;  
 export default class App extends Component {
   constructor(props) {
     super(props);
@@ -49,18 +51,30 @@ export default class App extends Component {
      // Oscar's states
      selectedIndexRowOne: -1,
      selectedIndexRowTwo: -1,
-     currentPicture: bootImage,
-     visibleModalId: null,
+     currentPicture: null,
+     visibleModalStart: true,
+     visibleModalUpdate: false,
      text: '',
-     isFocused: false 
+     isFocused: false ,
+     isLoading: true,
     };
     this.pubnub.init(this);
   }
 
+  performTimeConsumingTask = async() => {
+    return new Promise((resolve) =>
+      setTimeout(
+        () => { resolve('result') },
+        3000
+      )
+    );
+  }
+
   //Track User GPS Data
-  componentDidMount() {
+  async componentDidMount() {
     //PubNub
 
+    console.log('mounting');
     this.pubnub.getMessage('channel1.messages',(msg) =>{
       if(this.state.users.has(msg.message.uuid)){
         let tempMap = this.state.messages;
@@ -112,7 +126,7 @@ export default class App extends Component {
       position => {
         if(this.state.allowGPS){
           this.pubnub.publish({
-            message: {latitude: position.coords.latitude, longitude: position.coords.longitude, uuid: this.pubnub.getUUID(), image: this.state.selectedImage, username: this.state.username},
+            message: {latitude: position.coords.latitude, longitude: position.coords.longitude, uuid: this.pubnub.getUUID(), image: this.state.currentPicture, username: this.state.username},
             channel: 'channel1'
           });
           this.setState({
@@ -132,7 +146,7 @@ export default class App extends Component {
         })
         if(this.state.allowGPS){
           this.pubnub.publish({
-            message: {latitude: position.coords.latitude, longitude: position.coords.longitude, uuid: this.pubnub.getUUID(), image: this.state.selectedImage, username: this.state.username},
+            message: {latitude: position.coords.latitude, longitude: position.coords.longitude, uuid: this.pubnub.getUUID(), image: this.state.currentPicture, username: this.state.username},
             channel: 'channel1'
           });
           if(this.state.focusOnMe){
@@ -149,10 +163,16 @@ export default class App extends Component {
         distanceFilter: 100
       }
     );
-    setInterval(this.publishMessage, 10000);
 
-
+    // setInterval(this.publishMessage, 10000);
+    console.log('unmounting');
+    const data = await this.performTimeConsumingTask();
+  
+    if (data !== null) {
+      this.setState({ isLoading: false });
+    }
   }
+
   clearMessage = (uuid) =>{
     let tempMap = this.state.messages;
     console.log("deleted", tempMap.delete(uuid))
@@ -175,7 +195,7 @@ export default class App extends Component {
   }
   componentWillUnmount() {
     this.pubnub.publish({
-      message: {latitude: -1, longitude: -1, uuid: this.pubnub.getUUID(),image: this.state.selectedImage, hideUser: true},
+      message: {latitude: -1, longitude: -1, uuid: this.pubnub.getUUID(),image: this.state.currentPicture, hideUser: true},
       channel: 'channel1'
     });
     this.pubnub.unsubscribeAll();
@@ -189,7 +209,7 @@ export default class App extends Component {
           this.animateToCurrent(this.state.currentLoc,1000)
         }
         let tempMap = this.state.users;
-        let tempUser = {latitude: this.state.currentLoc.latitude, longitude: this.state.currentLoc.longitude, uuid: this.pubnub.getUUID(), image: this.state.selectedImage, username: this.state.username}
+        let tempUser = {latitude: this.state.currentLoc.latitude, longitude: this.state.currentLoc.longitude, uuid: this.pubnub.getUUID(), image: this.state.currentPicture, username: this.state.username}
         tempMap.set(tempUser.uuid, tempUser)
         this.setState({
           users: tempMap
@@ -201,7 +221,7 @@ export default class App extends Component {
         })
       }else{
         this.pubnub.publish({
-          message: {latitude: -1, longitude: -1, uuid: this.pubnub.getUUID(),image: this.state.selectedImage, hideUser: true},
+          message: {latitude: -1, longitude: -1, uuid: this.pubnub.getUUID(),image: this.state.currentPicture, hideUser: true},
           channel: 'channel1'
         });
       }
@@ -356,8 +376,16 @@ export default class App extends Component {
     this.setState({selectedIndexRowTwo});
 }
 
-
   render() {
+    if(this.state.isLoading){
+      console.log('show splashscreen');
+      return <SplashScreen />;
+    }
+
+    // console.log(firstTime);
+    // if(firstTime){
+    //   this.setState({ visibleModalStart: !this.state.visibleModalStart });    
+    // }
 
     const component1 = () => 
     <Image
@@ -406,25 +434,50 @@ export default class App extends Component {
     this.setState({isFocused: false});
     }
 
+    const confirmProfile = () => {
+      if(selectedIndexRowOne === -1 && selectedIndexRowTwo === -1){
+          Alert.alert('Error','Please select a profile picture.');
+      }
+      else if(text.length === 0){
+        Alert.alert('Error','Please enter your username.');
+      }
+      else if(text.length > 16){
+        Alert.alert('Error', 'Username should be less than 16 characters');         
+      }
+      else{        
+        // publish username and image to channel
+        let getRowPic = (selectedIndexRowOne  > -1) ? true: false;
+        getRowPic = (getRowPic) ? imgArrayRowOne[selectedIndexRowOne]:
+          imgArrayRowTwo[selectedIndexRowTwo];
+        this.setState({ currentPicture: getRowPic });
+        this.setState({selectedIndexRowOne: -1}); 
+        this.setState({selectedIndexRowTwo: -1}); 
+        this.setState({text: ''}); 
+        this.setState({ visibleModalStart: false  });
+      }
+    }
+
     const cancelProfile = () => {
         this.setState({selectedIndexRowOne: -1}); 
+        this.setState({selectedIndexRowTwo: -1}); 
         this.setState({text: ''}); 
-        this.setState({ visibleModal: null });
+        this.setState({ visibleModalUpdate: false });
     }
 
     const updateProfile = () => {
         if(selectedIndexRowOne === -1 && selectedIndexRowTwo === -1){
           if(text.length === 0){
-            Alert.alert('Warning','No changes were made');
+            Alert.alert('Error','No changes were made');
           }
           else if(text.length > 16){
-            Alert.alert('Warning', 'Username should be less than 16 characters');         
+            Alert.alert('Error', 'Username should be less than 16 characters');         
           }
           else{ 
             // if(text.length > 0){
             //   // publish username to channel and database
             // }
-            this.setState({ visibleModal: null });
+            this.setState({text: ''}); 
+            this.setState({ visibleModalUpdate: false });
           }
         }
         // else if(text.length)
@@ -435,7 +488,8 @@ export default class App extends Component {
           this.setState({ currentPicture: getRowPic });
           this.setState({selectedIndexRowOne: -1}); 
           this.setState({selectedIndexRowTwo: -1}); 
-          this.setState({ visibleModal: null });
+          this.setState({text: ''}); 
+          this.setState({ visibleModalUpdate: false });
         }
       }
     
@@ -462,15 +516,60 @@ export default class App extends Component {
     let usersArray = Array.from(usersMap.values());
     //MAKE SURE TO ADD NSLocationWhenInUseUsageDescription INTO INFO.PLST
 
-    return (
+    return (      
        <View style={styles.container}>
+          <Modal isVisible={this.state.visibleModalStart}>
+                <View style={styles.content}>
+                    <View style={styles.textContent}> 
+                        <Text style={styles.text}>Profile Picture</Text> 
+                    </View>
+                    <ButtonGroup
+                        selectedIndex={this.state.selectedIndexRowOne}
+                        buttons={buttonsOne}
+                        onPress={this.updateIndexOne}
+                        containerStyle={{height: 70}}
+                    />   
+                    <ButtonGroup
+                        selectedIndex={this.state.selectedIndexRowTwo}
+                        buttons={buttonsTwo}
+                        onPress={this.updateIndexTwo}
+                        containerStyle={{height: 70}}
+                    />    
+
+                    <View> 
+                        <TextInput 
+                            type="TextInput" 
+                            name="myTextInput" 
+                            style={{height: 40, marginBottom: 10}}
+                            placeholder='Enter your username' 
+                            underlineColorAndroid={
+                            isFocused ?
+                            "rgb(208,33,41)" : "#D3D3D3"
+                            }
+                            onFocus={handleFocus}
+                            onBlur={handleBlur}
+                            value={this.state.text}
+                            onChangeText={(text) => this.setState({text})}                 
+                        />            
+                    </View>
+
+                    <View style={styles.buttonContainer}>
+                        <View style={styles.button}>
+                            <Button
+                            onPress={confirmProfile}
+                            title="Confirm"
+                            />
+                        </View>
+                    </View>
+                </View>
+          </Modal>
+
            <MapView
              style={styles.map}
              showsMyLocationButton={true}
              showUserLocation={true}
              ref={(ref) => this.map = ref}
              onMoveShouldSetResponder={this.draggedMap}
-
             >
               { usersArray.map((item, index)=>(
                   //TRY SWITCHING UP TO CALLOUTS
@@ -493,19 +592,20 @@ export default class App extends Component {
 
               )) }
            </MapView >
-           <View style={styles.topBar}>
 
-             <TouchableOpacity onPress={() => this.setState({ visibleModal: 'default' })}>
+           <View style={styles.topBar}> 
+
+             <TouchableOpacity onPress={() => this.setState({ visibleModalUpdate: !this.state.visibleModalUpdate })}>
                <Image
                  style={styles.profile}
                  source={require('./assets/images/profile.png')}
                />
              </TouchableOpacity>
-
-             <Modal isVisible={this.state.visibleModal === 'default'}>
+                    
+             <Modal isVisible={this.state.visibleModalUpdate}>
                 <View style={styles.content}>
                     <View style={styles.textContent}> 
-                        <Text style={styles.text}>Profile</Text> 
+                        <Text style={styles.text}>Profile Picture</Text> 
                     </View>
                     <ButtonGroup
                         selectedIndex={this.state.selectedIndexRowOne}
