@@ -29,6 +29,7 @@ export default class App extends React.Component {
       messages: new Map(),
       allowGPS: true,
       showAbout: false,
+      emojiCode: 1
     };
     this.pubnub.init(this);
   }
@@ -335,9 +336,7 @@ export default class App extends React.Component {
              showsMyLocationButton={true}
              showUserLocation={true}
              ref={(ref) => this.map = ref}
-             onMoveShouldSetResponder={this.draggedMap}
-
-            >
+             onMoveShouldSetResponder={this.draggedMap} >
               { usersArray.map((item, index)=>(
 
                   <Marker
@@ -388,7 +387,7 @@ export default class App extends React.Component {
                />
              </TouchableOpacity>
           </View>
-          <AnimationScreen />
+          <AnimationScreen {...this.state} pubnub={this.pubnub}/>
 
 
          <Modal isVisible={this.state.showAbout}>

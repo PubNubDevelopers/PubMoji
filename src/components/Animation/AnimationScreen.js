@@ -670,6 +670,10 @@ export default class AnimationScreen extends Component {
     } else {
       this.soundIconChoose.play()
     }
+    this.props.pubnub.publish({
+      message: {latitude: this.props.currentLoc.latitude, longitude: this.props.currentLoc.longitude, uuid: this.props.pubnub.getUUID(), image: this.props.selectedImage, username: this.props.usersname, emojiCode: this.whichIconUserChoose},
+      channel: 'channel1'
+    });
   }
 
   render () {
@@ -710,9 +714,7 @@ export default class AnimationScreen extends Component {
 
             {/* Button */}
             {/*{this.renderButton()}*/}
-
           </View>
-
         </View>
       </View>
     )
