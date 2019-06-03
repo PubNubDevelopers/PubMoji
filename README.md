@@ -1,4 +1,4 @@
-Welcome to PubMoji!
+# Welcome to PubMoji!
 
 Pubmoji is an interactive phone application designed to demonstrate PubNub's capabilities. You will see just how easy it is to integrate Pub/Sub, Prescence, and other keystone multi-user features into a phone application.
 
@@ -15,13 +15,13 @@ All user-data is handled securley and reliably through PubNub. Each user publish
 "Image of PubNub Abstraction"
       
       
-To get started, sign up for a free PubNub account to get your Pub/Sub keys!
+#### To get started, sign up for a free PubNub account to get your Pub/Sub keys!
 
 "PubNub Key image link"
 
       
       
-FREQUENTLY ASKED QUESTIONS     
+## FREQUENTLY ASKED QUESTIONS     
       
 What is PubNub?
 PubNub is a global Data Stream Network (DSN) and realtime network-as-a-service. PubNub's primary product is a realtime publish/subscribe messaging API built on a global data stream network which is made up of a replicated network with multiple points of presence around the world.
