@@ -20,6 +20,9 @@ To get started, sign up for a free PubNub account to get your Pub/Sub keys!
 "PubNub Key image link"
 
       
+      
+FREQUENTLY ASKED QUESTIONS     
+      
 What is PubNub?
 PubNub is a global Data Stream Network (DSN) and realtime network-as-a-service. PubNub's primary product is a realtime publish/subscribe messaging API built on a global data stream network which is made up of a replicated network with multiple points of presence around the world.
 
