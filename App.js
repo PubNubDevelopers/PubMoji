@@ -17,12 +17,6 @@ const img6 = require('./assets/images/chrome-logo.png');
 const imgArrayRowOne = [img1, img2, img3];
 const imgArrayRowTwo = [img4, img5, img6];
   
-// // Get random image on app boot
-// const randomInt = Math.floor(Math.random() * 2);
-// const randomIndex= Math.floor(Math.random() * 3)
-// const bootImage = (randomInt === 0) ? imgArrayRowOne[randomIndex] :
-//   imgArrayRowTwo[randomIndex];
-
 const firstTime = true;  
 export default class App extends Component {
   constructor(props) {
@@ -40,7 +34,6 @@ export default class App extends Component {
       },
       numUsers: 0,
       username: "A Naughty Moose",
-      selectedImage: 1,
       fixedOnUUID: "",
       focusOnMe: false,
       users: new Map(),
@@ -763,15 +756,4 @@ const styles = StyleSheet.create({
   button: {
     flex: 1
   }
-
-
-
 });
-
-const AboutPage = () => {
-  return(
-    <View style={styles.aboutView}>
-      <Text>Test about</Text>
-    </View>
-  )
-}
