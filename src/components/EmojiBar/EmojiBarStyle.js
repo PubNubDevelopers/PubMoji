@@ -60,7 +60,7 @@ export default StyleSheet.create({
   // Box
   viewBox: {
     borderRadius: 30,
-    width: 340,
+    width: 360,
     height: 50,
     marginTop: 125,
     marginLeft: 0,
@@ -95,7 +95,7 @@ export default StyleSheet.create({
   // Group icon
   viewWrapGroupIcon: {
     flexDirection: 'row',
-    width: 340,
+    width: 360,
     height: 120,
     marginTop: 50,
     position: 'absolute',
@@ -105,7 +105,6 @@ export default StyleSheet.create({
     justifyContent: 'space-around',
     paddingLeft: 5,
     paddingRight: 5,
-    flex: 1
   },
   viewWrapIcon: {
     justifyContent: 'center',
@@ -134,12 +133,13 @@ export default StyleSheet.create({
   // Group jump icon
   viewWrapGroupJumpIcon: {
     flexDirection: 'row',
-    width: 330,
+    width: 360,
     height: 140,
     borderWidth: 0,
     borderColor: 'green',
     marginTop: 30,
     marginLeft: 10,
+    marginRight: 10,
     position: 'absolute',
     alignItems: 'flex-end',
     flex: 1
