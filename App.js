@@ -4,18 +4,7 @@ import React, {Component} from 'react';
 import {Platform, StyleSheet, Text, TextInput, Button, View, Image, Switch,TouchableOpacity,TouchableWithoutFeedback, Header, Alert} from 'react-native';
 import MapView, {Marker, AnimatedRegion, Callout } from 'react-native-maps';
 import PubNubReact from 'pubnub-react';
-import Modal from "react-native-modal";
-import { ButtonGroup } from 'react-native-elements';
-import SplashScreen from './src/components/SplashScreen';
-
-const img1 = require('./assets/images/favicon.png');
-const img2 = require('./assets/images/apple-logo.png');
-const img3 = require('./assets/images/twitter-logo.png');
-const img4 = require('./assets/images/linkedin-logo.png');
-const img5 = require('./assets/images/microsoft-logo.png');
-const img6 = require('./assets/images/chrome-logo.png');
-const imgArrayRowOne = [img1, img2, img3];
-const imgArrayRowTwo = [img4, img5, img6];
+//import Modal from "react-native-modal";
 
 export default class App extends Component {
   constructor(props) {
@@ -39,34 +28,18 @@ export default class App extends Component {
       messages: new Map(),
       allowGPS: true,
       showAbout: false,
+      currentPicture: require('./boss.png')
+    }
 
-     // Oscar's states
-     selectedIndexRowOne: -1,
-     selectedIndexRowTwo: -1,
-     currentPicture: null,
-     visibleModalStart: true,
-     visibleModalUpdate: false,
-     usernameTemp: '',
-     isFocused: false ,
-     isLoading: false,
-    };
+
     this.pubnub.init(this);
   }
 
-  // performTimeConsumingTask = async() => {
-  //   return new Promise((resolve) =>
-  //     setTimeout(
-  //       () => { resolve('result') },
-  //       3000
-  //     )
-  //   );
-  // }
 
   //Track User GPS Data
   componentDidMount() {
     //PubNub
 
-    console.log('mounting');
     this.pubnub.getMessage('channel1.messages',(msg) =>{
       if(this.state.users.has(msg.publisher)){
         let tempMap = this.state.messages;
@@ -82,7 +55,7 @@ export default class App extends Component {
     })
 
     this.pubnub.getMessage('channel1', (msg) => {
-      console.log("MSG: ", msg)
+      // console.log("MSG: ", msg)
       if(msg.publisher == this.state.fixedOnUUID){
         this.animateToCurrent({latitude: msg.message.latitude, longitude: msg.message.longitude},400)
       }
@@ -158,12 +131,7 @@ export default class App extends Component {
     );
 
      setInterval(this.publishMessage, 10000);
-    // console.log('unmounting');
-    // const data = await this.performTimeConsumingTask();
-    //
-    // if (data !== null) {
-    //   this.setState({ isLoading: false });
-    // }
+
   }
 
   clearMessage = (uuid) =>{
@@ -172,7 +140,6 @@ export default class App extends Component {
     this.setState({
       messages: tempMap
     },()=>{console.log("piza",this.state.messages)})
-    //console.log("clearing message")
   }
   stopMessageTimer = (timerId) => {
     console.log("clearing timeout");
@@ -196,13 +163,13 @@ export default class App extends Component {
   }
   componentDidUpdate(prevProps,prevState){
     if(prevState.allowGPS != this.state.allowGPS){
-      console.log("allow GPS: ",this.state.allowGPS)
       if(this.state.allowGPS){
+        console.log(this.state.users)
         if(this.state.focusOnMe){
           this.animateToCurrent(this.state.currentLoc,1000)
         }
         let tempMap = this.state.users;
-        let tempUser = {latitude: this.state.currentLoc.latitude, longitude: this.state.currentLoc.longitude,  image: this.state.currentPicture, username: this.state.username}
+        let tempUser = {uuid: this.pubnub.getUUID(),latitude: this.state.currentLoc.latitude, longitude: this.state.currentLoc.longitude,  image: this.state.currentPicture, username: this.state.username}
         tempMap.set(tempUser.uuid, tempUser)
         this.setState({
           users: tempMap
@@ -260,18 +227,6 @@ export default class App extends Component {
     }
     this.map.animateToRegion(region,speed)
   }
-  // animate(newCoords) {
-  //   const { coordinate } = new AnimatedRegion(this.state.coords),
-  //   const newCoordinate = newCoords;
-  //
-  //   if (Platform.OS === 'android') {
-  //     if (this.marker) {
-  //       this.marker._component.animateMarkerToCoordinate(newCoordinate, 500);
-  //     }
-  //   } else {
-  //     coordinate.timing(newCoordinate).start();
-  //   }
-  // }
   toggleAbout = () =>{
     this.setState({
       showAbout: !this.state.showAbout
@@ -310,6 +265,7 @@ export default class App extends Component {
 
   }
   touchUser = (uuid) =>{
+    console.log(uuid," : ", this.pubnub.getUUID())
     if(uuid === this.pubnub.getUUID()){
       this.focusLoc()
     }else{
@@ -332,17 +288,10 @@ export default class App extends Component {
         <View style={styles.messagePopUp}>
           <Text style={styles.messagePopUp}>{message}</Text>
         </View>
-
-
-
       )
     }
   }
-  // <Callout>
-  //   <View>
-  //     <Text style={styles.messagePopUp}>{message}</Text>
-  //   </View>
-  // </Callout>
+
   showUsername = (user) => {
     if((this.state.focusOnMe && user.uuid == this.pubnub.getUUID()) || this.state.fixedOnUUID == user.uuid)
     {
@@ -358,185 +307,7 @@ export default class App extends Component {
     }
   }
 
-  // <Callout>
-  //   <View>
-  //
-  //   </View>
-  // </Callout>
-  // selectUserImage = (imageNum) =>{
-  //   switch (imageNum) {
-  //     case 1:
-  //       return (require('./assets/images/boss.png'))
-  //
-  //       break;
-  //     default:
-  //       return (require('./assets/images/boss.png'))
-  //
-  //   }
-  // }
-
-  // Oscars functions
-  updateIndexOne = (selectedIndexRowOne) => {
-    if(this.state.selectedIndexRowTwo != -1){
-        this.setState({selectedIndexRowTwo: -1});
-    }
-    this.setState({selectedIndexRowOne});
-
-}
-
-  updateIndexTwo =  (selectedIndexRowTwo) => {
-    if(this.state.selectedIndexRowOne != -1){
-        this.setState({selectedIndexRowOne: -1});
-    }
-    this.setState({selectedIndexRowTwo});
-}
-// returnComponent = (imageIndex) =>{
-//   let image;
-//   switch (imageIndex) {
-//     case 1:
-//       image = require('./assets/images/favicon.png');
-//       break;
-//
-//     case 2:
-//       image = require('./assets/images/apple-logo.png');
-//       break;
-//
-//     case 3:
-//       image = require('./assets/images/twitter-logo.png');
-//       break;
-//
-//     case 4:
-//       image = require('./assets/images/linkedin-logo.png');
-//       break;
-//
-//     case 5:
-//       image = require('./assets/images/microsoft-logo.png');
-//       break;
-//
-//     case 6:
-//       image = require('./assets/images/chrome-logo.png');
-//       break;
-//
-//     default:
-//       image = require('./assets/images/favicon.png');
-//   }
-//   return(
-//     <Image
-//       source={image}
-//     />)
-// }
-
   render() {
-    if(this.state.isLoading){
-      console.log('show splashscreen');
-      return <SplashScreen />;
-    }
-
-    const component1 = () =>
-    <Image
-      source={img1}
-    />
-
-    const component2 = () =>
-    <Image
-    source={img2}
-    />
-
-    const component3 = () => <Image source={img3}/>
-
-    const component4 = () =>
-    <Image
-    source={img4}
-    />
-
-    const component5 = () =>
-    <Image
-    source={img5}
-    />
-
-    const component6 = () =>
-    <Image
-    source={img6}
-    />
-
-    const buttonsOne = [{ element: component1}, { element: component2, id: 2 }, { element: component3, id: 3 }];
-    const buttonsTwo = [{ element: component4, id: 4 }, { element: component5, id: 5 }, { element: component6, id: 6 }];
-
-    const { selectedIndexRowOne } = this.state;
-    const { selectedIndexRowTwo } = this.state;
-    const { currentPicture } = this.state;
-    const { isFocused } = this.state;
-    const {usernameTemp} = this.state;
-
-    const handleFocus = () => {
-    this.setState({isFocused: true});
-    }
-
-    const handleBlur = () => {
-    this.setState({isFocused: false});
-    }
-
-    const confirmProfile = () => {
-      if(selectedIndexRowOne === -1 && selectedIndexRowTwo === -1){
-          Alert.alert('Error','Please select a profile picture.');
-      }
-      else if(usernameTemp.length === 0){
-        Alert.alert('Error','Please enter your username.');
-      }
-      else if(usernameTemp.length > 16){
-        Alert.alert('Error', 'Username should be less than 16 characters');
-      }
-      else{
-        // publish username and image to channel
-        let getRowPic = (selectedIndexRowOne  > -1) ? true: false;
-        getRowPic = (getRowPic) ? imgArrayRowOne[selectedIndexRowOne]:
-          imgArrayRowTwo[selectedIndexRowTwo];
-        this.setState({ currentPicture: getRowPic });
-        this.setState({username:usernameTemp})
-        this.setState({selectedIndexRowOne: -1});
-        this.setState({selectedIndexRowTwo: -1});
-        this.setState({usernameTemp: ''});
-        this.setState({ visibleModalStart: false  });
-      }
-    }
-
-    const cancelProfile = () => {
-        this.setState({selectedIndexRowOne: -1});
-        this.setState({selectedIndexRowTwo: -1});
-        this.setState({usernameTemp: ''});
-        this.setState({ visibleModalUpdate: false });
-    }
-
-    const updateProfile = () => {
-        if(selectedIndexRowOne === -1 && selectedIndexRowTwo === -1){
-          if(usernameTemp.length === 0){
-            Alert.alert('Error','No changes were made');
-          }
-          else if(usernameTemp.length > 16){
-            Alert.alert('Error', 'Username should be less than 16 characters');
-          }
-          else{
-            // if(usernameTemp.length > 0){
-            //   // publish username to channel and database
-            // }
-            this.setState({username:usernameTemp})
-            this.setState({usernameTemp: ''});
-
-            this.setState({ visibleModalUpdate: false });
-          }
-        }
-        // else if(usernameTemp.length)
-        else{
-          let getRowPic = (selectedIndexRowOne  > -1) ? true: false;
-          getRowPic = (getRowPic) ? imgArrayRowOne[selectedIndexRowOne]:
-            imgArrayRowTwo[selectedIndexRowTwo];
-          this.setState({ currentPicture: getRowPic });
-          this.setState({selectedIndexRowOne: -1});
-          this.setState({selectedIndexRowTwo: -1});
-          this.setState({usernameTemp: ''});
-          this.setState({ visibleModalUpdate: false });
-        }
-      }
 
 
     let about;
@@ -563,51 +334,6 @@ export default class App extends Component {
 
     return (
        <View style={styles.container}>
-          <Modal isVisible={this.state.visibleModalStart}>
-                <View style={styles.content}>
-                    <View style={styles.textContent}>
-                        <Text style={styles.text}>Profile Picture</Text>
-                    </View>
-                    <ButtonGroup
-                        selectedIndex={this.state.selectedIndexRowOne}
-                        buttons={buttonsOne}
-                        onPress={this.updateIndexOne}
-                        containerStyle={{height: 70}}
-                    />
-                    <ButtonGroup
-                        selectedIndex={this.state.selectedIndexRowTwo}
-                        buttons={buttonsTwo}
-                        onPress={this.updateIndexTwo}
-                        containerStyle={{height: 70}}
-                    />
-
-                    <View>
-                        <TextInput
-                            type="TextInput"
-                            name="myTextInput"
-                            style={{height: 40, marginBottom: 10}}
-                            placeholder='Enter your username'
-                            underlineColorAndroid={
-                            isFocused ?
-                            "rgb(208,33,41)" : "#D3D3D3"
-                            }
-                            onFocus={handleFocus}
-                            onBlur={handleBlur}
-                            value={this.state.usernameTemp}
-                            onChangeText={(usernameTemp) => this.setState({usernameTemp})}
-                        />
-                    </View>
-
-                    <View style={styles.buttonContainer}>
-                        <View style={styles.button}>
-                            <Button
-                            onPress={confirmProfile}
-                            title="Confirm"
-                            />
-                        </View>
-                    </View>
-                </View>
-          </Modal>
 
            <MapView
              style={styles.map}
@@ -626,7 +352,7 @@ export default class App extends Component {
                     <TouchableOpacity onPress={() =>{this.touchUser(item.uuid)}} >
                       <View style={styles.marker}>
                         {this.messageOutPut(item.message)}
-                        <Image source={currentPicture} style={this.selectedStyle(item.uuid)} />
+                        <Image source={this.state.currentPicture} style={this.selectedStyle(item.uuid)} />
                         {this.showUsername(item)}
                       </View>
                     </TouchableOpacity>
@@ -645,57 +371,7 @@ export default class App extends Component {
                />
              </TouchableOpacity>
 
-             <Modal isVisible={this.state.visibleModalUpdate}>
-                <View style={styles.content}>
-                    <View style={styles.textContent}>
-                        <Text style={styles.text}>Profile Picture</Text>
-                    </View>
-                    <ButtonGroup
-                        selectedIndex={this.state.selectedIndexRowOne}
-                        buttons={buttonsOne}
-                        onPress={this.updateIndexOne}
-                        containerStyle={{height: 70}}
-                    />
-                    <ButtonGroup
-                        selectedIndex={this.state.selectedIndexRowTwo}
-                        buttons={buttonsTwo}
-                        onPress={this.updateIndexTwo}
-                        containerStyle={{height: 70}}
-                    />
 
-                    <View>
-                        <TextInput
-                            type="TextInput"
-                            name="myTextInput"
-                            style={{height: 40, marginBottom: 10}}
-                            placeholder='Change your username'
-                            underlineColorAndroid={
-                            isFocused ?
-                            "rgb(208,33,41)" : "#D3D3D3"
-                            }
-                            onFocus={handleFocus}
-                            onBlur={handleBlur}
-                            value={this.state.usernameTemp}
-                            onChangeText={(usernameTemp) => this.setState({usernameTemp})}
-                        />
-                    </View>
-
-                    <View style={styles.buttonContainer}>
-                        <View style={styles.button}>
-                            <Button
-                            onPress={cancelProfile}
-                            title="Cancel"
-                            />
-                        </View>
-                        <View style={styles.button}>
-                            <Button
-                            onPress={updateProfile}
-                            title="Confirm"
-                            />
-                        </View>
-                    </View>
-                </View>
-            </Modal>
 
 
             <View style={styles.rightBar}>
