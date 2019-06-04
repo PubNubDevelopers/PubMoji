@@ -64,7 +64,6 @@ export default class App extends React.Component {
     this.pubnub.getMessage('channel1', (msg) => {
         coord = [msg.message.latitude,msg.message.longitude]; //Format GPS Coordinates for Payload
         let oldUser = this.state.users.get(msg.message.uuid); //Obtain User's Previous State Object
-
         //emojiCount
         let emojiCount;
         if(msg.message.emoji != 2){ //Add Payload Emoji Count to emojiCount
@@ -76,7 +75,8 @@ export default class App extends React.Component {
         }else{
           emojiCount = 0; //reset EmojiCount to 0
         }
-
+        console.log("emoji: ",msg.message.emoji)
+        console.log(emojiCount)
 
         let newUser = {uuid: msg.message.uuid, coords: coord, emoji: msg.message.emoji }; //User's Updated State
         //Check If State Has Changed With User
@@ -146,13 +146,7 @@ export default class App extends React.Component {
 
   });
 
-  //Decrement Emoji Count
-  hideEmoji = () => {
-        this.pubnub.publish({
-          message: {latitude: this.state.latitude, longitude: this.state.longitude, uuid: this.pubnub.getUUID(), emoji: -1},
-          channel: 'channel1'
-        });
-  };
+
 
   //Increment Emoji Count
   showEmoji = () => {
@@ -212,58 +206,36 @@ export default class App extends React.Component {
       return true;
     }
 
-
   render() {
 
        let usersArray = Array.from(this.state.users.values());
+       //Decrement Emoji Count
+       hideEmoji = () => {
+             this.pubnub.publish({
+               message: {latitude: this.state.latitude, longitude: this.state.longitude, uuid: this.pubnub.getUUID(), emoji: -1},
+               channel: 'channel1'
+             });
+       };
 
     return (
 
     <View style={styles.container}>
 
-      <View style={styles.view}>
-         <Modal isVisible={true}>
-           <View style={styles.modal}>
-             <Image style={styles.image} source={require('./Pubmoji.png')} style={{height: 180, width:250, }} />
-             <Text style={styles.text}>I am the modal content!</Text>
-           </View>
-         </Modal>
-       </View>
+
        <MapView style={styles.map} region={this.setRegion()}>
                { usersArray.map((item, index)=>(
                  <Marker key={index} coordinate={{latitude: item.coords[0], longitude: item.coords[1]}}>
-
-                       {(item.emoji > 0 ) && <Animatable.View animation="fadeOutUp" duration={2000} iterationCount={1} direction="normal" easing = "ease-out" onAnimationEnd={() => this.hideEmoji()}>
-                          <Image source={require('./heart.png')} style={{height: 35, width:35, }} />
-                       </Animatable.View> }
-
-                       {(item.emoji-1 > 0 ) && <Animatable.View animation="fadeOutUp" duration={1500} iterationCount={1} direction="normal" easing = "ease-out" onAnimationEnd={() => this.hideEmoji()}>
-                          <Image source={require('./heart.png')} style={{height: 35, width:35, }} />
-                       </Animatable.View> }
-
-                       {(item.emoji-2 > 0 ) && <Animatable.View animation="fadeOutUp" duration={1000} iterationCount={1} direction="normal" easing = "ease-out" onAnimationEnd={() => this.hideEmoji()}>
-                          <Image source={require('./heart.png')} style={{height: 35, width:35, }} />
-                       </Animatable.View> }
-
-                       {(item.emoji-3 > 0 ) && <Animatable.View animation="fadeOutUp" duration={2000} iterationCount={1} direction="normal" easing = "ease-out" onAnimationEnd={() => this.hideEmoji()}>
-                          <Image source={require('./heart.png')} style={{height: 35, width:35, }} />
-                       </Animatable.View> }
-
-                       {(item.emoji-4 > 0 ) && <Animatable.View animation="fadeOutUp" duration={1500} iterationCount={1} direction="normal" easing = "ease-out" onAnimationEnd={() => this.hideEmoji()}>
-                          <Image source={require('./heart.png')} style={{height: 35, width:35, }} />
-                       </Animatable.View> }
-
-                       {(item.emoji-5 > 0 ) && <Animatable.View animation="fadeOutUp" duration={2000} iterationCount={1} direction="normal" easing = "ease-out" onAnimationEnd={() => this.hideEmoji()}>
-                          <Image source={require('./heart.png')} style={{height: 35, width:35, }} />
-                       </Animatable.View> }
-
-                       {(item.emoji-6 > 0 ) && <Animatable.View animation="fadeOutUp" duration={2000} iterationCount={1} direction="normal" easing = "ease-out" onAnimationEnd={() => this.hideEmoji()}>
-                          <Image source={require('./heart.png')} style={{height: 35, width:35, }} />
-                       </Animatable.View> }
-
-                       {(item.emoji-7 > 0 ) && <Animatable.View animation="fadeOutUp" duration={2000} iterationCount={1} direction="normal" easing = "ease-out" onAnimationEnd={() => this.killEmoji()}>
-                          <Image source={require('./heart.png')} style={{height: 35, width:35, }} />
-                       </Animatable.View> }
+                    {
+                      function() {
+                          let rows = [];
+                          for(let i = 0 ; i < item.emoji; i++){
+                            rows.push(<Animatable.View animation="fadeOutUp" duration={2000} iterationCount={1} direction="normal" easing = "ease-out" onAnimationEnd = {() => this.hideEmoji()} key = {i}>
+                                      <Image source={require('./heart.png')} style={{height: 35, width:35, }} />
+                                    </Animatable.View> );
+                          }
+                          return rows;
+                      }()
+                    }
 
                        <Image source={require('./boss.png')} style={{height: 35, width:35, }} />
                       <Button title="show Emoji" onPress={() => this.showEmoji()}/>
@@ -272,6 +244,9 @@ export default class App extends React.Component {
        </MapView>
      </View>
    );
+
+
+
   }
 }
 
