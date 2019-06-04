@@ -16,7 +16,7 @@ const img5 = require('./assets/images/microsoft-logo.png');
 const img6 = require('./assets/images/chrome-logo.png');
 const imgArrayRowOne = [img1, img2, img3];
 const imgArrayRowTwo = [img4, img5, img6];
-  
+
 export default class App extends Component {
   constructor(props) {
     super(props);
@@ -46,40 +46,40 @@ export default class App extends Component {
      currentPicture: null,
      visibleModalStart: true,
      visibleModalUpdate: false,
-     text: '',
+     usernameTemp: '',
      isFocused: false ,
-     isLoading: true,
+     isLoading: false,
     };
     this.pubnub.init(this);
   }
 
-  performTimeConsumingTask = async() => {
-    return new Promise((resolve) =>
-      setTimeout(
-        () => { resolve('result') },
-        3000
-      )
-    );
-  }
+  // performTimeConsumingTask = async() => {
+  //   return new Promise((resolve) =>
+  //     setTimeout(
+  //       () => { resolve('result') },
+  //       3000
+  //     )
+  //   );
+  // }
 
   //Track User GPS Data
-  async componentDidMount() {
+    componentDidMount() {
     //PubNub
 
     console.log('mounting');
-    this.pubnub.getMessage('channel1.messages',(msg) =>{
-      if(this.state.users.has(msg.message.uuid)){
-        let tempMap = this.state.messages;
-        if(this.state.messages.has(msg.message.uuid)){
-          this.stopMessageTimer(this.state.messages.get(msg.message.uuid).timerId)
-        }
-        let message = {uuid: msg.message.uuid, message: msg.message.message, timerId: setTimeout(this.clearMessage, 5000, msg.message.uuid) }
-        tempMap.set(msg.message.uuid, message)
-        this.setState({
-          messages: tempMap
-        })
-      }
-    })
+    // this.pubnub.getMessage('channel1.messages',(msg) =>{
+    //   if(this.state.users.has(msg.message.uuid)){
+    //     let tempMap = this.state.messages;
+    //     if(this.state.messages.has(msg.message.uuid)){
+    //       this.stopMessageTimer(this.state.messages.get(msg.message.uuid).timerId)
+    //     }
+    //     let message = {uuid: msg.message.uuid, message: msg.message.message, timerId: setTimeout(this.clearMessage, 5000, msg.message.uuid) }
+    //     tempMap.set(msg.message.uuid, message)
+    //     this.setState({
+    //       messages: tempMap
+    //     })
+    //   }
+    // })
 
     this.pubnub.getMessage('channel1', (msg) => {
       if(msg.message.uuid == this.state.fixedOnUUID){
@@ -106,10 +106,10 @@ export default class App extends Component {
         channels: ['channel1'],
         withPresence: true
     });
-    this.pubnub.subscribe({
-        channels: ['channel1.messages'],
-        withPresence: true
-    });
+    // this.pubnub.subscribe({
+    //     channels: ['channel1.messages'],
+    //     withPresence: true
+    // });
     this.pubnub.getPresence('channel1', (presence) => {
         console.log(presence);
     });
@@ -128,7 +128,7 @@ export default class App extends Component {
         }
       },
       error => console.log("Maps Error: ",error),
-      { enableHighAccuracy: true, timeout: 200000, maximumAge: 1000 }
+      { enableHighAccuracy: true, timeout: 200, maximumAge: 1000 }
     );
     //Track motional Coordinates
     navigator.geolocation.watchPosition(
@@ -150,41 +150,41 @@ export default class App extends Component {
       error => console.log("Maps Error: ",error),
       {
         enableHighAccuracy: true,
-        timeout: 20000,
+        timeout: 200,
         maximumAge: 1000,
         distanceFilter: 100
       }
     );
 
-    // setInterval(this.publishMessage, 10000);
-    console.log('unmounting');
-    const data = await this.performTimeConsumingTask();
-  
-    if (data !== null) {
-      this.setState({ isLoading: false });
-    }
+     //setInterval(this.publishMessage, 10000);
+    // console.log('unmounting');
+    // const data = await this.performTimeConsumingTask();
+    //
+    // if (data !== null) {
+    //   this.setState({ isLoading: false });
+    // }
   }
 
-  clearMessage = (uuid) =>{
-    let tempMap = this.state.messages;
-    console.log("deleted", tempMap.delete(uuid))
-    this.setState({
-      messages: tempMap
-    },()=>{console.log("piza",this.state.messages)})
-    //console.log("clearing message")
-  }
-  stopMessageTimer = (timerId) => {
-    console.log("clearing timeout");
-    clearTimeout(timerId)
-  }
-  publishMessage = () => {
-    const testMessage = "Testing messages";
-    this.pubnub.publish({
-      message: {message: Math.random( ), uuid: this.pubnub.getUUID()},
-      channel: 'channel1.messages'
-    });
-    console.log("publishing")
-  }
+  // clearMessage = (uuid) =>{
+  //   let tempMap = this.state.messages;
+  //   console.log("deleted", tempMap.delete(uuid))
+  //   this.setState({
+  //     messages: tempMap
+  //   },()=>{console.log("piza",this.state.messages)})
+  //   //console.log("clearing message")
+  // }
+  // stopMessageTimer = (timerId) => {
+  //   console.log("clearing timeout");
+  //   clearTimeout(timerId)
+  // }
+  // publishMessage = () => {
+  //   const testMessage = "Testing messages";
+  //   this.pubnub.publish({
+  //     message: {message: Math.random( ), uuid: this.pubnub.getUUID()},
+  //     channel: 'channel1.messages'
+  //   });
+  //   console.log("publishing")
+  // }
   componentWillUnmount() {
     this.pubnub.publish({
       message: {latitude: -1, longitude: -1, uuid: this.pubnub.getUUID(),image: this.state.currentPicture, hideUser: true},
@@ -341,30 +341,30 @@ export default class App extends Component {
       )
     }
   }
-  selectUserImage = (imageNum) =>{
-    switch (imageNum) {
-      case 1:
-        return (require('./assets/images/boss.png'))
-
-        break;
-      default:
-        return (require('./assets/images/boss.png'))
-
-    }
-  }
+  // selectUserImage = (imageNum) =>{
+  //   switch (imageNum) {
+  //     case 1:
+  //       return (require('./assets/images/boss.png'))
+  //
+  //       break;
+  //     default:
+  //       return (require('./assets/images/boss.png'))
+  //
+  //   }
+  // }
 
   // Oscars functions
   updateIndexOne = (selectedIndexRowOne) => {
     if(this.state.selectedIndexRowTwo != -1){
-        this.setState({selectedIndexRowTwo: -1}); 
-    }  
+        this.setState({selectedIndexRowTwo: -1});
+    }
     this.setState({selectedIndexRowOne});
 }
 
   updateIndexTwo =  (selectedIndexRowTwo) => {
     if(this.state.selectedIndexRowOne != -1){
-        this.setState({selectedIndexRowOne: -1});  
-    }  
+        this.setState({selectedIndexRowOne: -1});
+    }
     this.setState({selectedIndexRowTwo});
 }
 
@@ -373,33 +373,33 @@ export default class App extends Component {
       console.log('show splashscreen');
       return <SplashScreen />;
     }
-    
-    const component1 = () => 
+
+    const component1 = () =>
     <Image
       source={img1}
     />
 
-    const component2 = () =>     
+    const component2 = () =>
     <Image
     source={img2}
     />
 
-    const component3 = () => 
+    const component3 = () =>
     <Image
     source={img3}
     />
 
-    const component4 = () =>                 
+    const component4 = () =>
     <Image
     source={img4}
     />
 
-    const component5 = () =>                 
+    const component5 = () =>
     <Image
     source={img5}
     />
 
-    const component6 = () =>                 
+    const component6 = () =>
     <Image
     source={img6}
     />
@@ -411,7 +411,7 @@ export default class App extends Component {
     const { selectedIndexRowTwo } = this.state;
     const { currentPicture } = this.state;
     const { isFocused } = this.state;
-    const {text} = this.state;
+    const {usernameTemp} = this.state;
 
     const handleFocus = () => {
     this.setState({isFocused: true});
@@ -425,61 +425,61 @@ export default class App extends Component {
       if(selectedIndexRowOne === -1 && selectedIndexRowTwo === -1){
           Alert.alert('Error','Please select a profile picture.');
       }
-      else if(text.length === 0){
+      else if(usernameTemp.length === 0){
         Alert.alert('Error','Please enter your username.');
       }
-      else if(text.length > 16){
-        Alert.alert('Error', 'Username should be less than 16 characters');         
+      else if(usernameTemp.length > 16){
+        Alert.alert('Error', 'Username should be less than 16 characters');
       }
-      else{        
+      else{
         // publish username and image to channel
         let getRowPic = (selectedIndexRowOne  > -1) ? true: false;
         getRowPic = (getRowPic) ? imgArrayRowOne[selectedIndexRowOne]:
           imgArrayRowTwo[selectedIndexRowTwo];
         this.setState({ currentPicture: getRowPic });
-        this.setState({selectedIndexRowOne: -1}); 
-        this.setState({selectedIndexRowTwo: -1}); 
-        this.setState({text: ''}); 
+        this.setState({selectedIndexRowOne: -1});
+        this.setState({selectedIndexRowTwo: -1});
+        this.setState({usernameTemp: ''});
         this.setState({ visibleModalStart: false  });
       }
     }
 
     const cancelProfile = () => {
-        this.setState({selectedIndexRowOne: -1}); 
-        this.setState({selectedIndexRowTwo: -1}); 
-        this.setState({text: ''}); 
+        this.setState({selectedIndexRowOne: -1});
+        this.setState({selectedIndexRowTwo: -1});
+        this.setState({usernameTemp: ''});
         this.setState({ visibleModalUpdate: false });
     }
 
     const updateProfile = () => {
         if(selectedIndexRowOne === -1 && selectedIndexRowTwo === -1){
-          if(text.length === 0){
+          if(usernameTemp.length === 0){
             Alert.alert('Error','No changes were made');
           }
-          else if(text.length > 16){
-            Alert.alert('Error', 'Username should be less than 16 characters');         
+          else if(usernameTemp.length > 16){
+            Alert.alert('Error', 'Username should be less than 16 characters');
           }
-          else{ 
-            // if(text.length > 0){
+          else{
+            // if(usernameTemp.length > 0){
             //   // publish username to channel and database
             // }
-            this.setState({text: ''}); 
+            this.setState({usernameTemp: ''});
             this.setState({ visibleModalUpdate: false });
           }
         }
-        // else if(text.length)
+        // else if(usernameTemp.length)
         else{
           let getRowPic = (selectedIndexRowOne  > -1) ? true: false;
           getRowPic = (getRowPic) ? imgArrayRowOne[selectedIndexRowOne]:
             imgArrayRowTwo[selectedIndexRowTwo];
           this.setState({ currentPicture: getRowPic });
-          this.setState({selectedIndexRowOne: -1}); 
-          this.setState({selectedIndexRowTwo: -1}); 
-          this.setState({text: ''}); 
+          this.setState({selectedIndexRowOne: -1});
+          this.setState({selectedIndexRowTwo: -1});
+          this.setState({usernameTemp: ''});
           this.setState({ visibleModalUpdate: false });
         }
       }
-    
+
 
     let about;
     let usersMap = this.state.users;
@@ -503,41 +503,41 @@ export default class App extends Component {
     let usersArray = Array.from(usersMap.values());
     //MAKE SURE TO ADD NSLocationWhenInUseUsageDescription INTO INFO.PLST
 
-    return (      
+    return (
        <View style={styles.container}>
           <Modal isVisible={this.state.visibleModalStart}>
                 <View style={styles.content}>
-                    <View style={styles.textContent}> 
-                        <Text style={styles.text}>Profile Picture</Text> 
+                    <View style={styles.textContent}>
+                        <Text style={styles.text}>Profile Picture</Text>
                     </View>
                     <ButtonGroup
                         selectedIndex={this.state.selectedIndexRowOne}
                         buttons={buttonsOne}
                         onPress={this.updateIndexOne}
                         containerStyle={{height: 70}}
-                    />   
+                    />
                     <ButtonGroup
                         selectedIndex={this.state.selectedIndexRowTwo}
                         buttons={buttonsTwo}
                         onPress={this.updateIndexTwo}
                         containerStyle={{height: 70}}
-                    />    
+                    />
 
-                    <View> 
-                        <TextInput 
-                            type="TextInput" 
-                            name="myTextInput" 
+                    <View>
+                        <TextInput
+                            type="TextInput"
+                            name="myTextInput"
                             style={{height: 40, marginBottom: 10}}
-                            placeholder='Enter your username' 
+                            placeholder='Enter your username'
                             underlineColorAndroid={
                             isFocused ?
                             "rgb(208,33,41)" : "#D3D3D3"
                             }
                             onFocus={handleFocus}
                             onBlur={handleBlur}
-                            value={this.state.text}
-                            onChangeText={(text) => this.setState({text})}                 
-                        />            
+                            value={this.state.usernameTemp}
+                            onChangeText={(usernameTemp) => this.setState({usernameTemp})}
+                        />
                     </View>
 
                     <View style={styles.buttonContainer}>
@@ -553,8 +553,6 @@ export default class App extends Component {
 
            <MapView
              style={styles.map}
-             showsMyLocationButton={true}
-             showUserLocation={true}
              ref={(ref) => this.map = ref}
              onMoveShouldSetResponder={this.draggedMap}
             >
@@ -580,7 +578,7 @@ export default class App extends Component {
               )) }
            </MapView >
 
-           <View style={styles.topBar}> 
+           <View style={styles.topBar}>
 
              <TouchableOpacity onPress={() => this.setState({ visibleModalUpdate: !this.state.visibleModalUpdate })}>
                <Image
@@ -588,40 +586,40 @@ export default class App extends Component {
                  source={require('./assets/images/profile.png')}
                />
              </TouchableOpacity>
-                    
+
              <Modal isVisible={this.state.visibleModalUpdate}>
                 <View style={styles.content}>
-                    <View style={styles.textContent}> 
-                        <Text style={styles.text}>Profile Picture</Text> 
+                    <View style={styles.textContent}>
+                        <Text style={styles.text}>Profile Picture</Text>
                     </View>
                     <ButtonGroup
                         selectedIndex={this.state.selectedIndexRowOne}
                         buttons={buttonsOne}
                         onPress={this.updateIndexOne}
                         containerStyle={{height: 70}}
-                    />   
+                    />
                     <ButtonGroup
                         selectedIndex={this.state.selectedIndexRowTwo}
                         buttons={buttonsTwo}
                         onPress={this.updateIndexTwo}
                         containerStyle={{height: 70}}
-                    />    
+                    />
 
-                    <View> 
-                        <TextInput 
-                            type="TextInput" 
-                            name="myTextInput" 
+                    <View>
+                        <TextInput
+                            type="TextInput"
+                            name="myTextInput"
                             style={{height: 40, marginBottom: 10}}
-                            placeholder='Change your username' 
+                            placeholder='Change your username'
                             underlineColorAndroid={
                             isFocused ?
                             "rgb(208,33,41)" : "#D3D3D3"
                             }
                             onFocus={handleFocus}
                             onBlur={handleBlur}
-                            value={this.state.text}
-                            onChangeText={(text) => this.setState({text})}                 
-                        />            
+                            value={this.state.usernameTemp}
+                            onChangeText={(usernameTemp) => this.setState({usernameTemp})}
+                        />
                     </View>
 
                     <View style={styles.buttonContainer}>
@@ -670,6 +668,7 @@ export default class App extends Component {
    );
   }
 }
+
 const styles = StyleSheet.create({
   aboutView:{
     backgroundColor: '#9FA8DA',
@@ -732,7 +731,7 @@ const styles = StyleSheet.create({
   },
   text: {
     fontFamily: 'proxima-nova',
-    color: 'rgb(208,33,41)',  
+    color: 'rgb(208,33,41)',
     fontSize: 37,
     fontWeight: 'bold',
   },
