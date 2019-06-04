@@ -63,18 +63,18 @@ export default class App extends Component {
   // }
 
   //Track User GPS Data
-    componentDidMount() {
+  componentDidMount() {
     //PubNub
 
     console.log('mounting');
     // this.pubnub.getMessage('channel1.messages',(msg) =>{
-    //   if(this.state.users.has(msg.message.uuid)){
+    //   if(this.state.users.has(msg.publisher)){
     //     let tempMap = this.state.messages;
-    //     if(this.state.messages.has(msg.message.uuid)){
-    //       this.stopMessageTimer(this.state.messages.get(msg.message.uuid).timerId)
+    //     if(this.state.messages.has(msg.publisher)){
+    //       this.stopMessageTimer(this.state.messages.get(msg.publisher).timerId)
     //     }
-    //     let message = {uuid: msg.message.uuid, message: msg.message.message, timerId: setTimeout(this.clearMessage, 5000, msg.message.uuid) }
-    //     tempMap.set(msg.message.uuid, message)
+    //     let message = {uuid: msg.publisher, message: msg.message.message, timerId: setTimeout(this.clearMessage, 5000, msg.publisher) }
+    //     tempMap.set(msg.publisher, message)
     //     this.setState({
     //       messages: tempMap
     //     })
@@ -82,11 +82,12 @@ export default class App extends Component {
     // })
 
     this.pubnub.getMessage('channel1', (msg) => {
-      if(msg.message.uuid == this.state.fixedOnUUID){
+      console.log("MSG: ", msg)
+      if(msg.publisher == this.state.fixedOnUUID){
         this.animateToCurrent({latitude: msg.message.latitude, longitude: msg.message.longitude},400)
       }
-      let oldUser = this.state.users.get(msg.message.uuid)
-      let newUser = {uuid: msg.message.uuid, latitude: msg.message.latitude, longitude: msg.message.longitude, image: msg.message.image, username: msg.message.username };
+      let oldUser = this.state.users.get(msg.publisher)
+      let newUser = {uuid: msg.publisher, latitude: msg.message.latitude, longitude: msg.message.longitude, image: msg.message.image, username: msg.message.username };
       if(!this.isEquivalent(oldUser, newUser)){
         let tempMap = this.state.users;
 
@@ -118,7 +119,7 @@ export default class App extends Component {
       position => {
         if(this.state.allowGPS){
           this.pubnub.publish({
-            message: {latitude: position.coords.latitude, longitude: position.coords.longitude, uuid: this.pubnub.getUUID(), image: this.state.currentPicture, username: this.state.username},
+            message: {latitude: position.coords.latitude, longitude: position.coords.longitude,  image: this.state.currentPicture, username: this.state.username},
             channel: 'channel1'
           });
           this.setState({
@@ -138,7 +139,7 @@ export default class App extends Component {
         })
         if(this.state.allowGPS){
           this.pubnub.publish({
-            message: {latitude: position.coords.latitude, longitude: position.coords.longitude, uuid: this.pubnub.getUUID(), image: this.state.currentPicture, username: this.state.username},
+            message: {latitude: position.coords.latitude, longitude: position.coords.longitude,  image: this.state.currentPicture, username: this.state.username},
             channel: 'channel1'
           });
           if(this.state.focusOnMe){
@@ -187,7 +188,7 @@ export default class App extends Component {
   // }
   componentWillUnmount() {
     this.pubnub.publish({
-      message: {latitude: -1, longitude: -1, uuid: this.pubnub.getUUID(),image: this.state.currentPicture, hideUser: true},
+      message: {latitude: -1, longitude: -1, image: this.state.currentPicture, hideUser: true},
       channel: 'channel1'
     });
     this.pubnub.unsubscribeAll();
@@ -201,7 +202,7 @@ export default class App extends Component {
           this.animateToCurrent(this.state.currentLoc,1000)
         }
         let tempMap = this.state.users;
-        let tempUser = {latitude: this.state.currentLoc.latitude, longitude: this.state.currentLoc.longitude, uuid: this.pubnub.getUUID(), image: this.state.currentPicture, username: this.state.username}
+        let tempUser = {latitude: this.state.currentLoc.latitude, longitude: this.state.currentLoc.longitude,  image: this.state.currentPicture, username: this.state.username}
         tempMap.set(tempUser.uuid, tempUser)
         this.setState({
           users: tempMap
@@ -213,7 +214,7 @@ export default class App extends Component {
         })
       }else{
         this.pubnub.publish({
-          message: {latitude: -1, longitude: -1, uuid: this.pubnub.getUUID(),image: this.state.currentPicture, hideUser: true},
+          message: {latitude: -1, longitude: -1, image: this.state.currentPicture, hideUser: true},
           channel: 'channel1'
         });
       }
@@ -439,7 +440,6 @@ export default class App extends Component {
     <Image
     source={img6}
     />
-  console.log("rerendered")
 
     const buttonsOne = [{ element: component1}, { element: component2, id: 2 }, { element: component3, id: 3 }];
     const buttonsTwo = [{ element: component4, id: 4 }, { element: component5, id: 5 }, { element: component6, id: 6 }];
