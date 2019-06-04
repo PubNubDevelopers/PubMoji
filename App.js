@@ -4,7 +4,7 @@ import MapView, {Marker} from 'react-native-maps';
 import PubNubReact from 'pubnub-react';
 import * as Animatable from 'react-native-animatable';
 import Modal from "react-native-modal";
-import AnimationScreen from './src/components/Animation/AnimationScreen'
+import EmojiBar from './src/components/EmojiBar/EmojiBar'
 
 const instructions = Platform.select({
   ios: 'Press Cmd+R to reload,\n' + 'Cmd+D or shake for dev menu',
@@ -269,7 +269,7 @@ export default class App extends React.Component {
        </MapView>
        </View>
         <Button title="show Emoji" onPress={() => this.showEmoji()}/>
-        <AnimationScreen {...this.state} pubnub={this.pubnub}/>
+        <EmojiBar {...this.state} pubnub={this.pubnub}/>
      </View>
    );
   }

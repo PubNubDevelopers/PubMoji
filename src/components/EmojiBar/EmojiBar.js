@@ -2,7 +2,7 @@ import React, { Component } from 'react'
 import { Animated, BackHandler, Image, PanResponder, Text, TouchableOpacity, View } from 'react-native'
 import Sound from 'react-native-sound'
 
-import styles from './AnimationStyle'
+import styles from './EmojiBarStyle'
 import images from '../../Images/Images.js'
 
 import FastImage from 'react-native-fast-image'
@@ -671,7 +671,7 @@ export default class AnimationScreen extends Component {
       this.soundIconChoose.play()
     }
     this.props.pubnub.publish({
-      message: {latitude: this.props.latitude, longitude: this.props.longitude, uuid: this.props.pubnub.getUUID(), image: 1, username: this.props.usersname, emojiCode: this.whichIconUserChoose},
+      message: {latitude: this.props.latitude, longitude: this.props.longitude, uuid: this.props.pubnub.getUUID(), image: 1, username: this.props.usersname, emojiType: this.whichIconUserChoose},
       channel: 'channel1'
     });
   }
