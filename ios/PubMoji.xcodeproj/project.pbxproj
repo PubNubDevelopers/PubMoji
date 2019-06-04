@@ -38,6 +38,11 @@
 		2DCD954D1E0B4F2C00145EB5 /* PubMojiTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E356F21AD99517003FC87E /* PubMojiTests.m */; };
 		2DF0FFEE2056DD460020B375 /* libReact.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3DAD3EA31DF850E9000B6D8A /* libReact.a */; };
 		38B9D2F422A72F6B0089FCB1 /* libAirMaps.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 38B9D2F322A72EE60089FCB1 /* libAirMaps.a */; };
+		38B9D2FA22A73C790089FCB1 /* short_press_like.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 38B9D2F522A73C780089FCB1 /* short_press_like.mp3 */; };
+		38B9D2FB22A73C790089FCB1 /* icon_choose.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 38B9D2F622A73C780089FCB1 /* icon_choose.mp3 */; };
+		38B9D2FC22A73C790089FCB1 /* box_down.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 38B9D2F722A73C780089FCB1 /* box_down.mp3 */; };
+		38B9D2FD22A73C790089FCB1 /* box_up.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 38B9D2F822A73C780089FCB1 /* box_up.mp3 */; };
+		38B9D2FE22A73C790089FCB1 /* icon_focus.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 38B9D2F922A73C790089FCB1 /* icon_focus.mp3 */; };
 		832341BD1AAA6AB300B99B32 /* libRCTText.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 832341B51AAA6A8300B99B32 /* libRCTText.a */; };
 		ADBDB9381DFEBF1600ED6528 /* libRCTBlob.a in Frameworks */ = {isa = PBXBuildFile; fileRef = ADBDB9271DFEBF0700ED6528 /* libRCTBlob.a */; };
 		BC0FCA25263A4FA18239CE01 /* libFastImage.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 61D00C413E3340419188AFF3 /* libFastImage.a */; };
@@ -368,6 +373,11 @@
 		2D02E4901E0B4A5D006451C7 /* PubMoji-tvOSTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "PubMoji-tvOSTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		2D16E6891FA4F8E400B85C8A /* libReact.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libReact.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		38B9D2EE22A72EE60089FCB1 /* AirMaps.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = AirMaps.xcodeproj; path = "../node_modules/react-native-maps/lib/ios/AirMaps.xcodeproj"; sourceTree = "<group>"; };
+		38B9D2F522A73C780089FCB1 /* short_press_like.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = short_press_like.mp3; path = ../android/app/src/main/res/raw/short_press_like.mp3; sourceTree = "<group>"; };
+		38B9D2F622A73C780089FCB1 /* icon_choose.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = icon_choose.mp3; path = ../android/app/src/main/res/raw/icon_choose.mp3; sourceTree = "<group>"; };
+		38B9D2F722A73C780089FCB1 /* box_down.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = box_down.mp3; path = ../android/app/src/main/res/raw/box_down.mp3; sourceTree = "<group>"; };
+		38B9D2F822A73C780089FCB1 /* box_up.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = box_up.mp3; path = ../android/app/src/main/res/raw/box_up.mp3; sourceTree = "<group>"; };
+		38B9D2F922A73C790089FCB1 /* icon_focus.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = icon_focus.mp3; path = ../android/app/src/main/res/raw/icon_focus.mp3; sourceTree = "<group>"; };
 		5E91572D1DD0AC6500FF2AA8 /* RCTAnimation.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = RCTAnimation.xcodeproj; path = "../node_modules/react-native/Libraries/NativeAnimation/RCTAnimation.xcodeproj"; sourceTree = "<group>"; };
 		61D00C413E3340419188AFF3 /* libFastImage.a */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = archive.ar; path = libFastImage.a; sourceTree = "<group>"; };
 		78C398B01ACF4ADC00677621 /* RCTLinking.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = RCTLinking.xcodeproj; path = "../node_modules/react-native/Libraries/LinkingIOS/RCTLinking.xcodeproj"; sourceTree = "<group>"; };
@@ -648,6 +658,11 @@
 		83CBB9F61A601CBA00E9B192 = {
 			isa = PBXGroup;
 			children = (
+				38B9D2F722A73C780089FCB1 /* box_down.mp3 */,
+				38B9D2F822A73C780089FCB1 /* box_up.mp3 */,
+				38B9D2F622A73C780089FCB1 /* icon_choose.mp3 */,
+				38B9D2F922A73C790089FCB1 /* icon_focus.mp3 */,
+				38B9D2F522A73C780089FCB1 /* short_press_like.mp3 */,
 				13B07FAE1A68108700A75B9A /* PubMoji */,
 				832341AE1AAA6A7D00B99B32 /* Libraries */,
 				00E356EF1AD99517003FC87E /* PubMojiTests */,
@@ -1158,7 +1173,12 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				38B9D2FC22A73C790089FCB1 /* box_down.mp3 in Resources */,
+				38B9D2FD22A73C790089FCB1 /* box_up.mp3 in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
+				38B9D2FA22A73C790089FCB1 /* short_press_like.mp3 in Resources */,
+				38B9D2FB22A73C790089FCB1 /* icon_choose.mp3 in Resources */,
+				38B9D2FE22A73C790089FCB1 /* icon_focus.mp3 in Resources */,
 				13B07FBD1A68108700A75B9A /* LaunchScreen.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
