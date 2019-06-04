@@ -128,7 +128,7 @@ export default class App extends Component {
         }
       },
       error => console.log("Maps Error: ",error),
-      { enableHighAccuracy: true, timeout: 200, maximumAge: 1000 }
+      { enableHighAccuracy: true, timeout: 2000, maximumAge: 1000 }
     );
     //Track motional Coordinates
     navigator.geolocation.watchPosition(
@@ -150,7 +150,7 @@ export default class App extends Component {
       error => console.log("Maps Error: ",error),
       {
         enableHighAccuracy: true,
-        timeout: 200,
+        timeout: 2000,
         maximumAge: 1000,
         distanceFilter: 100
       }
@@ -359,6 +359,7 @@ export default class App extends Component {
         this.setState({selectedIndexRowTwo: -1});
     }
     this.setState({selectedIndexRowOne});
+
 }
 
   updateIndexTwo =  (selectedIndexRowTwo) => {
@@ -367,6 +368,41 @@ export default class App extends Component {
     }
     this.setState({selectedIndexRowTwo});
 }
+// returnComponent = (imageIndex) =>{
+//   let image;
+//   switch (imageIndex) {
+//     case 1:
+//       image = require('./assets/images/favicon.png');
+//       break;
+//
+//     case 2:
+//       image = require('./assets/images/apple-logo.png');
+//       break;
+//
+//     case 3:
+//       image = require('./assets/images/twitter-logo.png');
+//       break;
+//
+//     case 4:
+//       image = require('./assets/images/linkedin-logo.png');
+//       break;
+//
+//     case 5:
+//       image = require('./assets/images/microsoft-logo.png');
+//       break;
+//
+//     case 6:
+//       image = require('./assets/images/chrome-logo.png');
+//       break;
+//
+//     default:
+//       image = require('./assets/images/favicon.png');
+//   }
+//   return(
+//     <Image
+//       source={image}
+//     />)
+// }
 
   render() {
     if(this.state.isLoading){
@@ -403,6 +439,7 @@ export default class App extends Component {
     <Image
     source={img6}
     />
+  console.log("rerendered")
 
     const buttonsOne = [{ element: component1}, { element: component2, id: 2 }, { element: component3, id: 3 }];
     const buttonsTwo = [{ element: component4, id: 4 }, { element: component5, id: 5 }, { element: component6, id: 6 }];
@@ -669,6 +706,7 @@ export default class App extends Component {
   }
 }
 
+
 const styles = StyleSheet.create({
   aboutView:{
     backgroundColor: '#9FA8DA',
@@ -730,7 +768,6 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   text: {
-    fontFamily: 'proxima-nova',
     color: 'rgb(208,33,41)',
     fontSize: 37,
     fontWeight: 'bold',
