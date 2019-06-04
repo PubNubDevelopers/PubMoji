@@ -2,7 +2,7 @@
 
 import React, {Component} from 'react';
 import {Platform, StyleSheet, Text, TextInput, Button, View, Image, Switch,TouchableOpacity,TouchableWithoutFeedback, Header, Alert} from 'react-native';
-import MapView, {Marker, AnimatedRegion } from 'react-native-maps';
+import MapView, {Marker, AnimatedRegion, Callout } from 'react-native-maps';
 import PubNubReact from 'pubnub-react';
 import Modal from "react-native-modal";
 import { ButtonGroup } from 'react-native-elements';
@@ -67,19 +67,19 @@ export default class App extends Component {
     //PubNub
 
     console.log('mounting');
-    // this.pubnub.getMessage('channel1.messages',(msg) =>{
-    //   if(this.state.users.has(msg.publisher)){
-    //     let tempMap = this.state.messages;
-    //     if(this.state.messages.has(msg.publisher)){
-    //       this.stopMessageTimer(this.state.messages.get(msg.publisher).timerId)
-    //     }
-    //     let message = {uuid: msg.publisher, message: msg.message.message, timerId: setTimeout(this.clearMessage, 5000, msg.publisher) }
-    //     tempMap.set(msg.publisher, message)
-    //     this.setState({
-    //       messages: tempMap
-    //     })
-    //   }
-    // })
+    this.pubnub.getMessage('channel1.messages',(msg) =>{
+      if(this.state.users.has(msg.publisher)){
+        let tempMap = this.state.messages;
+        if(this.state.messages.has(msg.publisher)){
+          this.stopMessageTimer(this.state.messages.get(msg.publisher).timerId)
+        }
+        let message = {uuid: msg.publisher, message: msg.message.message, timerId: setTimeout(this.clearMessage, 5000, msg.publisher) }
+        tempMap.set(msg.publisher, message)
+        this.setState({
+          messages: tempMap
+        })
+      }
+    })
 
     this.pubnub.getMessage('channel1', (msg) => {
       console.log("MSG: ", msg)
@@ -107,10 +107,10 @@ export default class App extends Component {
         channels: ['channel1'],
         withPresence: true
     });
-    // this.pubnub.subscribe({
-    //     channels: ['channel1.messages'],
-    //     withPresence: true
-    // });
+    this.pubnub.subscribe({
+        channels: ['channel1.messages'],
+        withPresence: true
+    });
     this.pubnub.getPresence('channel1', (presence) => {
         console.log(presence);
     });
@@ -157,7 +157,7 @@ export default class App extends Component {
       }
     );
 
-     //setInterval(this.publishMessage, 10000);
+     setInterval(this.publishMessage, 10000);
     // console.log('unmounting');
     // const data = await this.performTimeConsumingTask();
     //
@@ -166,26 +166,26 @@ export default class App extends Component {
     // }
   }
 
-  // clearMessage = (uuid) =>{
-  //   let tempMap = this.state.messages;
-  //   console.log("deleted", tempMap.delete(uuid))
-  //   this.setState({
-  //     messages: tempMap
-  //   },()=>{console.log("piza",this.state.messages)})
-  //   //console.log("clearing message")
-  // }
-  // stopMessageTimer = (timerId) => {
-  //   console.log("clearing timeout");
-  //   clearTimeout(timerId)
-  // }
-  // publishMessage = () => {
-  //   const testMessage = "Testing messages";
-  //   this.pubnub.publish({
-  //     message: {message: Math.random( ), uuid: this.pubnub.getUUID()},
-  //     channel: 'channel1.messages'
-  //   });
-  //   console.log("publishing")
-  // }
+  clearMessage = (uuid) =>{
+    let tempMap = this.state.messages;
+    console.log("deleted", tempMap.delete(uuid))
+    this.setState({
+      messages: tempMap
+    },()=>{console.log("piza",this.state.messages)})
+    //console.log("clearing message")
+  }
+  stopMessageTimer = (timerId) => {
+    console.log("clearing timeout");
+    clearTimeout(timerId)
+  }
+  publishMessage = () => {
+    const testMessage = "Testing messages";
+    this.pubnub.publish({
+      message: {message: Math.random( ), uuid: this.pubnub.getUUID()},
+      channel: 'channel1.messages'
+    });
+    console.log("publishing")
+  }
   componentWillUnmount() {
     this.pubnub.publish({
       message: {latitude: -1, longitude: -1, image: this.state.currentPicture, hideUser: true},
@@ -329,19 +329,40 @@ export default class App extends Component {
   messageOutPut = (message) => {
     if(message){
       return(
-        <Text style={styles.messagePopUp}>{message}</Text>
+        <View style={styles.messagePopUp}>
+          <Text style={styles.messagePopUp}>{message}</Text>
+        </View>
+
+
+
       )
     }
   }
+  // <Callout>
+  //   <View>
+  //     <Text style={styles.messagePopUp}>{message}</Text>
+  //   </View>
+  // </Callout>
   showUsername = (user) => {
     if((this.state.focusOnMe && user.uuid == this.pubnub.getUUID()) || this.state.fixedOnUUID == user.uuid)
     {
-      console.log(user.username)
+      console.log("user",user.username)
       return (
-        <Text>{user.username}</Text>
+        <View style={styles.messagePopUp}>
+          <Text>{user.username}</Text>
+        </View>
+
+
+
       )
     }
   }
+
+  // <Callout>
+  //   <View>
+  //
+  //   </View>
+  // </Callout>
   // selectUserImage = (imageNum) =>{
   //   switch (imageNum) {
   //     case 1:
@@ -421,10 +442,7 @@ export default class App extends Component {
     source={img2}
     />
 
-    const component3 = () =>
-    <Image
-    source={img3}
-    />
+    const component3 = () => <Image source={img3}/>
 
     const component4 = () =>
     <Image
@@ -474,6 +492,7 @@ export default class App extends Component {
         getRowPic = (getRowPic) ? imgArrayRowOne[selectedIndexRowOne]:
           imgArrayRowTwo[selectedIndexRowTwo];
         this.setState({ currentPicture: getRowPic });
+        this.setState({username:usernameTemp})
         this.setState({selectedIndexRowOne: -1});
         this.setState({selectedIndexRowTwo: -1});
         this.setState({usernameTemp: ''});
@@ -500,7 +519,9 @@ export default class App extends Component {
             // if(usernameTemp.length > 0){
             //   // publish username to channel and database
             // }
+            this.setState({username:usernameTemp})
             this.setState({usernameTemp: ''});
+
             this.setState({ visibleModalUpdate: false });
           }
         }
@@ -603,11 +624,11 @@ export default class App extends Component {
                       this.marker = marker;
                     }}>
                     <TouchableOpacity onPress={() =>{this.touchUser(item.uuid)}} >
-                      {this.messageOutPut(item.message)}
-                      <View style={styles.selectedUserBackground}>
+                      <View style={styles.marker}>
+                        {this.messageOutPut(item.message)}
                         <Image source={currentPicture} style={this.selectedStyle(item.uuid)} />
+                        {this.showUsername(item)}
                       </View>
-                      {this.showUsername(item)}
                     </TouchableOpacity>
                 </Marker>
 
@@ -713,16 +734,17 @@ const styles = StyleSheet.create({
   },
   marker:{
     justifyContent: 'center',
-    alignSelf: 'center',
+    alignItems: 'center',
   },
   messagePopUp:{
     backgroundColor: '#C5C8D7',
+    alignItems: 'center'
 
   },
   topBar:{
     top: 50,
     right: 10,
-    flexDirection: 'row',
+    flexDirection:'row',
     justifyContent: 'space-between',
     alignItems: 'center'
   },
@@ -771,6 +793,9 @@ const styles = StyleSheet.create({
     color: 'rgb(208,33,41)',
     fontSize: 37,
     fontWeight: 'bold',
+  },
+  usernameView:{
+
   },
   content: {
     backgroundColor: 'white',
