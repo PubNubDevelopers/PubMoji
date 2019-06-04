@@ -3,8 +3,8 @@ import { StyleSheet, Platform } from 'react-native'
 export default StyleSheet.create({
   // Container
   viewContainer: {
-    flex: 1,
-    flexDirection: 'column'
+    flexDirection: 'column',
+    flex: 1
   },
 
   // Toolbar
@@ -20,7 +20,7 @@ export default StyleSheet.create({
     height: 23,
     marginLeft: 26,
     tintColor: 'white',
-    marginTop: Platform.OS === 'android' ? 0 : 20
+    marginTop: Platform.OrS === 'android' ? 0 : 20
   },
   icTrail: {
     width: 23,
@@ -33,14 +33,11 @@ export default StyleSheet.create({
     fontWeight: 'bold',
     fontSize: 18,
     textAlign: 'center',
-    flex: 1,
     marginTop: Platform.OS === 'android' ? 0 : 20
   },
 
   // Body
   viewBody: {
-    flex: 1,
-    flexDirection: 'column'
   },
 
   // Top blank space
@@ -53,7 +50,7 @@ export default StyleSheet.create({
   viewContent: {
     borderWidth: 0,
     borderColor: 'red',
-    flexDirection: 'column',
+    flexDirection: 'row',
     height: 320,
     marginLeft: 10,
     marginRight: 10,
@@ -79,7 +76,7 @@ export default StyleSheet.create({
     width: 100,
     justifyContent: 'space-around',
     alignItems: 'center',
-    borderWidth: 1,
+    borderWidth: 0,
     padding: 10,
     borderRadius: 3,
     marginTop: 170,
@@ -107,7 +104,8 @@ export default StyleSheet.create({
     alignItems: 'flex-end',
     justifyContent: 'space-around',
     paddingLeft: 5,
-    paddingRight: 5
+    paddingRight: 5,
+    flex: 1
   },
   viewWrapIcon: {
     justifyContent: 'center',
@@ -143,6 +141,7 @@ export default StyleSheet.create({
     marginTop: 30,
     marginLeft: 10,
     position: 'absolute',
-    alignItems: 'flex-end'
+    alignItems: 'flex-end',
+    flex: 1
   }
 })

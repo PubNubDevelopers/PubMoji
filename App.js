@@ -1,5 +1,5 @@
 import React, {Component} from 'react';
-import {Platform, StyleSheet, Text, View, Image, Button} from 'react-native';
+import {Platform, StyleSheet, Text, View, Image, Button, TouchableOpacity} from 'react-native';
 import MapView, {Marker} from 'react-native-maps';
 import PubNubReact from 'pubnub-react';
 import * as Animatable from 'react-native-animatable';
@@ -217,14 +217,12 @@ export default class App extends React.Component {
        let usersArray = Array.from(this.state.users.values());
 
     return (
-
+      <View> 
     <View style={styles.container}>
-
       <View style={styles.view}>
-        <AnimationScreen {...this.state} pubnub={this.pubnub}/>
-         <Modal isVisible={true}>
+         <Modal isVisible={false}>
            <View style={styles.modal}>
-             <Image style={styles.image} source={require('./Pubmoji.png')} style={{height: 180, width:250, }} />
+             <Image style={styles.image} source={require('./assets/images/PubMoji.png')} style={{height: 180, width:250, }} />
              <Text style={styles.text}>I am the modal content!</Text>
            </View>
          </Modal>
@@ -266,10 +264,12 @@ export default class App extends React.Component {
                        </Animatable.View> }
 
                        <Image source={require('./assets/images/marker.png')} style={{height: 35, width:35, }} />
-                      <Button title="show Emoji" onPress={() => this.showEmoji()}/>
                  </Marker>
                )) }
        </MapView>
+       </View>
+        <Button title="show Emoji" onPress={() => this.showEmoji()}/>
+        <AnimationScreen {...this.state} pubnub={this.pubnub}/>
      </View>
    );
   }
@@ -278,9 +278,8 @@ export default class App extends React.Component {
 const styles = StyleSheet.create({
   container: {
     ...StyleSheet.absoluteFillObject,
-    justifyContent: "flex-end",
-    alignItems: "center"
-  },
+    justifyContent: "center",
+    alignItems: "flex-start",  },
   map: {
     ...StyleSheet.absoluteFillObject
   },

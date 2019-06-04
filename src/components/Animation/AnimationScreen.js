@@ -671,24 +671,13 @@ export default class AnimationScreen extends Component {
       this.soundIconChoose.play()
     }
     this.props.pubnub.publish({
-      message: {latitude: this.props.currentLoc.latitude, longitude: this.props.currentLoc.longitude, uuid: this.props.pubnub.getUUID(), image: this.props.selectedImage, username: this.props.usersname, emojiCode: this.whichIconUserChoose},
+      message: {latitude: this.props.latitude, longitude: this.props.longitude, uuid: this.props.pubnub.getUUID(), image: 1, username: this.props.usersname, emojiCode: this.whichIconUserChoose},
       channel: 'channel1'
     });
   }
 
   render () {
     return (
-      <View style={styles.viewContainer}>
-        {/* Toolbar */}
-{/*        <View style={styles.toolbar}>
-          <TouchableOpacity onPress={() => this.handleBackPress()}>
-            <Image style={styles.icBack} source={images.ic_back}/>
-          </TouchableOpacity>
-          <Text style={styles.titleToolbar}>PubNub Emoji Bar</Text>
-          <View style={styles.icTrail}/>
-        </View>*/}
-
-        {/* Body */}
         <View style={styles.viewBody} {...this.rootPanResponder.panHandlers} >
           {/* Top space */}
 {/*          <View style={styles.viewTopSpace}/>
@@ -716,7 +705,6 @@ export default class AnimationScreen extends Component {
             {/*{this.renderButton()}*/}
           </View>
         </View>
-      </View>
     )
   }
 
