@@ -1,11 +1,10 @@
 import React, {Component} from 'react';
-import {Platform, StyleSheet, Text, View, Image, Button} from 'react-native';
+import {Platform, StyleSheet, Text, View, Image, Button, TouchableOpacity} from 'react-native';
 import MapView, {Marker} from 'react-native-maps';
-import hi from './boss.png';
 import PubNubReact from 'pubnub-react';
-import User from './Components/User.js';
 import * as Animatable from 'react-native-animatable';
 import Modal from "react-native-modal";
+import EmojiBar from './src/components/EmojiBar/EmojiBar'
 
 const instructions = Platform.select({
   ios: 'Press Cmd+R to reload,\n' + 'Cmd+D or shake for dev menu',
@@ -218,10 +217,8 @@ export default class App extends React.Component {
        };
 
     return (
-
+      <View>
     <View style={styles.container}>
-
-
        <MapView style={styles.map} region={this.setRegion()}>
                { usersArray.map((item, index)=>(
                  <Marker key={index} coordinate={{latitude: item.coords[0], longitude: item.coords[1]}}>
@@ -237,11 +234,13 @@ export default class App extends React.Component {
                       }()
                     }
 
-                       <Image source={require('./boss.png')} style={{height: 35, width:35, }} />
-                      <Button title="show Emoji" onPress={() => this.showEmoji()}/>
+                       <Image source={require('./assets/images/marker.png')} style={{height: 35, width:35, }} />
                  </Marker>
                )) }
        </MapView>
+       </View>
+        <Button title="show Emoji" onPress={() => this.showEmoji()}/>
+        <EmojiBar {...this.state} pubnub={this.pubnub}/>
      </View>
    );
   }
@@ -250,9 +249,8 @@ export default class App extends React.Component {
 const styles = StyleSheet.create({
   container: {
     ...StyleSheet.absoluteFillObject,
-    justifyContent: "flex-end",
-    alignItems: "center"
-  },
+    justifyContent: "center",
+    alignItems: "flex-start",  },
   map: {
     ...StyleSheet.absoluteFillObject
   },
