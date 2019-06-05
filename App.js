@@ -33,12 +33,14 @@ export default class App extends Component {
     }
 
 
+
     this.pubnub.init(this);
   }
 
 
   //Track User GPS Data
   componentDidMount() {
+
     //PubNub
     this.pubnub.getMessage('channel1.messages',(msg) =>{
       console.log("MSG: ", msg)
@@ -160,6 +162,10 @@ export default class App extends Component {
         distanceFilter: 100
       }
     );
+    // if(Platform.OS === 'android'){
+    //   console.log("Dsadasdsada")
+    //   this.animateToCurrent({latitude: 37.0902, longitude: 95.7129},400)
+    // }
 
      // setInterval(this.publishMessage, 10000);
 
@@ -216,6 +222,11 @@ export default class App extends Component {
           });
         })
       }else{
+        let tempMap = this.state.users;
+        tempMap.delete(this.pubnub.getUUID())
+        this.setState({
+          users: tempMap
+        })
         this.pubnub.publish({
           message: {latitude: -1, longitude: -1, image: this.state.currentPicture, hideUser: true},
           channel: 'channel1'
@@ -379,26 +390,28 @@ export default class App extends Component {
              style={styles.map}
              ref={(ref) => this.map = ref}
              onMoveShouldSetResponder={this.draggedMap}
+             initialRegion={{
+                latitude: 36.818080,
+                longitude: -98.640297,
+                latitudeDelta: 60.0001,
+                longitudeDelta: 60.0001,
+              }}
             >
               { usersArray.map((item, index)=>(
-                  //TRY SWITCHING UP TO CALLOUTS
-                  <Marker
-                    style={styles.marker}
-                    key={index}
-                    coordinate={{latitude: item.latitude, longitude: item.longitude}}
-                    ref={marker => {
-                      this.marker = marker;
-                    }}>
-                    <TouchableOpacity onPress={() =>{this.touchUser(item.uuid)}} >
-                      <View style={styles.marker}>
-                        {this.messageOutPut(this.state.messages.get(item.uuid))}
-                        <Image source={this.state.currentPicture} style={this.selectedStyle(item.uuid)} />
-                        {this.showUsername(item)}
-                      </View>
-                    </TouchableOpacity>
+                //TRY SWITCHING UP TO CALLOUTS
+                <Marker
+                  onPress={() =>{this.touchUser(item.uuid)}}
+                  style={styles.marker}
+                  key={index}
+                  coordinate={{latitude: item.latitude, longitude: item.longitude}}
+                  ref={marker => {
+                    this.marker = marker;}}>
+                  <View style={styles.marker}>
+                    {this.messageOutPut(this.state.messages.get(item.uuid))}
+                    <Image source={this.state.currentPicture} style={this.selectedStyle(item.uuid)} />
+                    {this.showUsername(item)}
+                  </View>
                 </Marker>
-
-
               )) }
            </MapView >
 
