@@ -278,15 +278,15 @@ export default class App extends Component {
   selectedStyle = (uuid) =>{
     if((this.state.focusOnMe && uuid == this.pubnub.getUUID()) || this.state.fixedOnUUID == uuid)
     {
-      return { height: 50, width:50}
+      return { height: 50, width:50,borderRadius: 25}
     }
-    return { height: 30, width:30}
+    return { height: 30, width:30, borderRadius: 15}
   }
   messageOutPut = (message) => {
     if(message){
       return(
-        <View style={styles.messagePopUp}>
-          <Text style={styles.messagePopUp}>{message}</Text>
+        <View style={styles.textBackground}>
+          <Text style={styles.text}>{message}</Text>
         </View>
       )
     }
@@ -297,8 +297,8 @@ export default class App extends Component {
     {
       console.log("user",user.username)
       return (
-        <View style={styles.messagePopUp}>
-          <Text>{user.username}</Text>
+        <View style={styles.textBackground}>
+        <Text style={styles.text}>{user.username}</Text>
         </View>
 
 
@@ -412,10 +412,19 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  messagePopUp:{
-    backgroundColor: '#C5C8D7',
-    alignItems: 'center'
-
+  textBackground:{
+    backgroundColor: "#D22028",
+    alignItems: 'center',
+    padding: 5,
+    borderRadius: 5,
+  },
+  userImage:{
+    borderRadius: 10
+  },
+  text:{
+    fontSize: 12,
+    color: '#E1E4F3',
+    fontWeight: 'bold',
   },
   topBar:{
     top: 50,
@@ -459,17 +468,14 @@ const styles = StyleSheet.create({
     width: 30,
     height: 30,
     marginHorizontal: 25,
+
   },
 
   textContent: {
     alignItems: 'center',
     marginBottom: 10,
   },
-  text: {
-    color: 'rgb(208,33,41)',
-    fontSize: 37,
-    fontWeight: 'bold',
-  },
+
   usernameView:{
 
   },
