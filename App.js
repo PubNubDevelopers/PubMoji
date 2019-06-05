@@ -379,11 +379,11 @@ export default class App extends React.Component {
                   containerStyle={{height: 70}}
               />    
 
-            <View> 
+              <View style={{flexDirection: 'row', height: 40, marginBottom: 10}}> 
                 <TextInput 
+                    style={{flex: 1}}
                     type="TextInput" 
                     name="myTextInput" 
-                    style={{height: 40, marginBottom: 10}}
                     placeholder='Enter your username' 
                     underlineColorAndroid={
                     isFocused ?
@@ -394,8 +394,7 @@ export default class App extends React.Component {
                     value={this.state.text}
                     onChangeText={(text) => this.setState({text})}                 
                 />            
-            </View>
-
+              </View>
             <View style={styles.buttonContainer}>
                 <View style={styles.button}>
                     <Button
@@ -537,6 +536,9 @@ const styles = StyleSheet.create({
   },
   buttonContainer: {
     flexDirection: 'row',
+  },
+  button: {
+    flex: 1
   },
   modal: {
     flex: 1,
