@@ -156,15 +156,6 @@ export default class App extends React.Component {
 
   };
 
-  //Reset Emoji Count
-  killEmoji = () => {
-       this.pubnub.publish({
-         message: {latitude: this.state.latitude, longitude: this.state.longitude, uuid: this.pubnub.getUUID(), emoji: -1},
-         channel: 'channel1'
-       });
-
- };
-
   showText = () => {
     if(this.state.show == true){
       this.setState({show: false});
@@ -206,12 +197,20 @@ export default class App extends React.Component {
     }
 
   render() {
-
-       let usersArray = Array.from(this.state.users.values());
-       //Decrement Emoji Count
-
+    let usersArray = Array.from(this.state.users.values());
+    //Decrement Emoji Count
+    //Reset Emoji Count
+    killEmoji = () => {
+      this.pubnub.publish({
+        message: {
+          latitude: this.state.latitude,
+          longitude: this.state.longitude,
+          uuid: this.pubnub.getUUID(),
+          emoji: -1},
+        channel: 'channel1'});
+    };
     return (
-      <View>
+    <View>
     <View style={styles.container}>
        <MapView style={styles.map} region={this.setRegion()}>
                { usersArray.map((item, index)=>(
@@ -227,13 +226,14 @@ export default class App extends React.Component {
                           return rows;
                       }()
                     }
-
                        <Image source={require('./assets/images/marker.png')} style={{height: 35, width:35, }} />
                  </Marker>
                )) }
        </MapView>
        </View>
+       <View style={styles.button}>
         <Button title="show Emoji" onPress={() => this.showEmoji()}/>
+        </View>
         <EmojiBar {...this.state} pubnub={this.pubnub}/>
      </View>
    );
