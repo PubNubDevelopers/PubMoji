@@ -4,14 +4,15 @@ import React, {Component} from 'react';
 import {Platform, StyleSheet, Text, TextInput, Button, View, Image, Switch,TouchableOpacity,TouchableWithoutFeedback, Header, Alert} from 'react-native';
 import MapView, {Marker, AnimatedRegion, Callout } from 'react-native-maps';
 import PubNubReact from 'pubnub-react';
+import Timeout from 'smart-timeout'
 //import Modal from "react-native-modal";
 
 export default class App extends Component {
   constructor(props) {
     super(props);
     this.pubnub = new PubNubReact({
-        publishKey: 'pub-c-a64b528c-0749-416f-bf75-50abbfa905f9',
-        subscribeKey: 'sub-c-8a8e493c-f876-11e6-80ea-0619f8945a4f',
+        publishKey: 'pub-c-d93d7b15-4e46-42f4-ba03-c5d997844b9e',
+        subscribeKey: 'sub-c-1ef826d4-78df-11e9-945c-2ea711aa6b65',
     });
 
     //Base State
@@ -39,23 +40,30 @@ export default class App extends Component {
   //Track User GPS Data
   componentDidMount() {
     //PubNub
-
     this.pubnub.getMessage('channel1.messages',(msg) =>{
+      console.log("MSG: ", msg)
       if(this.state.users.has(msg.publisher)){
         let tempMap = this.state.messages;
-        if(this.state.messages.has(msg.publisher)){
-          this.stopMessageTimer(this.state.messages.get(msg.publisher).timerId)
-        }
-        let message = {uuid: msg.publisher, message: msg.message.message, timerId: setTimeout(this.clearMessage, 5000, msg.publisher) }
+        // if(this.state.messages.has(msg.publisher)){
+        //
+        //   this.stopMessageTimer(this.state.messages.get(msg.publisher).timerId)
+        // }
+        Timeout.set(msg.publisher,this.clearMessage,5000,msg.publisher)
+        let message = {uuid: msg.publisher, message: msg.message.message}//, timerId: Timeout.set(msg.publisher,this.clearMessage,5000,msg.publisher)  }//setTimeout(this.clearMessage, 5000, msg.publisher)
+        console.log("message before setting",tempMap)
         tempMap.set(msg.publisher, message)
+        console.log("message after setting",tempMap)
         this.setState({
           messages: tempMap
         })
       }
-    })
+    },
+    function(status, response) {
+        console.log(status,response)
+    });
 
     this.pubnub.getMessage('channel1', (msg) => {
-      // console.log("MSG: ", msg)
+
       if(msg.publisher == this.state.fixedOnUUID){
         this.animateToCurrent({latitude: msg.message.latitude, longitude: msg.message.longitude},400)
       }
@@ -75,17 +83,30 @@ export default class App extends Component {
         })
       }
        //this.publishMessage()
+    },
+    function(status, response) {
+        console.log(status,response)
     });
     this.pubnub.subscribe({
         channels: ['channel1'],
         withPresence: true
+    },
+    function(status, response) {
+        console.log(status,response)
     });
     this.pubnub.subscribe({
         channels: ['channel1.messages'],
         withPresence: true
+    },
+    function(status, response) {
+        console.log(status,response)
     });
+    //this.pubnub.getStatus()
     this.pubnub.getPresence('channel1', (presence) => {
-        console.log(presence);
+        console.log("Presence",presence);
+    },
+    function(status, response) {
+        console.log(status,response)
     });
     //Get Stationary Coordinate
     navigator.geolocation.getCurrentPosition(
@@ -94,8 +115,15 @@ export default class App extends Component {
           this.pubnub.publish({
             message: {latitude: position.coords.latitude, longitude: position.coords.longitude,  image: this.state.currentPicture, username: this.state.username},
             channel: 'channel1'
+          },
+          function(status, response) {
+              console.log(status,response)
           });
+          let tempMap = this.state.users;
+          let tempUser = {uuid: this.pubnub.getUUID(),latitude: position.coords.latitude, longitude: position.coords.longitude,  image: this.state.currentPicture, username: this.state.username}
+          tempMap.set(tempUser.uuid, tempUser)
           this.setState({
+            users:tempMap,
             currentLoc: position.coords
           })
 
@@ -114,6 +142,9 @@ export default class App extends Component {
           this.pubnub.publish({
             message: {latitude: position.coords.latitude, longitude: position.coords.longitude,  image: this.state.currentPicture, username: this.state.username},
             channel: 'channel1'
+          },
+          function(status, response) {
+              console.log(status,response)
           });
           if(this.state.focusOnMe){
             this.animateToCurrent(position.coords,1000)
@@ -130,26 +161,31 @@ export default class App extends Component {
       }
     );
 
-     setInterval(this.publishMessage, 10000);
+     // setInterval(this.publishMessage, 10000);
 
   }
 
   clearMessage = (uuid) =>{
     let tempMap = this.state.messages;
-    console.log("deleted", tempMap.delete(uuid))
+    console.log("before",tempMap)
+    tempMap.delete(uuid)
+    console.log("after",tempMap)
     this.setState({
       messages: tempMap
     },()=>{console.log("piza",this.state.messages)})
   }
-  stopMessageTimer = (timerId) => {
-    console.log("clearing timeout");
-    clearTimeout(timerId)
-  }
+  // stopMessageTimer = (timerId) => {
+  //   console.log("clearing timeout");
+  //   clearTimeout(timerId)
+  // }
   publishMessage = () => {
     const testMessage = "Testing messages";
     this.pubnub.publish({
-      message: {message: Math.random( ), uuid: this.pubnub.getUUID()},
+      message: {message: Math.random( )},
       channel: 'channel1.messages'
+    },
+    function(status, response) {
+        console.log(status,response)
     });
     console.log("publishing")
   }
@@ -228,6 +264,7 @@ export default class App extends Component {
     this.map.animateToRegion(region,speed)
   }
   toggleAbout = () =>{
+    this.publishMessage()
     this.setState({
       showAbout: !this.state.showAbout
     })
@@ -275,6 +312,9 @@ export default class App extends Component {
       })
     }
   }
+  displayMesasges = () =>{
+    console.log(this.state.messages)
+  }
   selectedStyle = (uuid) =>{
     if((this.state.focusOnMe && uuid == this.pubnub.getUUID()) || this.state.fixedOnUUID == uuid)
     {
@@ -286,7 +326,7 @@ export default class App extends Component {
     if(message){
       return(
         <View style={styles.textBackground}>
-          <Text style={styles.text}>{message}</Text>
+          <Text style={styles.text}>{message.message}</Text>
         </View>
       )
     }
@@ -295,7 +335,7 @@ export default class App extends Component {
   showUsername = (user) => {
     if((this.state.focusOnMe && user.uuid == this.pubnub.getUUID()) || this.state.fixedOnUUID == user.uuid)
     {
-      console.log("user",user.username)
+      //console.log("user",user.username)
       return (
         <View style={styles.textBackground}>
         <Text style={styles.text}>{user.username}</Text>
@@ -351,7 +391,7 @@ export default class App extends Component {
                     }}>
                     <TouchableOpacity onPress={() =>{this.touchUser(item.uuid)}} >
                       <View style={styles.marker}>
-                        {this.messageOutPut(item.message)}
+                        {this.messageOutPut(this.state.messages.get(item.uuid))}
                         <Image source={this.state.currentPicture} style={this.selectedStyle(item.uuid)} />
                         {this.showUsername(item)}
                       </View>
@@ -364,7 +404,7 @@ export default class App extends Component {
 
            <View style={styles.topBar}>
 
-             <TouchableOpacity onPress={() => this.setState({ visibleModalUpdate: !this.state.visibleModalUpdate })}>
+             <TouchableOpacity onPress={this.displayMesasges}>
                <Image
                  style={styles.profile}
                  source={require('./assets/images/profile.png')}
