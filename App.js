@@ -65,7 +65,7 @@ export default class App extends React.Component {
         let oldUser = this.state.users.get(msg.message.uuid); //Obtain User's Previous State Object
         //emojiCount
         let emojiCount;
-        if(msg.message.emoji != 2){ //Add Payload Emoji Count to emojiCount
+        if(msg.message.emoji != -1){ //Add Payload Emoji Count to emojiCount
           if(oldUser){
             emojiCount = oldUser.emoji + msg.message.emoji;
           }else{
@@ -159,7 +159,7 @@ export default class App extends React.Component {
   //Reset Emoji Count
   killEmoji = () => {
        this.pubnub.publish({
-         message: {latitude: this.state.latitude, longitude: this.state.longitude, uuid: this.pubnub.getUUID(), emoji: 2},
+         message: {latitude: this.state.latitude, longitude: this.state.longitude, uuid: this.pubnub.getUUID(), emoji: -1},
          channel: 'channel1'
        });
 
@@ -209,12 +209,6 @@ export default class App extends React.Component {
 
        let usersArray = Array.from(this.state.users.values());
        //Decrement Emoji Count
-       hideEmoji = () => {
-             this.pubnub.publish({
-               message: {latitude: this.state.latitude, longitude: this.state.longitude, uuid: this.pubnub.getUUID(), emoji: -1},
-               channel: 'channel1'
-             });
-       };
 
     return (
       <View>
@@ -226,8 +220,8 @@ export default class App extends React.Component {
                       function() {
                           let rows = [];
                           for(let i = 0 ; i < item.emoji; i++){
-                            rows.push(<Animatable.View animation="fadeOutUp" duration={2000} iterationCount={1} direction="normal" easing = "ease-out" onAnimationEnd = {() => this.hideEmoji()} key = {i}>
-                                      <Image source={require('./heart.png')} style={{height: 35, width:35, }} />
+                            rows.push(<Animatable.View animation="fadeOutUp" duration={2000} iterationCount={1} direction="normal" easing = "ease-out" onAnimationEnd = {() => this.killEmoji()} key = {i}>
+                                      <Image source={require('./assets/images/heart.png')} style={{height: 35, width:35, }} />
                                     </Animatable.View> );
                           }
                           return rows;
