@@ -12,17 +12,21 @@
     "react": "16.8.3",
     "react-native": "0.59.8",
     "react-native-elements": "^1.1.0",
+    "react-native-fast-image": "^6.0.1",
     "react-native-maps": "^0.24.2",
     "react-native-modal": "^11.0.1",
     "react-native-vector-icons": "^6.4.2",
+    "react-native-sound": "^0.10.12",
+    "react-test-renderer": "16.8.3",
+    "react-timer-mixin": "^0.13.4",
     "smart-timeout": "^2.0.4"
   },
   "devDependencies": {
-    "@babel/core": "7.4.5",
-    "@babel/runtime": "7.4.5",
-    "babel-jest": "24.8.0",
-    "jest": "24.8.0",
-    "metro-react-native-babel-preset": "0.54.1",
+    "@babel/core": "^7.4.4",
+    "@babel/runtime": "^7.4.4",
+    "babel-jest": "^24.8.0",
+    "jest": "^24.8.0",
+    "metro-react-native-babel-preset": "^0.54.1",
     "react-test-renderer": "16.8.3"
   },
   "jest": {

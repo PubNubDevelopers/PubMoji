@@ -2,10 +2,13 @@
 
 import React, {Component} from 'react';
 import {Platform, StyleSheet, Text, TextInput, Button, View, Image, Switch,TouchableOpacity,TouchableWithoutFeedback, Header, Alert} from 'react-native';
-import MapView, {Marker, AnimatedRegion, Callout } from 'react-native-maps';
+import MapView, {Marker, Callout } from 'react-native-maps';
 import PubNubReact from 'pubnub-react';
 import Timeout from 'smart-timeout'
-//import Modal from "react-native-modal";
+import Modal from "react-native-modal";
+import EmojiBar from './src/components/EmojiBar/EmojiBar'
+import * as Animatable from 'react-native-animatable';
+
 
 export default class App extends Component {
   constructor(props) {
@@ -27,6 +30,7 @@ export default class App extends Component {
       focusOnMe: false,
       users: new Map(),
       messages: new Map(),
+      emojis: new Map(),
       allowGPS: true,
       showAbout: false,
       currentPicture: require('./boss.png')
@@ -43,13 +47,9 @@ export default class App extends Component {
 
     //PubNub
     this.pubnub.getMessage('channel1.messages',(msg) =>{
-      console.log("MSG: ", msg)
+      //console.log("MSG: ", msg)
       if(this.state.users.has(msg.publisher)){
         let tempMap = this.state.messages;
-        // if(this.state.messages.has(msg.publisher)){
-        //
-        //   this.stopMessageTimer(this.state.messages.get(msg.publisher).timerId)
-        // }
         Timeout.set(msg.publisher,this.clearMessage,5000,msg.publisher)
         let message = {uuid: msg.publisher, message: msg.message.message}//, timerId: Timeout.set(msg.publisher,this.clearMessage,5000,msg.publisher)  }//setTimeout(this.clearMessage, 5000, msg.publisher)
         console.log("message before setting",tempMap)
@@ -59,9 +59,29 @@ export default class App extends Component {
           messages: tempMap
         })
       }
-    },
-    function(status, response) {
-        console.log(status,response)
+    });
+    this.pubnub.getMessage('channel1.emoji',(msg) =>{
+      console.log("MSG: ", msg)
+
+      let tempMap = this.state.emojis;
+      let newEmoji;
+      if(msg.message.emoji == 2){
+        tempMap.delete(msg.publisher)
+      }else{
+        if(this.state.emojis.has(msg.publisher)){
+          let oldEmoji = this.state.emojis.get(msg.publisher)
+          newEmoji = {uuid: msg.publisher, emojiCount: oldEmoji.emojiCount + 1 }
+
+        }else{
+          newEmoji = {uuid: msg.publisher, emojiCount: 1 }
+        }
+        tempMap.set(newEmoji.uuid, newEmoji);
+        this.setState({
+          emojis: tempMap
+        },()=>{
+          console.log(this.state.emojis)
+        })
+      }
     });
 
     this.pubnub.getMessage('channel1', (msg) => {
@@ -73,7 +93,6 @@ export default class App extends Component {
       let newUser = {uuid: msg.publisher, latitude: msg.message.latitude, longitude: msg.message.longitude, image: msg.message.image, username: msg.message.username };
       if(!this.isEquivalent(oldUser, newUser)){
         let tempMap = this.state.users;
-
         if(msg.message.hideUser){
             tempMap.delete(newUser.uuid)
         }else{
@@ -85,30 +104,22 @@ export default class App extends Component {
         })
       }
        //this.publishMessage()
-    },
-    function(status, response) {
-        console.log(status,response)
     });
     this.pubnub.subscribe({
         channels: ['channel1'],
         withPresence: true
-    },
-    function(status, response) {
-        console.log(status,response)
     });
     this.pubnub.subscribe({
         channels: ['channel1.messages'],
         withPresence: true
-    },
-    function(status, response) {
-        console.log(status,response)
+    });
+    this.pubnub.subscribe({
+        channels: ['channel1.emoji'],
+        withPresence: true
     });
     //this.pubnub.getStatus()
     this.pubnub.getPresence('channel1', (presence) => {
         console.log("Presence",presence);
-    },
-    function(status, response) {
-        console.log(status,response)
     });
     //Get Stationary Coordinate
     navigator.geolocation.getCurrentPosition(
@@ -117,9 +128,6 @@ export default class App extends Component {
           this.pubnub.publish({
             message: {latitude: position.coords.latitude, longitude: position.coords.longitude,  image: this.state.currentPicture, username: this.state.username},
             channel: 'channel1'
-          },
-          function(status, response) {
-              console.log(status,response)
           });
           let tempMap = this.state.users;
           let tempUser = {uuid: this.pubnub.getUUID(),latitude: position.coords.latitude, longitude: position.coords.longitude,  image: this.state.currentPicture, username: this.state.username}
@@ -144,9 +152,6 @@ export default class App extends Component {
           this.pubnub.publish({
             message: {latitude: position.coords.latitude, longitude: position.coords.longitude,  image: this.state.currentPicture, username: this.state.username},
             channel: 'channel1'
-          },
-          function(status, response) {
-              console.log(status,response)
           });
           if(this.state.focusOnMe){
             this.animateToCurrent(position.coords,1000)
@@ -189,9 +194,6 @@ export default class App extends Component {
     this.pubnub.publish({
       message: {message: Math.random( )},
       channel: 'channel1.messages'
-    },
-    function(status, response) {
-        console.log(status,response)
     });
     console.log("publishing")
   }
@@ -357,13 +359,21 @@ export default class App extends Component {
       )
     }
   }
+  //Increment Emoji Count
+  showEmoji = () => {
+        this.pubnub.publish({
+          message: {uuid: this.pubnub.getUUID(), emoji: 1},
+          channel: 'channel1.emoji'
+        });
+
+  };
 
   render() {
 
 
     let about;
     let usersMap = this.state.users;
-    let messagesMap = this.state.messages;
+    let emojisMap = this.state.emojis;
     let gpsImage;
     if(this.state.focusOnMe || this.state.fixedOnUUID)
     {
@@ -373,16 +383,15 @@ export default class App extends Component {
     }
 
 
-    for( let key of messagesMap.keys()){
+    for( let key of emojisMap.keys()){
       let tempUser = usersMap.get(key)
       if(tempUser){
-        tempUser.message = messagesMap.get(key).message
+        tempUser.emoji = emojisMap.get(key).emojiCount
         usersMap.set(key, tempUser)
       }
     }
     let usersArray = Array.from(usersMap.values());
-    //MAKE SURE TO ADD NSLocationWhenInUseUsageDescription INTO INFO.PLST
-
+    //console.log(usersArray)
     return (
        <View style={styles.container}>
 
@@ -398,7 +407,6 @@ export default class App extends Component {
               }}
             >
               { usersArray.map((item, index)=>(
-                //TRY SWITCHING UP TO CALLOUTS
                 <Marker
                   onPress={() =>{this.touchUser(item.uuid)}}
                   style={styles.marker}
@@ -410,6 +418,39 @@ export default class App extends Component {
                     {this.messageOutPut(this.state.messages.get(item.uuid))}
                     <Image source={this.state.currentPicture} style={this.selectedStyle(item.uuid)} />
                     {this.showUsername(item)}
+
+                    {(item.emoji > 0 ) && <Animatable.View animation="fadeOutUp" duration={2000} iterationCount={1} direction="normal" easing = "ease-out" onAnimationEnd={() => this.hideEmoji()}>
+                       <Image source={require('./assets/images/heart.png')} style={{height: 35, width:35, }} />
+                    </Animatable.View> }
+
+                    {(item.emoji-1 > 0 ) && <Animatable.View animation="fadeOutUp" duration={1500} iterationCount={1} direction="normal" easing = "ease-out" onAnimationEnd={() => this.hideEmoji()}>
+                       <Image source={require('./assets/images/heart.png')} style={{height: 35, width:35, }} />
+                    </Animatable.View> }
+
+                    {(item.emoji-2 > 0 ) && <Animatable.View animation="fadeOutUp" duration={1000} iterationCount={1} direction="normal" easing = "ease-out" onAnimationEnd={() => this.hideEmoji()}>
+                       <Image source={require('./assets/images/heart.png')} style={{height: 35, width:35, }} />
+                    </Animatable.View> }
+
+                    {(item.emoji-3 > 0 ) && <Animatable.View animation="fadeOutUp" duration={2000} iterationCount={1} direction="normal" easing = "ease-out" onAnimationEnd={() => this.hideEmoji()}>
+                       <Image source={require('./assets/images/heart.png')} style={{height: 35, width:35, }} />
+                    </Animatable.View> }
+
+                    {(item.emoji-4 > 0 ) && <Animatable.View animation="fadeOutUp" duration={1500} iterationCount={1} direction="normal" easing = "ease-out" onAnimationEnd={() => this.hideEmoji()}>
+                       <Image source={require('./assets/images/heart.png')} style={{height: 35, width:35, }} />
+                    </Animatable.View> }
+
+                    {(item.emoji-5 > 0 ) && <Animatable.View animation="fadeOutUp" duration={2000} iterationCount={1} direction="normal" easing = "ease-out" onAnimationEnd={() => this.hideEmoji()}>
+                       <Image source={require('./assets/images/heart.png')} style={{height: 35, width:35, }} />
+                    </Animatable.View> }
+
+                    {(item.emoji-6 > 0 ) && <Animatable.View animation="fadeOutUp" duration={2000} iterationCount={1} direction="normal" easing = "ease-out" onAnimationEnd={() => this.hideEmoji()}>
+                       <Image source={require('./assets/images/heart.png')} style={{height: 35, width:35, }} />
+                    </Animatable.View> }
+
+                    {(item.emoji-7 > 0 ) && <Animatable.View animation="fadeOutUp" duration={2000} iterationCount={1} direction="normal" easing = "ease-out" onAnimationEnd={() => this.killEmoji()}>
+                       <Image source={require('./assets/images/heart.png')} style={{height: 35, width:35, }} />
+                    </Animatable.View> }
+
                   </View>
                 </Marker>
               )) }
@@ -450,8 +491,16 @@ export default class App extends Component {
              </TouchableOpacity>
           </View>
 
-       </View>
 
+        <Button title="show Emoji" onPress={() => this.showEmoji()}/>
+        <EmojiBar {...this.state} pubnub={this.pubnub}/>
+          <Modal isVisible={false}>
+            <View style={styles.modal}>
+              <Image style={styles.image} source={require('./assets/images/PubMoji.png')} style={{height: 180, width:250, }} />
+              <Text style={styles.text}>I am the modal content!</Text>
+            </View>
+          </Modal>
+     </View>
    );
   }
 }
@@ -540,10 +589,25 @@ const styles = StyleSheet.create({
     borderRadius: 4,
     borderColor: 'rgba(0, 0, 0, 0.1)',
   },
-  buttonContainer: {
-    flexDirection: 'row',
-  },
-  button: {
-    flex: 1
-  }
+  text: {
+      color: '#3f2949',
+      marginTop: 10,
+      alignItems: 'center',
+   },
+   view: {
+      alignItems: 'center',
+      // backgroundColor: '#ede3f2',
+      padding: 100,
+   },
+   buttonContainer: {
+     flexDirection: 'row',
+   },
+   button: {
+     flex: 1
+   },
+   image: {
+      alignItems: 'center',
+      // backgroundColor: '#ede3f2',
+      padding: 100,
+   },
 });
