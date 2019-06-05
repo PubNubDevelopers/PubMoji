@@ -1,11 +1,10 @@
 import React, {Component} from 'react';
-import {Platform, StyleSheet, Text, View, Image, Button} from 'react-native';
+import {Platform, StyleSheet, Text, View, Image, Button, TouchableOpacity} from 'react-native';
 import MapView, {Marker} from 'react-native-maps';
-import hi from './boss.png';
 import PubNubReact from 'pubnub-react';
-import User from './Components/User.js';
 import * as Animatable from 'react-native-animatable';
 import Modal from "react-native-modal";
+import EmojiBar from './src/components/EmojiBar/EmojiBar'
 
 const instructions = Platform.select({
   ios: 'Press Cmd+R to reload,\n' + 'Cmd+D or shake for dev menu',
@@ -218,13 +217,12 @@ export default class App extends React.Component {
        let usersArray = Array.from(this.state.users.values());
 
     return (
-
+      <View> 
     <View style={styles.container}>
-
       <View style={styles.view}>
-         <Modal isVisible={true}>
+         <Modal isVisible={false}>
            <View style={styles.modal}>
-             <Image style={styles.image} source={require('./Pubmoji.png')} style={{height: 180, width:250, }} />
+             <Image style={styles.image} source={require('./assets/images/PubMoji.png')} style={{height: 180, width:250, }} />
              <Text style={styles.text}>I am the modal content!</Text>
            </View>
          </Modal>
@@ -234,42 +232,44 @@ export default class App extends React.Component {
                  <Marker key={index} coordinate={{latitude: item.coords[0], longitude: item.coords[1]}}>
 
                        {(item.emoji > 0 ) && <Animatable.View animation="fadeOutUp" duration={2000} iterationCount={1} direction="normal" easing = "ease-out" onAnimationEnd={() => this.hideEmoji()}>
-                          <Image source={require('./heart.png')} style={{height: 35, width:35, }} />
+                          <Image source={require('./assets/images/heart.png')} style={{height: 35, width:35, }} />
                        </Animatable.View> }
 
                        {(item.emoji-1 > 0 ) && <Animatable.View animation="fadeOutUp" duration={1500} iterationCount={1} direction="normal" easing = "ease-out" onAnimationEnd={() => this.hideEmoji()}>
-                          <Image source={require('./heart.png')} style={{height: 35, width:35, }} />
+                          <Image source={require('./assets/images/heart.png')} style={{height: 35, width:35, }} />
                        </Animatable.View> }
 
                        {(item.emoji-2 > 0 ) && <Animatable.View animation="fadeOutUp" duration={1000} iterationCount={1} direction="normal" easing = "ease-out" onAnimationEnd={() => this.hideEmoji()}>
-                          <Image source={require('./heart.png')} style={{height: 35, width:35, }} />
+                          <Image source={require('./assets/images/heart.png')} style={{height: 35, width:35, }} />
                        </Animatable.View> }
 
                        {(item.emoji-3 > 0 ) && <Animatable.View animation="fadeOutUp" duration={2000} iterationCount={1} direction="normal" easing = "ease-out" onAnimationEnd={() => this.hideEmoji()}>
-                          <Image source={require('./heart.png')} style={{height: 35, width:35, }} />
+                          <Image source={require('./assets/images/heart.png')} style={{height: 35, width:35, }} />
                        </Animatable.View> }
 
                        {(item.emoji-4 > 0 ) && <Animatable.View animation="fadeOutUp" duration={1500} iterationCount={1} direction="normal" easing = "ease-out" onAnimationEnd={() => this.hideEmoji()}>
-                          <Image source={require('./heart.png')} style={{height: 35, width:35, }} />
+                          <Image source={require('./assets/images/heart.png')} style={{height: 35, width:35, }} />
                        </Animatable.View> }
 
                        {(item.emoji-5 > 0 ) && <Animatable.View animation="fadeOutUp" duration={2000} iterationCount={1} direction="normal" easing = "ease-out" onAnimationEnd={() => this.hideEmoji()}>
-                          <Image source={require('./heart.png')} style={{height: 35, width:35, }} />
+                          <Image source={require('./assets/images/heart.png')} style={{height: 35, width:35, }} />
                        </Animatable.View> }
 
                        {(item.emoji-6 > 0 ) && <Animatable.View animation="fadeOutUp" duration={2000} iterationCount={1} direction="normal" easing = "ease-out" onAnimationEnd={() => this.hideEmoji()}>
-                          <Image source={require('./heart.png')} style={{height: 35, width:35, }} />
+                          <Image source={require('./assets/images/heart.png')} style={{height: 35, width:35, }} />
                        </Animatable.View> }
 
                        {(item.emoji-7 > 0 ) && <Animatable.View animation="fadeOutUp" duration={2000} iterationCount={1} direction="normal" easing = "ease-out" onAnimationEnd={() => this.killEmoji()}>
-                          <Image source={require('./heart.png')} style={{height: 35, width:35, }} />
+                          <Image source={require('./assets/images/heart.png')} style={{height: 35, width:35, }} />
                        </Animatable.View> }
 
-                       <Image source={require('./boss.png')} style={{height: 35, width:35, }} />
-                      <Button title="show Emoji" onPress={() => this.showEmoji()}/>
+                       <Image source={require('./assets/images/marker.png')} style={{height: 35, width:35, }} />
                  </Marker>
                )) }
        </MapView>
+       </View>
+        <Button title="show Emoji" onPress={() => this.showEmoji()}/>
+        <EmojiBar {...this.state} pubnub={this.pubnub}/>
      </View>
    );
   }
@@ -278,9 +278,8 @@ export default class App extends React.Component {
 const styles = StyleSheet.create({
   container: {
     ...StyleSheet.absoluteFillObject,
-    justifyContent: "flex-end",
-    alignItems: "center"
-  },
+    justifyContent: "center",
+    alignItems: "flex-start",  },
   map: {
     ...StyleSheet.absoluteFillObject
   },
