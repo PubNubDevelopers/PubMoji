@@ -60,4 +60,3 @@ buck-out/
 ios/
 src/components/BitmojiName.js
 src/components/ToastExample.js
-src/components/ModalAppInit.js

@@ -4,18 +4,10 @@ import MapView, {Marker} from 'react-native-maps';
 import PubNubReact from 'pubnub-react';
 import * as Animatable from 'react-native-animatable';
 import Modal from "react-native-modal";
-import { ButtonGroup } from 'react-native-elements';
 import SplashScreen from './src/components/SplashScreen';
 import EmojiBar from './src/components/EmojiBar/EmojiBar'
-
-const img1 = require('./assets/images/favicon.png');
-const img2 = require('./assets/images/apple-logo.png');
-const img3 = require('./assets/images/twitter-logo.png');
-const img4 = require('./assets/images/linkedin-logo.png');
-const img5 = require('./assets/images/microsoft-logo.png');
-const img6 = require('./assets/images/chrome-logo.png');
-const imgArrayRowOne = [img1, img2, img3];
-const imgArrayRowTwo = [img4, img5, img6];
+import ModalAppInit from './src/components/ModalAppInit'
+import ModalAppUpdate from './src/components/ModalAppUpdate'
 
 export default class App extends React.Component {
 
@@ -42,6 +34,7 @@ export default class App extends React.Component {
       selectedIndexRowOne: -1,
       selectedIndexRowTwo: -1,
       currentPicture: null,
+
       visibleModalStart: true,
       visibleModalUpdate: false,
       text: '',
@@ -81,6 +74,7 @@ export default class App extends React.Component {
         let oldUser = this.state.users.get(msg.message.uuid); //Obtain User's Previous State Object
 
         console.log(msg);
+
         //emojiCount
         let emojiCount;
         if(msg.message.emoji != 2){ //Add Payload Emoji Count to emojiCount
@@ -228,18 +222,16 @@ export default class App extends React.Component {
     return true;
   }
 
-  updateIndexOne = (selectedIndexRowOne) => {
-    if(this.state.selectedIndexRowTwo != -1){
-        this.setState({selectedIndexRowTwo: -1}); 
-    }  
-    this.setState({selectedIndexRowOne});
+  changeProfilePicture = (e) => {
+    this.setState({currentPicture: e });
   }
 
-  updateIndexTwo =  (selectedIndexRowTwo) => {
-    if(this.state.selectedIndexRowOne != -1){
-        this.setState({selectedIndexRowOne: -1});  
-    }  
-    this.setState({selectedIndexRowTwo});
+  closeModalInit = (e) => {
+    this.setState({visibleModalStart: e });
+  }
+  
+  closeModalUpdate = (e) => {
+    this.setState({visibleModalUpdate: e });
   }
 
   render() {
@@ -247,160 +239,15 @@ export default class App extends React.Component {
       return <SplashScreen />;
     }
 
-    const component1 = () => 
-    <Image
-      source={img1}
-    />
-
-    const component2 = () =>     
-    <Image
-    source={img2}
-    />
-
-    const component3 = () => 
-    <Image
-    source={img3}
-    />
-
-    const component4 = () =>                 
-    <Image
-    source={img4}
-    />
-
-    const component5 = () =>                 
-    <Image
-    source={img5}
-    />
-
-    const component6 = () =>                 
-    <Image
-    source={img6}
-    />
-
-    const buttonsOne = [{ element: component1}, { element: component2, id: 2 }, { element: component3, id: 3 }];
-    const buttonsTwo = [{ element: component4, id: 4 }, { element: component5, id: 5 }, { element: component6, id: 6 }];
-
-    const { selectedIndexRowOne } = this.state;
-    const { selectedIndexRowTwo } = this.state;
-    const { currentPicture } = this.state;
-    const { isFocused } = this.state;
-    const {text} = this.state;
-
-    const handleFocus = () => {
-    this.setState({isFocused: true});
-    }
-
-    const handleBlur = () => {
-    this.setState({isFocused: false});
-    }
-
-    const confirmProfile = () => {
-      if(selectedIndexRowOne === -1 && selectedIndexRowTwo === -1){
-          Alert.alert('Error','Please select a profile picture.');
-      }
-      else if(text.length === 0){
-        Alert.alert('Error','Please enter your username.');
-      }
-      else if(text.length > 16){
-        Alert.alert('Error', 'Username should be less than 16 characters');         
-      }
-      else{        
-        // publish username and image to channel
-        let getRowPic = (selectedIndexRowOne  > -1) ? true: false;
-        getRowPic = (getRowPic) ? imgArrayRowOne[selectedIndexRowOne]:
-          imgArrayRowTwo[selectedIndexRowTwo];
-        this.setState({ currentPicture: getRowPic });
-        this.setState({selectedIndexRowOne: -1}); 
-        this.setState({selectedIndexRowTwo: -1}); 
-        this.setState({text: ''}); 
-        this.setState({ visibleModalStart: false  });
-      }
-    }
-
-    const cancelProfile = () => {
-      this.setState({selectedIndexRowOne: -1}); 
-      this.setState({selectedIndexRowTwo: -1}); 
-      this.setState({text: ''}); 
-      this.setState({ visibleModalUpdate: false });
-    }
-
-    const updateProfile = () => {
-      if(selectedIndexRowOne === -1 && selectedIndexRowTwo === -1){
-        if(text.length === 0){
-          Alert.alert('Error','No changes were made');
-        }
-        else if(text.length > 16){
-          Alert.alert('Error', 'Username should be less than 16 characters');         
-        }
-        else{ 
-          // if(text.length > 0){
-          //   // publish username to channel and database
-          // }
-          console.log('profile updated');
-          this.setState({text: ''}); 
-          this.setState({ visibleModalUpdate: false });
-        }
-      }
-      // else if(text.length)
-      else{
-        let getRowPic = (selectedIndexRowOne  > -1) ? true: false;
-        getRowPic = (getRowPic) ? imgArrayRowOne[selectedIndexRowOne]:
-          imgArrayRowTwo[selectedIndexRowTwo];
-        this.setState({ currentPicture: getRowPic });
-        this.setState({selectedIndexRowOne: -1}); 
-        this.setState({selectedIndexRowTwo: -1}); 
-        this.setState({text: ''}); 
-        this.setState({ visibleModalUpdate: false });
-      }
-    }
-
     let usersArray = Array.from(this.state.users.values());
 
     return (
     <View style={styles.container}>
-      <Modal isVisible={this.state.visibleModalStart}>
-          <View style={styles.content}>
-              <View style={styles.textContent}> 
-                  <Text style={styles.text}>Profile Picture</Text> 
-              </View>
-              <ButtonGroup
-                  selectedIndex={this.state.selectedIndexRowOne}
-                  buttons={buttonsOne}
-                  onPress={this.updateIndexOne}
-                  containerStyle={{height: 70}}
-              />   
-              <ButtonGroup
-                  selectedIndex={this.state.selectedIndexRowTwo}
-                  buttons={buttonsTwo}
-                  onPress={this.updateIndexTwo}
-                  containerStyle={{height: 70}}
-              />    
-
-              <View style={{flexDirection: 'row', height: 40, marginBottom: 10}}> 
-                <TextInput 
-                    style={{flex: 1}}
-                    type="TextInput" 
-                    name="myTextInput" 
-                    placeholder='Enter your username' 
-                    underlineColorAndroid={
-                    isFocused ?
-                    "rgb(208,33,41)" : "#D3D3D3"
-                    }
-                    onFocus={handleFocus}
-                    onBlur={handleBlur}
-                    value={this.state.text}
-                    onChangeText={(text) => this.setState({text})}                 
-                />            
-              </View>
-            <View style={styles.buttonContainer}>
-                <View style={styles.button}>
-                    <Button
-                    onPress={confirmProfile}
-                    title="Confirm"
-                    />
-                </View>
-            </View>
-          </View>
+       <Modal isVisible={this.state.visibleModalStart}>
+          <ModalAppInit 
+          changeProfilePicture={this.changeProfilePicture}
+          closeModalInit={this.closeModalInit}
+          />           
         </Modal>
 
        <MapView style={styles.map} region={this.setRegion()}>
@@ -439,7 +286,7 @@ export default class App extends React.Component {
                 <Image source={require('./assets/images/heart.png')} style={{height: 35, width:35, }} />
               </Animatable.View> }
 
-              <Image source={currentPicture} style={{height: 35, width:35, }} />
+              <Image source={this.state.currentPicture} style={{height: 35, width:35, }} />
             </Marker>
           )) }
        </MapView>
@@ -453,55 +300,10 @@ export default class App extends React.Component {
           </TouchableOpacity>
                 
           <Modal isVisible={this.state.visibleModalUpdate}>
-            <View style={styles.content}>
-                <View style={styles.textContent}> 
-                    <Text style={styles.text}>Profile Picture</Text> 
-                </View>
-                <ButtonGroup
-                  selectedIndex={this.state.selectedIndexRowOne}
-                  buttons={buttonsOne}
-                  onPress={this.updateIndexOne}
-                  containerStyle={{height: 70}}
-                />   
-                <ButtonGroup
-                  selectedIndex={this.state.selectedIndexRowTwo}
-                  buttons={buttonsTwo}
-                  onPress={this.updateIndexTwo}
-                  containerStyle={{height: 70}}
-                />    
-
-                <View> 
-                    <TextInput 
-                      type="TextInput" 
-                      name="myTextInput" 
-                      style={{height: 40, marginBottom: 10}}
-                      placeholder='Change your username' 
-                      underlineColorAndroid={
-                      isFocused ?
-                      "rgb(208,33,41)" : "#D3D3D3"
-                      }
-                      onFocus={handleFocus}
-                      onBlur={handleBlur}
-                      value={this.state.text}
-                      onChangeText={(text) => this.setState({text})}                 
-                    />            
-                </View>
-
-                <View style={styles.buttonContainer}>
-                  <View style={styles.button}>
-                      <Button
-                      onPress={cancelProfile}
-                      title="Cancel"
-                      />
-                  </View>
-                  <View style={styles.button}>
-                      <Button
-                      onPress={updateProfile}
-                      title="Confirm"
-                      />
-                  </View>
-              </View>
-            </View>
+            <ModalAppUpdate 
+              changeProfilePicture={this.changeProfilePicture}
+              closeModalUpdate={this.closeModalUpdate}
+              />            
           </Modal>
 
           <View style={styles.rightBar}>
@@ -525,9 +327,8 @@ export default class App extends React.Component {
 
 const styles = StyleSheet.create({
   container: {
-    ...StyleSheet.absoluteFillObject,
-    justifyContent: "center",
-    alignItems: "flex-start",  },
+    flex:1,
+  },
   map: {
     ...StyleSheet.absoluteFillObject
   },
@@ -569,9 +370,9 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
     alignItems: 'center'
   },
-  container: {
-    flex:1,
-  },
+  // container: {
+  //   flex:1,
+  // },
   info: {
     width: 30,
     height: 30,
