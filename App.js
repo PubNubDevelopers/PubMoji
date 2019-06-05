@@ -1,11 +1,12 @@
 import React, {Component} from 'react';
-import {StyleSheet, Text, TextInput, View, Image, Button, Alert, TouchableOpacity} from 'react-native';
+import {Platform, StyleSheet, Text, View, Image, Button, TouchableOpacity, TextInput, Alert} from 'react-native';
 import MapView, {Marker} from 'react-native-maps';
 import PubNubReact from 'pubnub-react';
 import * as Animatable from 'react-native-animatable';
 import Modal from "react-native-modal";
 import { ButtonGroup } from 'react-native-elements';
 import SplashScreen from './src/components/SplashScreen';
+import EmojiBar from './src/components/EmojiBar/EmojiBar'
 
 const img1 = require('./assets/images/favicon.png');
 const img2 = require('./assets/images/apple-logo.png');
@@ -227,10 +228,6 @@ export default class App extends React.Component {
     return true;
   }
 
-  printHello (){
-    Alert.alert('You tapped the button!');
-  }
-
   updateIndexOne = (selectedIndexRowOne) => {
     if(this.state.selectedIndexRowTwo != -1){
         this.setState({selectedIndexRowTwo: -1}); 
@@ -411,35 +408,35 @@ export default class App extends React.Component {
             <Marker key={index} coordinate={{latitude: item.coords[0], longitude: item.coords[1]}}>
 
               {(item.emoji > 0 ) && <Animatable.View animation="fadeOutUp" duration={2000} iterationCount={1} direction="normal" easing = "ease-out" onAnimationEnd={() => this.hideEmoji()}>
-                <Image source={require('./assets/images/favicon.png')} style={{height: 35, width:35, }} />
+                <Image source={require('./assets/images/heart.png')} style={{height: 35, width:35, }} />
               </Animatable.View> }
 
               {(item.emoji-1 > 0 ) && <Animatable.View animation="fadeOutUp" duration={1500} iterationCount={1} direction="normal" easing = "ease-out" onAnimationEnd={() => this.hideEmoji()}>
-                <Image source={require('./assets/images/favicon.png')} style={{height: 35, width:35, }} />
+                <Image source={require('./assets/images/heart.png')} style={{height: 35, width:35, }} />
               </Animatable.View> }
 
               {(item.emoji-2 > 0 ) && <Animatable.View animation="fadeOutUp" duration={1000} iterationCount={1} direction="normal" easing = "ease-out" onAnimationEnd={() => this.hideEmoji()}>
-                <Image source={require('./assets/images/favicon.png')} style={{height: 35, width:35, }} />
+                <Image source={require('./assets/images/heart.png')} style={{height: 35, width:35, }} />
               </Animatable.View> }
 
               {(item.emoji-3 > 0 ) && <Animatable.View animation="fadeOutUp" duration={2000} iterationCount={1} direction="normal" easing = "ease-out" onAnimationEnd={() => this.hideEmoji()}>
-                <Image source={require('./assets/images/favicon.png')} style={{height: 35, width:35, }} />
+                <Image source={require('./assets/images/heart.png')} style={{height: 35, width:35, }} />
               </Animatable.View> }
 
               {(item.emoji-4 > 0 ) && <Animatable.View animation="fadeOutUp" duration={1500} iterationCount={1} direction="normal" easing = "ease-out" onAnimationEnd={() => this.hideEmoji()}>
-                <Image source={require('./assets/images/favicon.png')} style={{height: 35, width:35, }} />
+                <Image source={require('./assets/images/heart.png')} style={{height: 35, width:35, }} />
               </Animatable.View> }
 
               {(item.emoji-5 > 0 ) && <Animatable.View animation="fadeOutUp" duration={2000} iterationCount={1} direction="normal" easing = "ease-out" onAnimationEnd={() => this.hideEmoji()}>
-                <Image source={require('./assets/images/favicon.png')} style={{height: 35, width:35, }} />
+                <Image source={require('./assets/images/heart.png')} style={{height: 35, width:35, }} />
               </Animatable.View> }
 
               {(item.emoji-6 > 0 ) && <Animatable.View animation="fadeOutUp" duration={2000} iterationCount={1} direction="normal" easing = "ease-out" onAnimationEnd={() => this.hideEmoji()}>
-                <Image source={require('./assets/images/favicon.png')} style={{height: 35, width:35, }} />
+                <Image source={require('./assets/images/heart.png')} style={{height: 35, width:35, }} />
               </Animatable.View> }
 
               {(item.emoji-7 > 0 ) && <Animatable.View animation="fadeOutUp" duration={2000} iterationCount={1} direction="normal" easing = "ease-out" onAnimationEnd={() => this.killEmoji()}>
-                <Image source={require('./assets/images/favicon.png')} style={{height: 35, width:35, }} />
+                <Image source={require('./assets/images/heart.png')} style={{height: 35, width:35, }} />
               </Animatable.View> }
 
               <Image source={currentPicture} style={{height: 35, width:35, }} />
@@ -520,6 +517,7 @@ export default class App extends React.Component {
         <View style={styles.bottomBar}>
             <Button onPress={this.showEmoji} title="Emoji Bar Here"/>
         </View>
+        <EmojiBar {...this.state} pubnub={this.pubnub}/>
     </View>
    );
   }
@@ -527,10 +525,9 @@ export default class App extends React.Component {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    justifyContent: "flex-end",
-    alignItems: "center",
-  },
+    ...StyleSheet.absoluteFillObject,
+    justifyContent: "center",
+    alignItems: "flex-start",  },
   map: {
     ...StyleSheet.absoluteFillObject
   },
