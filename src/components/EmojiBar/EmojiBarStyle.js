@@ -38,6 +38,9 @@ export default StyleSheet.create({
 
   // Body
   viewBody: {
+    borderWidth: 0,
+    borderColor: 'purple',
+    marginTop: 550
   },
 
   // Top blank space
@@ -51,18 +54,17 @@ export default StyleSheet.create({
     borderWidth: 0,
     borderColor: 'red',
     flexDirection: 'row',
-    height: 320,
+    height: 140,
     marginLeft: 10,
-    marginRight: 10,
-    marginTop: 375
+    marginRight: 10
   },
 
   // Box
   viewBox: {
     borderRadius: 30,
-    width: 360,
+    width: 350,
     height: 50,
-    marginTop: 125,
+    marginTop: 75,
     marginLeft: 0,
     position: 'absolute',
     // Has to set color for elevation
@@ -95,9 +97,8 @@ export default StyleSheet.create({
   // Group icon
   viewWrapGroupIcon: {
     flexDirection: 'row',
-    width: 360,
+    width: 350,
     height: 120,
-    marginTop: 50,
     position: 'absolute',
     borderWidth: 0,
     borderColor: 'blue',
@@ -133,11 +134,10 @@ export default StyleSheet.create({
   // Group jump icon
   viewWrapGroupJumpIcon: {
     flexDirection: 'row',
-    width: 360,
+    width: 350,
     height: 140,
     borderWidth: 0,
     borderColor: 'green',
-    marginTop: 30,
     marginLeft: 10,
     marginRight: 10,
     position: 'absolute',
