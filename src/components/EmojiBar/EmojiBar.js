@@ -671,7 +671,7 @@ export default class AnimationScreen extends Component {
       this.soundIconChoose.play()
     }
     this.props.pubnub.publish({
-      message: {latitude: this.props.latitude, longitude: this.props.longitude, uuid: this.props.pubnub.getUUID(), image: 1, username: this.props.usersname, emojiType: this.whichIconUserChoose},
+      message: {latitude: this.props.latitude, longitude: this.props.longitude, uuid: this.props.pubnub.getUUID(), image: 1, username: this.props.usersname, emojiType: this.whichIconUserChoose, emoji: 1},
       channel: 'channel1'
     });
   }
