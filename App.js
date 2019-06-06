@@ -70,7 +70,7 @@ export default class App extends Component {
       }else{
         if(this.state.emojis.has(msg.publisher)){
           let oldEmoji = this.state.emojis.get(msg.publisher)
-          newEmoji = {uuid: msg.publisher, emojiCount: oldEmoji.emojiCount + 1 }
+          newEmoji = {uuid: msg.publisher, emojiCount: oldEmoji.emojiCount + msg.message.emoji }
 
         }else{
           newEmoji = {uuid: msg.publisher, emojiCount: 1 }
@@ -367,6 +367,21 @@ export default class App extends Component {
         });
 
   };
+  //Decrement Emoji Count
+  hideEmoji = () => {
+        this.pubnub.publish({
+          message: { uuid: this.pubnub.getUUID(), emoji: -1},
+          channel: 'channel1.emoji'
+        });
+  };
+  //Reset Emoji Count
+  killEmoji = () => {
+       this.pubnub.publish({
+         message: { uuid: this.pubnub.getUUID(), emoji: 2},
+         channel: 'channel1.emoji'
+       });
+
+ };
 
   render() {
 
@@ -391,6 +406,7 @@ export default class App extends Component {
       }
     }
     let usersArray = Array.from(usersMap.values());
+    //console.log(usersArray)
     //console.log(usersArray)
     return (
        <View style={styles.container}>
