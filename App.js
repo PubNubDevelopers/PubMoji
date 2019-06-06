@@ -4,7 +4,8 @@ import MapView, {Marker} from 'react-native-maps';
 import PubNubReact from 'pubnub-react';
 import * as Animatable from 'react-native-animatable';
 import Modal from "react-native-modal";
-import EmojiBar from './src/components/EmojiBar/EmojiBar'
+import EmojiBar from './src/components/EmojiBar/EmojiBar';
+import MessageInput from './src/components/MessageInput/MessageInput';
 
 const instructions = Platform.select({
   ios: 'Press Cmd+R to reload,\n' + 'Cmd+D or shake for dev menu',
@@ -213,7 +214,7 @@ export default class App extends React.Component {
     <View>
     <View style={styles.container}>
        <MapView style={styles.map} region={this.setRegion()}>
-               { usersArray.map((item, index)=>(
+               { usersArray.map((item, index) => (
                  <Marker key={index} coordinate={{latitude: item.coords[0], longitude: item.coords[1]}}>
                     {
                       function() {
@@ -231,10 +232,8 @@ export default class App extends React.Component {
                )) }
        </MapView>
        </View>
-       <View style={styles.button}>
-        <Button title="show Emoji" onPress={() => this.showEmoji()}/>
-        </View>
-        <EmojiBar {...this.state} pubnub={this.pubnub}/>
+       <MessageInput {...this.state} pubnub={this.pubnub}/>
+       <EmojiBar {...this.state} pubnub={this.pubnub}/>
      </View>
    );
   }
