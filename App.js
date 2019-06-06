@@ -92,10 +92,9 @@ export default class App extends Component {
     this.pubnub.getMessage('channel1', (msg) => {
         coord = [msg.message.latitude,msg.message.longitude]; //Format GPS Coordinates for Payload
         let oldUser = this.state.users.get(msg.message.uuid); //Obtain User's Previous State Object
-
         //emojiCount
         let emojiCount;
-        if(msg.message.emoji != 2){ //Add Payload Emoji Count to emojiCount
+        if(msg.message.emoji != -1){ //Add Payload Emoji Count to emojiCount
           if(oldUser){
             emojiCount = oldUser.emoji + msg.message.emoji;
           }else{
@@ -104,7 +103,8 @@ export default class App extends Component {
         }else{
           emojiCount = 0; //reset EmojiCount to 0
         }
-
+        console.log("emoji: ",msg.message.emoji)
+        console.log(emojiCount)
 
         let newUser = {uuid: msg.message.uuid, coords: coord, emoji: msg.message.emoji }; //User's Updated State
         //Check If State Has Changed With User
@@ -177,26 +177,10 @@ export default class App extends Component {
 
   });
 
-  //Decrement Emoji Count
-  hideEmoji = () => {
-    this.pubnub.publish({
-      message: {latitude: this.state.latitude, longitude: this.state.longitude, uuid: this.pubnub.getUUID(), emoji: -1},
-      channel: 'channel1'
-    });
-  };
-
   //Increment Emoji Count
   showEmoji = () => {
     this.pubnub.publish({
       message: {latitude: this.state.latitude, longitude: this.state.longitude, uuid: this.pubnub.getUUID(), emoji: 1},
-      channel: 'channel1'
-    });
-  };
-
-  //Reset Emoji Count
-  killEmoji = () => {
-    this.pubnub.publish({
-      message: {latitude: this.state.latitude, longitude: this.state.longitude, uuid: this.pubnub.getUUID(), emoji: 2},
       channel: 'channel1'
     });
   };
@@ -259,6 +243,16 @@ export default class App extends Component {
 
     let usersArray = Array.from(this.state.users.values());
 
+    killEmoji = () => {
+      this.pubnub.publish({
+        message: {
+          latitude: this.state.latitude,
+          longitude: this.state.longitude,
+          uuid: this.pubnub.getUUID(),
+          emoji: -1},
+        channel: 'channel1'});
+    };   
+
     return (
     <View style={styles.container}>
        <Modal isVisible={this.state.visibleModalStart}>
@@ -271,39 +265,17 @@ export default class App extends Component {
        <MapView style={styles.map} region={this.setRegion()}>
           { usersArray.map((item, index)=>(
             <Marker key={index} coordinate={{latitude: item.coords[0], longitude: item.coords[1]}}>
-
-              {(item.emoji > 0 ) && <Animatable.View animation="fadeOutUp" duration={2000} iterationCount={1} direction="normal" easing = "ease-out" onAnimationEnd={() => this.hideEmoji()}>
-                <Image source={require('./assets/images/heart.png')} style={{height: 35, width:35, }} />
-              </Animatable.View> }
-
-              {(item.emoji-1 > 0 ) && <Animatable.View animation="fadeOutUp" duration={1500} iterationCount={1} direction="normal" easing = "ease-out" onAnimationEnd={() => this.hideEmoji()}>
-                <Image source={require('./assets/images/heart.png')} style={{height: 35, width:35, }} />
-              </Animatable.View> }
-
-              {(item.emoji-2 > 0 ) && <Animatable.View animation="fadeOutUp" duration={1000} iterationCount={1} direction="normal" easing = "ease-out" onAnimationEnd={() => this.hideEmoji()}>
-                <Image source={require('./assets/images/heart.png')} style={{height: 35, width:35, }} />
-              </Animatable.View> }
-
-              {(item.emoji-3 > 0 ) && <Animatable.View animation="fadeOutUp" duration={2000} iterationCount={1} direction="normal" easing = "ease-out" onAnimationEnd={() => this.hideEmoji()}>
-                <Image source={require('./assets/images/heart.png')} style={{height: 35, width:35, }} />
-              </Animatable.View> }
-
-              {(item.emoji-4 > 0 ) && <Animatable.View animation="fadeOutUp" duration={1500} iterationCount={1} direction="normal" easing = "ease-out" onAnimationEnd={() => this.hideEmoji()}>
-                <Image source={require('./assets/images/heart.png')} style={{height: 35, width:35, }} />
-              </Animatable.View> }
-
-              {(item.emoji-5 > 0 ) && <Animatable.View animation="fadeOutUp" duration={2000} iterationCount={1} direction="normal" easing = "ease-out" onAnimationEnd={() => this.hideEmoji()}>
-                <Image source={require('./assets/images/heart.png')} style={{height: 35, width:35, }} />
-              </Animatable.View> }
-
-              {(item.emoji-6 > 0 ) && <Animatable.View animation="fadeOutUp" duration={2000} iterationCount={1} direction="normal" easing = "ease-out" onAnimationEnd={() => this.hideEmoji()}>
-                <Image source={require('./assets/images/heart.png')} style={{height: 35, width:35, }} />
-              </Animatable.View> }
-
-              {(item.emoji-7 > 0 ) && <Animatable.View animation="fadeOutUp" duration={2000} iterationCount={1} direction="normal" easing = "ease-out" onAnimationEnd={() => this.killEmoji()}>
-                <Image source={require('./assets/images/heart.png')} style={{height: 35, width:35, }} />
-              </Animatable.View> }
-
+              {
+                function() {
+                    let rows = [];
+                    for(let i = 0 ; i < item.emoji; i++){
+                      rows.push(<Animatable.View animation="fadeOutUp" duration={2000} iterationCount={1} direction="normal" easing = "ease-out" onAnimationEnd = {() => this.killEmoji()} key = {i}>
+                                <Image source={require('./assets/images/heart.png')} style={{height: 35, width:35, }} />
+                              </Animatable.View> );
+                    }
+                    return rows;
+                }()
+              }
               <Image source={this.state.currentPicture} style={{height: 35, width:35, }} />
             </Marker>
           )) }
@@ -395,9 +367,6 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
     alignItems: 'center'
   },
-  // container: {
-  //   flex:1,
-  // },
   info: {
     width: 30,
     height: 30,
