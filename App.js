@@ -218,7 +218,7 @@ export default class App extends React.Component {
     <View>
     <View style={styles.container}>
        <MapView style={styles.map} region={this.setRegion()}>
-               { usersArray.map((item, index)=>(
+               { usersArray.map((item, index) => (
                  <Marker key={index} coordinate={{latitude: item.coords[0], longitude: item.coords[1]}}>
                     {
                       function() {
@@ -241,11 +241,8 @@ export default class App extends React.Component {
                )) }
        </MapView>
        </View>
-       <View style={styles.button}>
-        <Button title="show Emoji" onPress={() => this.showEmoji()}/>
-        </View>
-        <EmojiBar {...this.state} pubnub={this.pubnub}/>
-     </View>
+       <EmojiBar {...this.state} pubnub={this.pubnub}/>
+       </View>
    );
   }
 }
