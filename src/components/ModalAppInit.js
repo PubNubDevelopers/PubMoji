@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import {StyleSheet, Text, Button, View, Image, TextInput, Alert} from 'react-native';
-import Modal from 'react-native-modal';
 import { ButtonGroup } from 'react-native-elements';
 
 const img1 = require('../../assets/images/favicon.png');
@@ -129,7 +128,7 @@ export default class ModalAppInit extends Component {
                     containerStyle={{height: 70}}
                 />    
 
-                <View style={{flexDirection: 'row', height: 40, marginBottom: 10}}> 
+                <View style={styles.username}> 
                     <TextInput 
                         style={{flex: 1}}
                         type="TextInput" 
@@ -159,36 +158,13 @@ export default class ModalAppInit extends Component {
     }       
 }
 
-
 const styles = StyleSheet.create({
-container: {
-    ...StyleSheet.absoluteFillObject,
-    justifyContent: "center",
-    alignItems: "flex-start",  },
-  map: {
-    ...StyleSheet.absoluteFillObject
-  },
   buttonContainer: {
     flexDirection: 'row',
   },
   button: {
     flex: 1
   },
-  modal: {
-    flex: 1,
-    alignItems: 'center',
-    backgroundColor: 'white',
-    padding: 100,
-    marginTop: 100,
-    marginBottom: 100,
-    marginLeft: 20,
-    marginRight: 20,
-  },
-  text: {
-      color: '#3f2949',
-      marginTop: 10,
-      alignItems: 'center',
-    },
   textContent: {
     alignItems: 'center',
     marginBottom: 10,
@@ -199,6 +175,12 @@ container: {
     fontSize: 37,
     fontWeight: 'bold',
   },
+  username:{
+    flexDirection: 'row', 
+    height: 40, 
+    marginBottom: 10,
+    paddingLeft: 6
+  },
   content: {
     backgroundColor: 'white',
     padding: 22,
@@ -206,5 +188,5 @@ container: {
     alignItems: 'center',
     borderRadius: 4,
     borderColor: 'rgba(0, 0, 0, 0.1)',
-  },    
+  },
 });

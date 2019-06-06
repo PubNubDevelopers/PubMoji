@@ -78,6 +78,7 @@ export default class ModalAppUpdate extends Component {
         let getRowPic = (selectedIndexRowOne  > -1) ? true: false;
         getRowPic = (getRowPic) ? imgArrayRowOne[selectedIndexRowOne]:
           imgArrayRowTwo[selectedIndexRowTwo];
+        // console.log('getRowPic' + getRowPic);  
         this.props.changeProfilePicture(getRowPic);
         this.setState({selectedIndexRowOne: -1}); 
         this.setState({selectedIndexRowTwo: -1}); 
@@ -141,11 +142,11 @@ export default class ModalAppUpdate extends Component {
                   containerStyle={{height: 70}}
                 />    
 
-                <View> 
+                <View style={styles.username}>
                     <TextInput 
+                      style={{flex: 1}}
                       type="TextInput" 
                       name="myTextInput" 
-                      style={{height: 40, marginBottom: 10}}
                       placeholder='Change your username' 
                       underlineColorAndroid={
                       isFocused ?
@@ -180,34 +181,23 @@ export default class ModalAppUpdate extends Component {
 
 
 const styles = StyleSheet.create({
-container: {
-    ...StyleSheet.absoluteFillObject,
-    justifyContent: "center",
-    alignItems: "flex-start",  },
-  map: {
-    ...StyleSheet.absoluteFillObject
-  },
   buttonContainer: {
     flexDirection: 'row',
   },
   button: {
     flex: 1
   },
-  modal: {
-    flex: 1,
-    alignItems: 'center',
-    backgroundColor: 'white',
-    padding: 100,
-    marginTop: 100,
-    marginBottom: 100,
-    marginLeft: 20,
-    marginRight: 20,
-  },
   text: {
       color: '#3f2949',
       marginTop: 10,
       alignItems: 'center',
-    },
+  },
+  username:{
+    flexDirection: 'row', 
+    height: 40, 
+    marginBottom: 10,
+    paddingLeft: 6
+  },
   textContent: {
     alignItems: 'center',
     marginBottom: 10,

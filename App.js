@@ -1,5 +1,5 @@
 import React, {Component} from 'react';
-import {Platform, StyleSheet, Text, View, Image, Button, TouchableOpacity, TextInput, Alert} from 'react-native';
+import {StyleSheet, Text, View, Image, Button, TouchableOpacity} from 'react-native';
 import MapView, {Marker} from 'react-native-maps';
 import PubNubReact from 'pubnub-react';
 import * as Animatable from 'react-native-animatable';
@@ -8,8 +8,9 @@ import SplashScreen from './src/components/SplashScreen';
 import EmojiBar from './src/components/EmojiBar/EmojiBar'
 import ModalAppInit from './src/components/ModalAppInit'
 import ModalAppUpdate from './src/components/ModalAppUpdate'
+import AsyncStorage from '@react-native-community/async-storage';
 
-export default class App extends React.Component {
+export default class App extends Component {
 
   constructor(props) {
     super(props);
@@ -35,7 +36,7 @@ export default class App extends React.Component {
       selectedIndexRowTwo: -1,
       currentPicture: null,
 
-      visibleModalStart: true,
+      visibleModalStart: false,
       visibleModalUpdate: false,
       text: '',
       isFocused: false ,
@@ -64,6 +65,25 @@ export default class App extends React.Component {
 
   //Track User GPS Data
   async componentDidMount() {
+
+    // Store boolean value so modal init only opens on app boot
+    const wasShown = await AsyncStorage.getItem('key'); // get key
+
+    if(wasShown === null) {
+      await AsyncStorage.setItem('key', '"true"');
+      this.setState({visibleModalStart: true, wasShown});
+    }
+
+    else{
+      this.setState({visibleModalStart: false, wasShown});   
+    }
+     
+    // get profile pic if available
+    const storeProfilePic =  await AsyncStorage.getItem('profile_pic_key');
+    if(storeProfilePic !=  null){
+      this.setState({currentPicture: parseInt(storeProfilePic)});
+    }
+
     this.pubnub.subscribe({
       channels: ['channel1'],
       withPresence: true
@@ -72,8 +92,6 @@ export default class App extends React.Component {
     this.pubnub.getMessage('channel1', (msg) => {
         coord = [msg.message.latitude,msg.message.longitude]; //Format GPS Coordinates for Payload
         let oldUser = this.state.users.get(msg.message.uuid); //Obtain User's Previous State Object
-
-        console.log(msg);
 
         //emojiCount
         let emojiCount;
@@ -130,7 +148,6 @@ export default class App extends React.Component {
           message: {latitude: this.state.latitude, longitude: this.state.longitude, uuid: this.pubnub.getUUID(), emoji: this.state.emoji},
           channel: 'channel1'
         });
-
       },
       error => console.log(error),
       {
@@ -222,7 +239,8 @@ export default class App extends React.Component {
     return true;
   }
 
-  changeProfilePicture = (e) => {
+  changeProfilePicture = async (e) => {
+    await AsyncStorage.setItem('profile_pic_key', JSON.stringify(e));
     this.setState({currentPicture: e });
   }
 
@@ -327,6 +345,13 @@ export default class App extends React.Component {
 
 const styles = StyleSheet.create({
   container: {
+    ...StyleSheet.absoluteFillObject,
+    justifyContent: "center",
+    alignItems: "flex-start",  },
+  map: {
+    ...StyleSheet.absoluteFillObject
+  },
+  container: {
     flex:1,
   },
   map: {
@@ -354,7 +379,7 @@ const styles = StyleSheet.create({
       alignItems: 'center',
    },
   topBar:{
-    top: 50,
+    top: 30,
     right: 10,
     flexDirection: 'row',
     justifyContent: 'space-between',
