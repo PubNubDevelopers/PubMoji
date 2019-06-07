@@ -34,7 +34,8 @@ export default class App extends React.Component {
       longitude: 106.759550,
       error:null,
       users: new Map(),
-      emoji: 0
+      emoji: 0,
+      emojiType: 0,
     };
 
     //Initialize PubNub Instance
@@ -66,23 +67,25 @@ export default class App extends React.Component {
         let oldUser = this.state.users.get(msg.message.uuid); //Obtain User's Previous State Object
         //emojiCount
         let emojiCount;
-        if(msg.message.emoji != -1){ //Add Payload Emoji Count to emojiCount
+        //emojiType
+        let emojiType;
+        if(msg.message.emoji != -1){ //Add Payload Emoji Count to emojiCount and Reset Count if EmojiType Changes
           if(oldUser){
-            emojiCount = oldUser.emoji + msg.message.emoji;
+            if(oldUser.emojiType == msg.message.emojiType){
+              emojiCount = oldUser.emoji + msg.message.emoji;
+            }else{emojiCount = 1;}
           }else{
             emojiCount = msg.message.emoji;
           }
         }else{
           emojiCount = 0; //reset EmojiCount to 0
         }
-        console.log("emoji: ",msg.message.emoji)
-        console.log(emojiCount)
-
-        let newUser = {uuid: msg.message.uuid, coords: coord, emoji: msg.message.emoji }; //User's Updated State
+        emojiType = msg.message.emojiType;
+        let newUser = {uuid: msg.message.uuid, coords: coord, emoji: msg.message.emoji, emojiType: emojiType }; //User's Updated State
         //Check If State Has Changed With User
         if(!this.isEquivalent(oldUser, newUser)){
           let tempMap = this.state.users;
-          newUser = {uuid: msg.message.uuid, coords: coord, emoji: emojiCount}; //add in the emoji count
+          newUser = {uuid: msg.message.uuid, coords: coord, emoji: emojiCount, emojiType: emojiType}; //add in the emoji count
           //Add/Remove User depending on hideUser
           if(msg.message.hideUser){
             tempMap.delete(newUser.uuid)
@@ -94,6 +97,7 @@ export default class App extends React.Component {
             users: tempMap
           })
         }
+        console.log(msg.message)
     });
 
 
@@ -118,7 +122,7 @@ export default class App extends React.Component {
         const { latitude, longitude } = position.coords;
         this.setState({ latitude,longitude });
         this.pubnub.publish({
-          message: {latitude: this.state.latitude, longitude: this.state.longitude, uuid: this.pubnub.getUUID(), emoji: this.state.emoji},
+          message: {latitude: this.state.latitude, longitude: this.state.longitude, uuid: this.pubnub.getUUID(), emoji: this.state.emoji,},
           channel: 'channel1'
         });
 
@@ -128,7 +132,7 @@ export default class App extends React.Component {
         enableHighAccuracy: true,
         timeout: 20000,
         maximumAge: 1000,
-        distanceFilter: 1000
+        distanceFilter: 100
       }
     );
   }
@@ -207,7 +211,8 @@ export default class App extends React.Component {
           latitude: this.state.latitude,
           longitude: this.state.longitude,
           uuid: this.pubnub.getUUID(),
-          emoji: -1},
+          emoji: -1,
+          emojiType: this.state.emojiType},
         channel: 'channel1'});
     };
     return (
@@ -220,8 +225,13 @@ export default class App extends React.Component {
                       function() {
                           let rows = [];
                           for(let i = 0 ; i < item.emoji; i++){
-                            rows.push(<Animatable.View animation="fadeOutUp" duration={2000} iterationCount={1} direction="normal" easing = "ease-out" onAnimationEnd = {() => this.killEmoji()} key = {i}>
-                                      <Image source={require('./assets/images/heart.png')} style={{height: 35, width:35, }} />
+                            rows.push(<Animatable.View style={styles.marker} animation="fadeOutUp" duration={2000} iterationCount={1} direction="normal" easing = "ease-out" onAnimationEnd = {() => this.killEmoji()} key = {i}>
+                                      {(item.emojiType == 1) && <Image source={require('./src/Images/ic_like.png')} style={{height: 35, width:35, }} />}
+                                      {(item.emojiType == 2) && <Image source={require('./src/Images/love2.png')} style={{height: 35, width:35, }} />}
+                                      {(item.emojiType == 3) && <Image source={require('./src/Images/haha2.png')} style={{height: 35, width:35, }} />}
+                                      {(item.emojiType == 4) && <Image source={require('./src/Images/wow2.png')} style={{height: 35, width:35, }} />}
+                                      {(item.emojiType == 5) && <Image source={require('./src/Images/sad2.png')} style={{height: 35, width:35, }} />}
+                                      {(item.emojiType == 6) && <Image source={require('./src/Images/angry2.png')} style={{height: 35, width:35, }} />}
                                     </Animatable.View> );
                           }
                           return rows;
@@ -294,5 +304,8 @@ const styles = StyleSheet.create({
       alignItems: 'center',
       // backgroundColor: '#ede3f2',
       padding: 100,
+   },
+   marker: {
+     position: 'absolute',
    },
 });
