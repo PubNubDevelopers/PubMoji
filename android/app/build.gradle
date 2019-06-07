@@ -117,9 +117,13 @@ android {
         }
     }
     buildTypes {
+        debug {
+            resValue 'string', "api_key", Google_Maps_ApiKey
+        }
         release {
             minifyEnabled enableProguardInReleaseBuilds
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
+            resValue 'string', "api_key", Google_Maps_ApiKey
         }
     }
     // applicationVariants are e.g. debug, release
@@ -138,12 +142,13 @@ android {
 }
 
 dependencies {
+    implementation project(':react-native-vector-icons')
     implementation project(':react-native-fast-image')
     implementation project(':react-native-sound')
     implementation fileTree(dir: "libs", include: ["*.jar"])
     implementation "com.android.support:appcompat-v7:${rootProject.ext.supportLibVersion}"
     implementation "com.facebook.react:react-native:+"  // From node_modules
-               implementation(project(':react-native-maps')){
+    implementation(project(':react-native-maps')){
        exclude group: 'com.google.android.gms', module: 'play-services-base'
        exclude group: 'com.google.android.gms', module: 'play-services-maps'
    }
