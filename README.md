@@ -15,7 +15,9 @@ All user-data is handled securley and reliably through PubNub. Each user publish
 # How to run
 
  ```npm i```
+
  ```react-native link```
+ 
  ```react-native run-ios``` or ```react-native run-android```
 
 "Image of PubNub Abstraction"

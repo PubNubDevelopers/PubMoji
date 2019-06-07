@@ -4,7 +4,9 @@ import MapView, {Marker} from 'react-native-maps';
 import PubNubReact from 'pubnub-react';
 import * as Animatable from 'react-native-animatable';
 import Modal from "react-native-modal";
-import EmojiBar from './src/components/EmojiBar/EmojiBar'
+import EmojiBar from './src/components/EmojiBar/EmojiBar';
+import UserCount from './src/components/UserCount/UserCount';
+
 
 const instructions = Platform.select({
   ios: 'Press Cmd+R to reload,\n' + 'Cmd+D or shake for dev menu',
@@ -35,6 +37,7 @@ export default class App extends React.Component {
       users: new Map(),
       emoji: 0,
       emojiType: 0,
+      userCount: 0
     };
 
     //Initialize PubNub Instance
@@ -60,7 +63,6 @@ export default class App extends React.Component {
 
   //Track User GPS Data
   componentDidMount() {
-
     this.pubnub.getMessage('channel1', (msg) => {
         coord = [msg.message.latitude,msg.message.longitude]; //Format GPS Coordinates for Payload
         let oldUser = this.state.users.get(msg.message.uuid); //Obtain User's Previous State Object
@@ -96,6 +98,7 @@ export default class App extends React.Component {
             users: tempMap
           })
         }
+        this.updateUserCount();
         console.log(msg.message)
     });
 
@@ -199,6 +202,20 @@ export default class App extends React.Component {
       // are considered equivalent
       return true;
     }
+  updateUserCount = () => {
+    var presenceUsers = 0;
+    this.pubnub.hereNow({
+        includeUUIDs: true,
+        includeState: true
+    },
+    function (status, response) {
+        // handle status, response
+        presenceUsers = response.totalOccupancy;
+    });
+    var totalUsers = Math.max(presenceUsers, this.state.users.size)
+    this.setState({userCount: totalUsers})
+
+  };
 
   render() {
     let usersArray = Array.from(this.state.users.values());
@@ -241,6 +258,7 @@ export default class App extends React.Component {
                )) }
        </MapView>
        </View>
+       <UserCount {...this.state} />
        <EmojiBar {...this.state} pubnub={this.pubnub}/>
        </View>
    );
