@@ -45,7 +45,9 @@ export default class App extends Component {
       emojis: new Map(),
       allowGPS: true,
       showAbout: false,
-      currentPicture: require("./boss.png")
+      currentPicture: require("./boss.png"),
+      emojiCount: 0,
+      emojiType: 1
     };
 
     this.pubnub.init(this);
@@ -58,10 +60,7 @@ export default class App extends Component {
       console.log("MSG: ", msg);
       if (this.state.users.has(msg.publisher)) {
         let messages = this.state.messages;
-        // if(this.state.messages.has(msg.publisher)){
-        //
-        //   this.stopMessageTimer(this.state.messages.get(msg.publisher).timerId)
-        // }
+
         Timeout.set(msg.publisher, this.clearMessage, 5000, msg.publisher);
         let message = { uuid: msg.publisher, message: msg.message.message }; //, timerId: Timeout.set(msg.publisher,this.clearMessage,5000,msg.publisher)  }//setTimeout(this.clearMessage, 5000, msg.publisher)
         messages.set(msg.publisher, message);
@@ -71,31 +70,46 @@ export default class App extends Component {
       }
     });
     this.pubnub.getMessage("channel1.emoji", msg => {
-      console.log(msg.message);
+      console.log("Emoji Message", msg.message);
       let oldEmoji = this.state.emojis.get(msg.publisher); //Obtain User's Previous State Object
       let emojis = this.state.emojis;
       let newEmoji;
       //emojiCount
       let emojiCount;
-      if (msg.message.emoji != -1) {
+      let emojiType;
+      if (msg.message.emojiCount != -1) {
         //Add Payload Emoji Count to emojiCount
+        emojiType = msg.message.emojiType;
         if (oldEmoji) {
-          emojiCount = oldEmoji.emoji + msg.message.emoji;
+          if (oldEmoji.emojiType == emojiType) {
+            emojiCount = oldEmoji.emojiCount + msg.message.emojiCount;
+          } else {
+            emojiCount = 1;
+          }
         } else {
-          emojiCount = msg.message.emoji;
+          emojiCount = msg.message.emojiCount;
         }
-      } else if (oldEmoji) {
+      } else {
+        console.log("got kill emojis");
         emojiCount = 0; //reset EmojiCount to 0
       }
-      newEmoji = { uuid: msg.publisher, emoji: emojiCount };
+      newEmoji = {
+        uuid: msg.publisher,
+        emojiCount: emojiCount,
+        emojiType: emojiType
+      };
       emojis.set(msg.publisher, newEmoji);
 
-      console.log("emoji: ", msg.message.emoji);
-      console.log(emojiCount);
+      //console.log("emojiCount: ", msg.message.emojiCount);
 
-      this.setState({
-        emojis
-      });
+      this.setState(
+        {
+          emojis
+        },
+        () => {
+          console.log(emojis);
+        }
+      );
     });
 
     this.pubnub.getMessage("channel1", msg => {
@@ -159,15 +173,15 @@ export default class App extends Component {
       }
     );
     //this.pubnub.getStatus()
-    this.pubnub.getPresence(
-      "channel1",
-      presence => {
-        console.log("Presence", presence);
-      },
-      function(status, response) {
-        console.log(status, response);
-      }
-    );
+    // this.pubnub.getPresence(
+    //   "channel1",
+    //   presence => {
+    //     console.log("Presence", presence);
+    //   },
+    //   function(status, response) {
+    //     console.log(status, response);
+    //   }
+    // );
     //Get Stationary Coordinate
     navigator.geolocation.getCurrentPosition(
       position => {
@@ -228,19 +242,11 @@ export default class App extends Component {
         distanceFilter: 100
       }
     );
-    // if(Platform.OS === 'android'){
-    //   console.log("Dsadasdsada")
-    //   this.animateToCurrent({latitude: 37.0902, longitude: 95.7129},400)
-    // }
-
-    // setInterval(this.publishMessage, 10000);
   }
 
   clearMessage = uuid => {
     let messages = this.state.messages;
-    console.log("before", messages);
     messages.delete(uuid);
-    console.log("after", messages);
     this.setState(
       {
         messages
@@ -439,7 +445,6 @@ export default class App extends Component {
       );
     }
   };
-
   showUsername = user => {
     if (
       (this.state.focusOnMe && user.uuid == this.pubnub.getUUID()) ||
@@ -454,9 +459,11 @@ export default class App extends Component {
     }
   };
   killEmoji = () => {
+    console.log("PENIIIIIS");
     this.pubnub.publish({
       message: {
-        emoji: -1
+        emojiCount: -1,
+        emojiType: this.state.emojiType
       },
       channel: "channel1.emoji"
     });
@@ -465,7 +472,10 @@ export default class App extends Component {
   showEmoji = () => {
     this.pubnub.publish(
       {
-        message: { emoji: 1 },
+        message: {
+          emojiCount: 1,
+          emojiType: this.state.emojiType
+        },
         channel: "channel1.emoji"
       },
       function(status, response) {
@@ -473,50 +483,6 @@ export default class App extends Component {
       }
     );
   };
-
-  //
-  // render() {
-  //   let usersArray = Array.from(this.state.users.values());
-  //   //Decrement Emoji Count
-  //   //Reset Emoji Count
-  //   killEmoji = () => {
-  //     this.pubnub.publish({
-  //       message: {
-  //         latitude: this.state.latitude,
-  //         longitude: this.state.longitude,
-  //         uuid: this.pubnub.getUUID(),
-  //         emoji: -1},
-  //       channel: 'channel1'});
-  //   };
-  //   return (
-  //   <View>
-  //   <View style={styles.container}>
-  //      <MapView style={styles.map} region={this.setRegion()}>
-  //              { usersArray.map((item, index)=>(
-  //                <Marker key={index} coordinate={{latitude: item.coords[0], longitude: item.coords[1]}}>
-  //                   {
-  //                     function() {
-  //                         let rows = [];
-  //                         for(let i = 0 ; i < item.emoji; i++){
-  //                           rows.push(<Animatable.View animation="fadeOutUp" duration={2000} iterationCount={1} direction="normal" easing = "ease-out" onAnimationEnd = {() => this.killEmoji()} key = {i}>
-  //                                     <Image source={require('./assets/images/heart.png')} style={{height: 35, width:35, }} />
-  //                                   </Animatable.View> );
-  //                         }
-  //                         return rows;
-  //                     }()
-  //                   }
-  //                      <Image source={require('./assets/images/marker.png')} style={{height: 35, width:35, }} />
-  //                </Marker>
-  //              )) }
-  //      </MapView>
-  //      </View>
-  //      <View style={styles.button}>
-  //       <Button title="show Emoji" onPress={() => this.showEmoji()}/>
-  //       </View>
-  //       <EmojiBar {...this.state} pubnub={this.pubnub}/>
-  //    </View>
-  //  );
-  // }
 
   render() {
     let about;
@@ -533,7 +499,8 @@ export default class App extends Component {
     for (let key of emojiMap.keys()) {
       let tempUser = usersMap.get(key);
       if (tempUser) {
-        tempUser.emoji = emojiMap.get(key).emoji;
+        tempUser.emojiCount = emojiMap.get(key).emojiCount;
+        tempUser.emojiType = emojiMap.get(key).emojiType;
         usersMap.set(key, tempUser);
       }
     }
@@ -572,7 +539,8 @@ export default class App extends Component {
               <View style={styles.marker}>
                 {(function() {
                   let rows = [];
-                  for (let i = 0; i < item.emoji; i++) {
+                  for (let i = 0; i < item.emojiCount; i++) {
+                    console.log(item.emojiCount);
                     rows.push(
                       <Animatable.View
                         animation="fadeOutUp"
@@ -580,13 +548,45 @@ export default class App extends Component {
                         iterationCount={1}
                         direction="normal"
                         easing="ease-out"
-                        onAnimationEnd={() => this.killEmoji}
+                        onAnimationEnd={this.killEmoji}
                         key={i}
                       >
-                        <Image
-                          source={require("./assets/images/heart.png")}
-                          style={{ height: 35, width: 35 }}
-                        />
+                        {item.emojiType == 1 && (
+                          <Image
+                            source={require("./src/Images/ic_like.png")}
+                            style={styles.emoji}
+                          />
+                        )}
+                        {item.emojiType == 2 && (
+                          <Image
+                            source={require("./src/Images/love2.png")}
+                            style={styles.emoji}
+                          />
+                        )}
+                        {item.emojiType == 3 && (
+                          <Image
+                            source={require("./src/Images/haha2.png")}
+                            style={styles.emoji}
+                          />
+                        )}
+                        {item.emojiType == 4 && (
+                          <Image
+                            source={require("./src/Images/wow2.png")}
+                            style={styles.emoji}
+                          />
+                        )}
+                        {item.emojiType == 5 && (
+                          <Image
+                            source={require("./src/Images/sad2.png")}
+                            style={styles.emoji}
+                          />
+                        )}
+                        {item.emojiType == 6 && (
+                          <Image
+                            source={require("./src/Images/angry2.png")}
+                            style={styles.emoji}
+                          />
+                        )}
                       </Animatable.View>
                     );
                   }
@@ -631,7 +631,7 @@ export default class App extends Component {
             <Image style={styles.focusLoc} source={gpsImage} />
           </TouchableOpacity>
         </View>
-        <Button title="show Emoji" onPress={() => this.showEmoji()} />
+        <Button title="show Emoji" onPress={this.showEmoji} />
 
         <EmojiBar {...this.state} pubnub={this.pubnub} />
       </View>
@@ -695,6 +695,10 @@ const styles = StyleSheet.create({
   map: {
     ...StyleSheet.absoluteFillObject
   },
+  emoji: {
+    height: 35,
+    width: 35
+  },
   info: {
     width: 30,
     height: 30,
@@ -710,8 +714,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 10
   },
-
-  usernameView: {},
   content: {
     backgroundColor: "white",
     padding: 22,
@@ -722,6 +724,8 @@ const styles = StyleSheet.create({
   },
   buttonContainer: {
     flexDirection: "row"
-  },
-  button: {}
+  }
+  // marker: {
+  //   position: "absolute"
+  // }
 });
