@@ -57,25 +57,24 @@ export default class App extends Component {
     this.pubnub.getMessage("channel1.messages", msg => {
       console.log("MSG: ", msg);
       if (this.state.users.has(msg.publisher)) {
-        let tempMap = this.state.messages;
+        let messages = this.state.messages;
         // if(this.state.messages.has(msg.publisher)){
         //
         //   this.stopMessageTimer(this.state.messages.get(msg.publisher).timerId)
         // }
         Timeout.set(msg.publisher, this.clearMessage, 5000, msg.publisher);
         let message = { uuid: msg.publisher, message: msg.message.message }; //, timerId: Timeout.set(msg.publisher,this.clearMessage,5000,msg.publisher)  }//setTimeout(this.clearMessage, 5000, msg.publisher)
-        console.log("message before setting", tempMap);
-        tempMap.set(msg.publisher, message);
-        console.log("message after setting", tempMap);
+        messages.set(msg.publisher, message);
         this.setState({
-          messages: tempMap
+          messages
         });
       }
     });
     this.pubnub.getMessage("channel1.emoji", msg => {
       console.log(msg.message);
       let oldEmoji = this.state.emojis.get(msg.publisher); //Obtain User's Previous State Object
-      let tempMap = this.state.emojis;
+      let emojis = this.state.emojis;
+      let newEmoji;
       //emojiCount
       let emojiCount;
       if (msg.message.emoji != -1) {
@@ -85,22 +84,20 @@ export default class App extends Component {
         } else {
           emojiCount = msg.message.emoji;
         }
-      } else {
+      } else if (oldEmoji) {
         emojiCount = 0; //reset EmojiCount to 0
       }
+      newEmoji = { uuid: msg.publisher, emoji: emojiCount };
+      emojis.set(msg.publisher, newEmoji);
+
       console.log("emoji: ", msg.message.emoji);
       console.log(emojiCount);
 
-      if (msg.message.hideUser) {
-        tempMap.delete(newEmoji.uuid);
-      } else {
-        tempMap.set(newEmoji.uuid, newEmoji);
-      }
-
       this.setState({
-        emojis: tempMap
+        emojis
       });
     });
+
     this.pubnub.getMessage("channel1", msg => {
       coord = [msg.message.latitude, msg.message.longitude]; //Format GPS Coordinates for Payload
 
@@ -122,19 +119,27 @@ export default class App extends Component {
         username: msg.message.username
       };
       if (!this.isEquivalent(oldUser, newUser)) {
-        let tempMap = this.state.users;
+        let users = this.state.users;
 
         if (msg.message.hideUser) {
-          tempMap.delete(newUser.uuid);
+          let emojis = this.state.emojis;
+          let messages = this.state.messages;
+
+          users.delete(newUser.uuid);
+          emojis.delete(newUser.uuid);
+          messages.delete(newUser.uuid);
+          this.setState({
+            emojis,
+            messages
+          });
         } else {
-          tempMap.set(newUser.uuid, newUser);
+          users.set(newUser.uuid, newUser);
         }
 
         this.setState({
-          users: tempMap
+          users
         });
       }
-      //this.publishMessage()
     });
     this.pubnub.subscribe({
       channels: ["channel1"],
@@ -144,7 +149,6 @@ export default class App extends Component {
       channels: ["channel1.emoji"],
       withPresence: true
     });
-
     this.pubnub.subscribe(
       {
         channels: ["channel1.messages"],
@@ -177,7 +181,7 @@ export default class App extends Component {
             },
             channel: "channel1"
           });
-          let tempMap = this.state.users;
+          let users = this.state.users;
           let tempUser = {
             uuid: this.pubnub.getUUID(),
             latitude: position.coords.latitude,
@@ -185,9 +189,9 @@ export default class App extends Component {
             image: this.state.currentPicture,
             username: this.state.username
           };
-          tempMap.set(tempUser.uuid, tempUser);
+          users.set(tempUser.uuid, tempUser);
           this.setState({
-            users: tempMap,
+            users,
             currentLoc: position.coords
           });
         }
@@ -233,13 +237,13 @@ export default class App extends Component {
   }
 
   clearMessage = uuid => {
-    let tempMap = this.state.messages;
-    console.log("before", tempMap);
-    tempMap.delete(uuid);
-    console.log("after", tempMap);
+    let messages = this.state.messages;
+    console.log("before", messages);
+    messages.delete(uuid);
+    console.log("after", messages);
     this.setState(
       {
-        messages: tempMap
+        messages
       },
       () => {
         console.log("piza", this.state.messages);
@@ -283,7 +287,7 @@ export default class App extends Component {
         if (this.state.focusOnMe) {
           this.animateToCurrent(this.state.currentLoc, 1000);
         }
-        let tempMap = this.state.users;
+        let users = this.state.users;
         let tempUser = {
           uuid: this.pubnub.getUUID(),
           latitude: this.state.currentLoc.latitude,
@@ -291,10 +295,10 @@ export default class App extends Component {
           image: this.state.currentPicture,
           username: this.state.username
         };
-        tempMap.set(tempUser.uuid, tempUser);
+        users.set(tempUser.uuid, tempUser);
         this.setState(
           {
-            users: tempMap
+            users
           },
           () => {
             this.pubnub.publish({
@@ -304,10 +308,18 @@ export default class App extends Component {
           }
         );
       } else {
-        let tempMap = this.state.users;
-        tempMap.delete(this.pubnub.getUUID());
+        let users = this.state.users;
+        let emojis = this.state.emojis;
+        let messages = this.state.messages;
+        let uuid = this.pubnub.getUUID();
+
+        users.delete(uuid);
+        emojis.delete(uuid);
+        messages.delete(uuid);
         this.setState({
-          users: tempMap
+          users,
+          emojis,
+          messages
         });
         this.pubnub.publish({
           message: {
@@ -568,7 +580,7 @@ export default class App extends Component {
                         iterationCount={1}
                         direction="normal"
                         easing="ease-out"
-                        onAnimationEnd={() => this.killEmoji()}
+                        onAnimationEnd={() => this.killEmoji}
                         key={i}
                       >
                         <Image
@@ -619,9 +631,7 @@ export default class App extends Component {
             <Image style={styles.focusLoc} source={gpsImage} />
           </TouchableOpacity>
         </View>
-        <View style={styles.button}>
-          <Button title="show Emoji" onPress={() => this.showEmoji()} />
-        </View>
+        <Button title="show Emoji" onPress={() => this.showEmoji()} />
 
         <EmojiBar {...this.state} pubnub={this.pubnub} />
       </View>
