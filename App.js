@@ -1,311 +1,745 @@
-import React, {Component} from 'react';
-import {Platform, StyleSheet, Text, View, Image, Button, TouchableOpacity} from 'react-native';
-import MapView, {Marker} from 'react-native-maps';
-import PubNubReact from 'pubnub-react';
-import * as Animatable from 'react-native-animatable';
+// Modal implented with modifying profile pic in map
+
+import React, { Component } from "react";
+import {
+  Platform,
+  StyleSheet,
+  Text,
+  Button,
+  View,
+  Image,
+  Switch,
+  TouchableOpacity,
+} from "react-native";
+import MapView, { Marker } from "react-native-maps";
+import PubNubReact from "pubnub-react";
+import * as Animatable from "react-native-animatable";
 import Modal from "react-native-modal";
-import EmojiBar from './src/components/EmojiBar/EmojiBar';
+import Timeout from "smart-timeout";
+import EmojiBar from "./src/components/EmojiBar/EmojiBar";
 import MessageInput from './src/components/MessageInput/MessageInput';
 
-const instructions = Platform.select({
-  ios: 'Press Cmd+R to reload,\n' + 'Cmd+D or shake for dev menu',
-  android:
-    'Double tap R on your keyboard to reload,\n' +
-    'Shake or press menu button for dev menu',
-});
 
-
-export default class App extends React.Component {
-
+export default class App extends Component {
   constructor(props) {
     super(props);
-
-    //Pub Sub Keys
     this.pubnub = new PubNubReact({
-        publishKey: 'pub-c-a64b528c-0749-416f-bf75-50abbfa905f9',
-        subscribeKey: 'sub-c-8a8e493c-f876-11e6-80ea-0619f8945a4f'
+      publishKey: "pub-c-d93d7b15-4e46-42f4-ba03-c5d997844b9e",
+      subscribeKey: "sub-c-1ef826d4-78df-11e9-945c-2ea711aa6b65"
     });
-
-    console.disableYellowBox = true;
 
     //Base State
     this.state = {
-      latitude: -6.270565,
-      longitude: 106.759550,
-      error:null,
+      currentLoc: {
+        latitude: -1,
+        longitude: -1
+      },
+      numUsers: 0,
+      username: "A Naughty Moose",
+      fixedOnUUID: "",
+      focusOnMe: false,
       users: new Map(),
-      emoji: 0,
-      emojiType: 0,
+      messages: new Map(),
+      emojis: new Map(),
+      allowGPS: true,
+      showAbout: false,
+      currentPicture: require("./boss.png"),
+      emojiCount: 0,
+      emojiType: 1
     };
 
-    //Initialize PubNub Instance
     this.pubnub.init(this);
-
-  }
-
-
-  //Subscribe to a PubNub Channel
-  componentWillMount() {
-    this.pubnub.subscribe({
-      channels: ['channel1'],
-      withPresence: true
-    });
-  }
-
-  //Unsubscribe PubNub Channel
-  componentWillUnmount() {
-    this.pubnub.unsubscribe({
-      channels: ['channel1']
-    });
   }
 
   //Track User GPS Data
   componentDidMount() {
+    //PubNub
+    this.pubnub.getMessage("message", msg => {
+      console.log("MSG: ", msg);
+      if (this.state.users.has(msg.publisher)) {
+        let messages = this.state.messages;
 
-    this.pubnub.getMessage('channel1', (msg) => {
-        coord = [msg.message.latitude,msg.message.longitude]; //Format GPS Coordinates for Payload
-        let oldUser = this.state.users.get(msg.message.uuid); //Obtain User's Previous State Object
-        //emojiCount
-        let emojiCount;
-        //emojiType
-        let emojiType;
-        if(msg.message.emoji != -1){ //Add Payload Emoji Count to emojiCount and Reset Count if EmojiType Changes
-          if(oldUser){
-            //if(oldUser.emojiType == msg.message.emojiType){
-              emojiCount = oldUser.emoji + msg.message.emoji;
-            //}else{emojiCount = 1;}
-          }else{
-            emojiCount = msg.message.emoji;
-          }
-        }else{
-          emojiCount = 0; //reset EmojiCount to 0
-        }
+        Timeout.set(msg.publisher, this.clearMessage, 5000, msg.publisher);
+        let message = { uuid: msg.publisher, message: msg.message.message }; //, timerId: Timeout.set(msg.publisher,this.clearMessage,5000,msg.publisher)  }//setTimeout(this.clearMessage, 5000, msg.publisher)
+        messages.set(msg.publisher, message);
+        this.setState({
+          messages
+        });
+      }
+    });
+    this.pubnub.getMessage("emoji", msg => {
+      console.log("Emoji Message", msg.message);
+      let oldEmoji = this.state.emojis.get(msg.publisher); //Obtain User's Previous State Object
+      let emojis = this.state.emojis;
+      let newEmoji;
+      //emojiCount
+      let emojiCount;
+      let emojiType;
+      if (msg.message.emojiCount != -1) {
+        //Add Payload Emoji Count to emojiCount
+
         emojiType = msg.message.emojiType;
-        let newUser = {uuid: msg.message.uuid, coords: coord, emoji: msg.message.emoji, emojiType: emojiType }; //User's Updated State
-        //Check If State Has Changed With User
-        if(!this.isEquivalent(oldUser, newUser)){
-          let tempMap = this.state.users;
-          newUser = {uuid: msg.message.uuid, coords: coord, emoji: emojiCount, emojiType: emojiType}; //add in the emoji count
-          //Add/Remove User depending on hideUser
-          if(msg.message.hideUser){
-            tempMap.delete(newUser.uuid)
-          }else{
-            tempMap.set(newUser.uuid, newUser);
-          }
-
-          this.setState({
-            users: tempMap
-          })
+        if (oldEmoji) {
+          // if (oldEmoji.emojiType == emojiType) {
+            emojiCount = oldEmoji.emojiCount + msg.message.emojiCount;
+          //  else {
+          //   emojiCount = 1;
+          // }
+        } else {
+          emojiCount = msg.message.emojiCount;
         }
-        console.log(msg.message)
+      } else {
+        console.log("got kill emojis");
+        emojiCount = 0; //reset EmojiCount to 0
+      }
+      newEmoji = {
+        uuid: msg.publisher,
+        emojiCount: emojiCount,
+        emojiType: emojiType
+      };
+      emojis.set(msg.publisher, newEmoji);
+
+      //console.log("emojiCount: ", msg.message.emojiCount);
+
+      this.setState(
+        {
+          emojis
+        },
+        () => {
+          console.log(emojis);
+        }
+      );
     });
 
+    this.pubnub.getMessage("location", msg => {
+      coord = [msg.message.latitude, msg.message.longitude]; //Format GPS Coordinates for Payload
 
+      if (msg.publisher == this.state.fixedOnUUID) {
+        this.animateToCurrent(
+          {
+            latitude: msg.message.latitude,
+            longitude: msg.message.longitude
+          },
+          400
+        );
+      }
+      let oldUser = this.state.users.get(msg.publisher);
+      let newUser = {
+        uuid: msg.publisher,
+        latitude: msg.message.latitude,
+        longitude: msg.message.longitude,
+        image: msg.message.image,
+        username: msg.message.username
+      };
+      if (!this.isEquivalent(oldUser, newUser)) {
+        let users = this.state.users;
+
+        if (msg.message.hideUser) {
+          let emojis = this.state.emojis;
+          let messages = this.state.messages;
+
+          users.delete(newUser.uuid);
+          emojis.delete(newUser.uuid);
+          messages.delete(newUser.uuid);
+          this.setState({
+            emojis,
+            messages
+          });
+        } else {
+          users.set(newUser.uuid, newUser);
+        }
+
+        this.setState({
+          users
+        });
+      }
+    });
+    this.pubnub.subscribe({
+      channels: ["location"],
+      withPresence: true
+    });
+    this.pubnub.subscribe({
+      channels: ["emoji"],
+      withPresence: true
+    });
+    this.pubnub.subscribe(
+      {
+        channels: ["message"],
+        withPresence: true
+      },
+      function(status, response) {
+        console.log(status, response);
+      }
+    );
+    //this.pubnub.getStatus()
+    // this.pubnub.getPresence(
+    //   "",
+    //   presence => {
+    //     console.log("Presence", presence);
+    //   },
+    //   function(status, response) {
+    //     console.log(status, response);
+    //   }
+    // );
     //Get Stationary Coordinate
     navigator.geolocation.getCurrentPosition(
       position => {
-       // console.log(position);
-        this.setState({
-          latitude: position.coords.latitude,
-          longitude: position.coords.longitude,
-          error: null
-        });
+        if (this.state.allowGPS) {
+          this.pubnub.publish({
+            message: {
+              latitude: position.coords.latitude,
+              longitude: position.coords.longitude,
+              image: this.state.currentPicture,
+              username: this.state.username
+            },
+            channel: "location"
+          });
+          let users = this.state.users;
+          let tempUser = {
+            uuid: this.pubnub.getUUID(),
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude,
+            image: this.state.currentPicture,
+            username: this.state.username
+          };
+          users.set(tempUser.uuid, tempUser);
+          this.setState({
+            users,
+            currentLoc: position.coords
+          });
+        }
       },
-      error => this.setState({ error: error.message }),
-      { enableHighAccuracy: true, timeout: 200000, maximumAge: 1000 }
+      error => console.log("Maps Error: ", error),
+      { enableHighAccuracy: true, timeout: 2000, maximumAge: 1000 }
     );
-
-
     //Track motional Coordinates
     navigator.geolocation.watchPosition(
       position => {
-        const { latitude, longitude } = position.coords;
-        this.setState({ latitude,longitude });
-        this.pubnub.publish({
-          message: {latitude: this.state.latitude, longitude: this.state.longitude, uuid: this.pubnub.getUUID(), emoji: this.state.emoji,},
-          channel: 'channel1'
+        this.setState({
+          currentLoc: position.coords
         });
-
+        if (this.state.allowGPS) {
+          this.pubnub.publish({
+            message: {
+              latitude: position.coords.latitude,
+              longitude: position.coords.longitude,
+              image: this.state.currentPicture,
+              username: this.state.username
+            },
+            channel: "location"
+          });
+          if (this.state.focusOnMe) {
+            this.animateToCurrent(position.coords, 1000);
+          }
+        }
       },
-      error => console.log(error),
+      error => console.log("Maps Error: ", error),
       {
         enableHighAccuracy: true,
-        timeout: 20000,
+        timeout: 2000,
         maximumAge: 1000,
         distanceFilter: 100
       }
     );
   }
 
+  clearMessage = uuid => {
+    let messages = this.state.messages;
+    messages.delete(uuid);
+    this.setState(
+      {
+        messages
+      },
+      () => {
+        console.log("piza", this.state.messages);
+      }
+    );
+  };
+  // stopMessageTimer = (timerId) => {
+  //   console.log("clearing timeout");
+  //   clearTimeout(timerId)
+  // }
+  publishMessage = () => {
+    const testMessage = "Testing messages";
+    this.pubnub.publish(
+      {
+        message: { message: Math.random() },
+        channel: "message"
+      },
+      function(status, response) {
+        console.log(status, response);
+      }
+    );
+    console.log("publishing");
+  };
   componentWillUnmount() {
+    this.pubnub.publish({
+      message: {
+        latitude: -1,
+        longitude: -1,
+        image: this.state.currentPicture,
+        hideUser: true
+      },
+      channel: "location"
+    });
+    this.pubnub.unsubscribeAll();
     navigator.geolocation.clearWatch(this.watchID);
   }
+  componentDidUpdate(prevProps, prevState) {
+    if (prevState.allowGPS != this.state.allowGPS) {
+      if (this.state.allowGPS) {
+        console.log(this.state.users);
+        if (this.state.focusOnMe) {
+          this.animateToCurrent(this.state.currentLoc, 1000);
+        }
+        let users = this.state.users;
+        let tempUser = {
+          uuid: this.pubnub.getUUID(),
+          latitude: this.state.currentLoc.latitude,
+          longitude: this.state.currentLoc.longitude,
+          image: this.state.currentPicture,
+          username: this.state.username
+        };
+        users.set(tempUser.uuid, tempUser);
+        this.setState(
+          {
+            users
+          },
+          () => {
+            this.pubnub.publish({
+              message: tempUser,
+              channel: "location"
+            });
+          }
+        );
+      } else {
+        let users = this.state.users;
+        let emojis = this.state.emojis;
+        let messages = this.state.messages;
+        let uuid = this.pubnub.getUUID();
 
-  //Coordinate Setter
-  setRegion = () => ({
-   latitude: this.state.latitude,
-   longitude: this.state.longitude,
-   latitudeDelta: 0,
-   longitudeDelta: 0
+        users.delete(uuid);
+        emojis.delete(uuid);
+        messages.delete(uuid);
+        this.setState({
+          users,
+          emojis,
+          messages
+        });
+        this.pubnub.publish({
+          message: {
+            latitude: -1,
+            longitude: -1,
+            image: this.state.currentPicture,
+            hideUser: true
+          },
+          channel: "location"
+        });
+      }
+    }
+  }
+  isEquivalent = (a, b) => {
+    if (!a || !b) {
+      if (a === b) return true;
+      return false;
+    }
+    // Create arrays of property names
+    var aProps = Object.getOwnPropertyNames(a);
+    var bProps = Object.getOwnPropertyNames(b);
 
-  });
+    // If number of properties is different,
+    // objects are not equivalent
+    if (aProps.length != bProps.length) {
+      return false;
+    }
 
+    for (var i = 0; i < aProps.length; i++) {
+      var propName = aProps[i];
 
+      // If values of same property are not equal,
+      // objects are not equivalent
+      if (a[propName] !== b[propName]) {
+        return false;
+      }
+    }
 
+    // If we made it this far, objects
+    // are considered equivalent
+    return true;
+  };
+  animateToCurrent = (coords, speed) => {
+    region = {
+      latitude: coords.latitude,
+      longitude: coords.longitude,
+      latitudeDelta: 0.01,
+      longitudeDelta: 0.01
+    };
+    this.map.animateToRegion(region, speed);
+  };
+  toggleAbout = () => {
+    this.publishMessage();
+    this.setState({
+      showAbout: !this.state.showAbout
+    });
+  };
+  toggleGPS = () => {
+    this.setState({
+      allowGPS: !this.state.allowGPS
+    });
+  };
+  focusLoc = () => {
+    if (this.state.focusOnMe || this.state.fixedOnUUID) {
+      this.setState({
+        focusOnMe: false,
+        fixedOnUUID: ""
+      });
+    } else {
+      region = {
+        latitude: this.state.currentLoc.latitude,
+        longitude: this.state.currentLoc.longitude,
+        latitudeDelta: 0.01,
+        longitudeDelta: 0.01
+      };
+      this.setState({
+        focusOnMe: true
+      });
+      this.map.animateToRegion(region, 2000);
+    }
+  };
+  draggedMap = () => {
+    this.setState({
+      focusOnMe: false,
+      fixedOnUUID: ""
+    });
+  };
+  touchUser = uuid => {
+    console.log(uuid, " : ", this.pubnub.getUUID());
+    if (uuid === this.pubnub.getUUID()) {
+      this.focusLoc();
+    } else {
+      this.setState({
+        fixedOnUUID: uuid,
+        focusOnMe: false
+      });
+    }
+  };
+  displayMesasges = () => {
+    console.log(this.state.messages);
+  };
+  selectedStyle = uuid => {
+    if (
+      (this.state.focusOnMe && uuid == this.pubnub.getUUID()) ||
+      this.state.fixedOnUUID == uuid
+    ) {
+      return { height: 50, width: 50, borderRadius: 25 };
+    }
+    return { height: 30, width: 30, borderRadius: 15 };
+  };
+  messageOutPut = message => {
+    if (message) {
+      return (
+        <View style={styles.textBackground}>
+          <Text style={styles.text}>{message.message}</Text>
+        </View>
+      );
+    }
+  };
+  showUsername = user => {
+    if (
+      (this.state.focusOnMe && user.uuid == this.pubnub.getUUID()) ||
+      this.state.fixedOnUUID == user.uuid
+    ) {
+      //console.log("user",user.username)
+      return (
+        <View style={styles.textBackground}>
+          <Text style={styles.text}>{user.username}</Text>
+        </View>
+      );
+    }
+  };
+  killEmoji = () => {
+    console.log("PENIIIIIS");
+    this.pubnub.publish({
+      message: {
+        emojiCount: -1,
+        emojiType: this.state.emojiType
+      },
+      channel: "emoji"
+    });
+  };
   //Increment Emoji Count
   showEmoji = () => {
-        this.pubnub.publish({
-          message: {latitude: this.state.latitude, longitude: this.state.longitude, uuid: this.pubnub.getUUID(), emoji: 1},
-          channel: 'channel1'
-        });
-
+    this.pubnub.publish(
+      {
+        message: {
+          emojiCount: 1,
+          emojiType: this.state.emojiType
+        },
+        channel: "emoji"
+      },
+      function(status, response) {
+        console.log(status, response);
+      }
+    );
   };
 
-  showText = () => {
-    if(this.state.show == true){
-      this.setState({show: false});
-    }else{
-      this.setState({show:true});
-    }
-
-}
-
-  isEquivalent = (a, b) => {
-
-      if(!a || !b){
-        if(a === b) return true;
-        return false
-      }
-      // Create arrays of property names
-      var aProps = Object.getOwnPropertyNames(a);
-      var bProps = Object.getOwnPropertyNames(b);
-
-      // If number of properties is different,
-      // objects are not equivalent
-      if (aProps.length != bProps.length) {
-          return false;
-      }
-
-      for (var i = 0; i < aProps.length; i++) {
-          var propName = aProps[i];
-
-          // If values of same property are not equal,
-          // objects are not equivalent
-          if (a[propName] !== b[propName]) {
-              return false;
-          }
-      }
-
-      // If we made it this far, objects
-      // are considered equivalent
-      return true;
-    }
-
   render() {
-    let usersArray = Array.from(this.state.users.values());
-    //Decrement Emoji Count
-    //Reset Emoji Count
-    killEmoji = () => {
-      this.pubnub.publish({
-        message: {
-          latitude: this.state.latitude,
-          longitude: this.state.longitude,
-          uuid: this.pubnub.getUUID(),
-          emoji: -1,
-          emojiType: this.state.emojiType},
-        channel: 'channel1'});
-    };
+    let about;
+    let usersMap = this.state.users;
+    let messagesMap = this.state.messages;
+    let emojiMap = this.state.emojis;
+    let gpsImage;
+    if (this.state.focusOnMe || this.state.fixedOnUUID) {
+      gpsImage = require("./assets/images/fixedGPS.png");
+    } else {
+      gpsImage = require("./assets/images/notFixedGPS.png");
+    }
+
+    for (let key of emojiMap.keys()) {
+      let tempUser = usersMap.get(key);
+      if (tempUser) {
+        tempUser.emojiCount = emojiMap.get(key).emojiCount;
+        tempUser.emojiType = emojiMap.get(key).emojiType;
+        usersMap.set(key, tempUser);
+      }
+    }
+    let usersArray = Array.from(usersMap.values());
+    //console.log(usersArray)
+    //console.log(usersArray)
     return (
-    <View>
-    <View style={styles.container}>
-       <MapView style={styles.map} region={this.setRegion()}>
-               { usersArray.map((item, index) => (
-                 <Marker key={index} coordinate={{latitude: item.coords[0], longitude: item.coords[1]}}>
-                    {
-                      function() {
-                          let rows = [];
-                          for(let i = 0 ; i < item.emoji; i++){
-                            rows.push(<Animatable.View style={styles.emoji} animation="fadeOutUp" duration={1000} iterationCount={1} direction="normal" easing = "ease-out" onAnimationEnd = {() => this.killEmoji()} key = {i}>
-                                      {(item.emojiType == 1) && <Image source={require('./src/Images/like2.png')} style={{height: 35, width:35, }} />}
-                                      {(item.emojiType == 2) && <Image source={require('./src/Images/love2.png')} style={{height: 35, width:35, }} />}
-                                      {(item.emojiType == 3) && <Image source={require('./src/Images/haha2.png')} style={{height: 35, width:35, }} />}
-                                      {(item.emojiType == 4) && <Image source={require('./src/Images/wow2.png')} style={{height: 35, width:35, }} />}
-                                      {(item.emojiType == 5) && <Image source={require('./src/Images/sad2.png')} style={{height: 35, width:35, }} />}
-                                      {(item.emojiType == 6) && <Image source={require('./src/Images/angry2.png')} style={{height: 35, width:35, }} />}
-                                    </Animatable.View> );
-                          }
-                          return rows;
-                      }()
-                    }
-                       <Image source={require('./assets/images/marker.png')} style={{height: 35, width:35, }} />
-                 </Marker>
-               )) }
-       </MapView>
-       </View>
-       <MessageInput {...this.state} pubnub={this.pubnub}/>
-       <EmojiBar {...this.state} pubnub={this.pubnub}/>
-     </View>
-   );
+      <View style={styles.container}>
+        <MapView
+          style={styles.map}
+          ref={ref => (this.map = ref)}
+          onMoveShouldSetResponder={this.draggedMap}
+          initialRegion={{
+            latitude: 36.81808,
+            longitude: -98.640297,
+            latitudeDelta: 60.0001,
+            longitudeDelta: 60.0001
+          }}
+        >
+          {usersArray.map((item, index) => (
+            //TRY SWITCHING UP TO CALLOUTS
+            <Marker
+              onPress={() => {
+                this.touchUser(item.uuid);
+              }}
+              style={styles.marker}
+              key={index}
+              coordinate={{
+                latitude: item.latitude,
+                longitude: item.longitude
+              }}
+              ref={marker => {
+                this.marker = marker;
+              }}
+            >
+              <View style={styles.marker}>
+                {(function() {
+                  let rows = [];
+                  for (let i = 0; i < item.emojiCount; i++) {
+                    console.log(item.emojiCount);
+                    rows.push(
+                      <Animatable.View
+                        animation="fadeOutUp"
+                        duration={1000}
+                        iterationCount={1}
+                        direction="normal"
+                        easing="ease-out"
+                        onAnimationEnd={this.killEmoji}
+                        key={i}
+                      >
+                        {item.emojiType == 1 && (
+                          <Image
+                            source={require("./src/Images/like2.png")}
+                            style={styles.emoji}
+                          />
+                        )}
+                        {item.emojiType == 2 && (
+                          <Image
+                            source={require("./src/Images/love2.png")}
+                            style={styles.emoji}
+                          />
+                        )}
+                        {item.emojiType == 3 && (
+                          <Image
+                            source={require("./src/Images/haha2.png")}
+                            style={styles.emoji}
+                          />
+                        )}
+                        {item.emojiType == 4 && (
+                          <Image
+                            source={require("./src/Images/wow2.png")}
+                            style={styles.emoji}
+                          />
+                        )}
+                        {item.emojiType == 5 && (
+                          <Image
+                            source={require("./src/Images/sad2.png")}
+                            style={styles.emoji}
+                          />
+                        )}
+                        {item.emojiType == 6 && (
+                          <Image
+                            source={require("./src/Images/angry2.png")}
+                            style={styles.emoji}
+                          />
+                        )}
+                      </Animatable.View>
+                    );
+                  }
+                  return rows;
+                })()}
+                {this.messageOutPut(this.state.messages.get(item.uuid))}
+                <Image
+                  source={this.state.currentPicture}
+                  style={this.selectedStyle(item.uuid)}
+                />
+                {this.showUsername(item)}
+              </View>
+            </Marker>
+          ))}
+        </MapView>
+
+
+        <View style={styles.topBar}>
+          <TouchableOpacity onPress={this.displayMesasges}>
+            <Image
+              style={styles.profile}
+              source={require("./assets/images/profile.png")}
+            />
+          </TouchableOpacity>
+
+          <View style={styles.rightBar}>
+            <TouchableOpacity onPress={this.toggleAbout}>
+              <Image
+                style={styles.info}
+                source={require("./assets/images/info.png")}
+              />
+            </TouchableOpacity>
+            <Switch
+              value={this.state.allowGPS}
+              style={styles.locationSwitch}
+              onValueChange={this.toggleGPS}
+            />
+          </View>
+        </View>
+
+
+
+          <View style={styles.bottom}>
+            <EmojiBar {...this.state} pubnub={this.pubnub} />
+            <View style={styles.bottomRow}>
+              <MessageInput {...this.state} pubnub={this.pubnub}/>
+                <TouchableOpacity onPress={this.focusLoc}>
+                  <Image style={styles.focusLoc} source={gpsImage} />
+                </TouchableOpacity>
+            </View>
+
+
+
+          </View>
+      </View>
+    );
+
   }
 }
 
 const styles = StyleSheet.create({
-  container: {
-    ...StyleSheet.absoluteFillObject,
+  bottomRow:{
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center"
+  },
+  aboutView: {
+    backgroundColor: "#9FA8DA"
+  },
+  marker: {
     justifyContent: "center",
-    alignItems: "flex-start",  },
+    alignItems: "center"
+  },
+  textBackground: {
+    backgroundColor: "#D22028",
+    alignItems: "center",
+    padding: 5,
+    borderRadius: 5
+  },
+  userImage: {
+    borderRadius: 10
+  },
+  text: {
+    fontSize: 12,
+    color: "#E1E4F3",
+    fontWeight: "bold"
+  },
+  topBar: {
+    top: 50,
+    right: 10,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center"
+  },
+  rightBar: {
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    alignItems: "center"
+  },
+  locationSwitch: {
+    right: 10
+  },
+  container: {
+    flex: 1
+  },
+  bottom: {
+    position: "absolute",
+    bottom: 16,
+    //right: 0,
+    justifyContent: "flex-end",
+    alignSelf: "center",
+    marginHorizontal: 16,
+    marginBottom: 16,
+    borderWidth:0,
+    borderColor: 'blue'
+  },
+  focusLoc: {
+    width: 30,
+    height: 30,
+    right: 16,
+  },
   map: {
     ...StyleSheet.absoluteFillObject
   },
-  bubble: {
-    flex: 1,
-    backgroundColor: "rgba(255,255,255,0.7)",
-    paddingHorizontal: 18,
-    paddingVertical: 12,
-    borderRadius: 20
+  emoji: {
+    height: 35,
+    width: 35,
+    position: "absolute",
   },
-  latlng: {
-    width: 200,
-    alignItems: "stretch"
+  info: {
+    width: 30,
+    height: 30,
+    marginHorizontal: 15
   },
-  button: {
-    width: 80,
-    paddingHorizontal: 12,
+  profile: {
+    width: 30,
+    height: 30,
+    marginHorizontal: 25
+  },
+
+  textContent: {
     alignItems: "center",
-    marginHorizontal: 10
+    marginBottom: 10
+  },
+  content: {
+    backgroundColor: "white",
+    padding: 22,
+    justifyContent: "center",
+    alignItems: "center",
+    borderRadius: 4,
+    borderColor: "rgba(0, 0, 0, 0.1)"
   },
   buttonContainer: {
-    flexDirection: "row",
-    marginVertical: 20,
-    backgroundColor: "transparent",
+    flexDirection: "row"
+  },
 
-  },
-  modal: {
-    flex: 1,
-    alignItems: 'center',
-    backgroundColor: 'white',
-    padding: 100,
-    marginTop: 100,
-    marginBottom: 100,
-    marginLeft: 20,
-    marginRight: 20,
-  },
-  text: {
-      color: '#3f2949',
-      marginTop: 10,
-      alignItems: 'center',
-   },
-   view: {
-      alignItems: 'center',
-      // backgroundColor: '#ede3f2',
-      padding: 100,
-   },
-   image: {
-      alignItems: 'center',
-      // backgroundColor: '#ede3f2',
-      padding: 100,
-   },
-   emoji: {
-     position: 'absolute',
-   },
 });
