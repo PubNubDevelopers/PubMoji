@@ -1,14 +1,15 @@
 import React, {Component} from 'react';
-import {StyleSheet, Text, View, Image, Button, TouchableOpacity} from 'react-native';
+import {StyleSheet, View, Image, TouchableOpacity} from 'react-native';
 import MapView, {Marker} from 'react-native-maps';
 import PubNubReact from 'pubnub-react';
 import * as Animatable from 'react-native-animatable';
 import Modal from "react-native-modal";
 import SplashScreen from './src/components/SplashScreen';
-import EmojiBar from './src/components/EmojiBar/EmojiBar'
-import ModalAppInit from './src/components/ModalAppInit'
-import ModalAppUpdate from './src/components/ModalAppUpdate'
+import EmojiBar from './src/components/EmojiBar/EmojiBar';
+import ModalAppInit from './src/components/ModalAppInit';
+import ModalAppUpdate from './src/components/ModalAppUpdate';
 import AsyncStorage from '@react-native-community/async-storage';
+import MessageInput from './src/components/MessageInput/MessageInput';
 
 export default class App extends Component {
 
@@ -44,6 +45,14 @@ export default class App extends Component {
     //Initialize PubNub Instance
     this.pubnub.init(this);
 
+  }
+
+  //Subscribe to a PubNub Channel
+  componentWillMount() {
+    this.pubnub.subscribe({
+      channels: ['channel1'],
+      withPresence: true
+    });
   }
 
   performTimeConsumingTask = async() => {
@@ -83,11 +92,6 @@ export default class App extends Component {
       this.setState({currentPicture: parseInt(storeProfilePic)});
     }
 
-    this.pubnub.subscribe({
-      channels: ['channel1'],
-      withPresence: true
-    });
-
     this.pubnub.getMessage('channel1', (msg) => {
         coord = [msg.message.latitude,msg.message.longitude]; //Format GPS Coordinates for Payload
         let oldUser = this.state.users.get(msg.message.uuid); //Obtain User's Previous State Object
@@ -97,9 +101,9 @@ export default class App extends Component {
         let emojiType;
         if(msg.message.emoji != -1){ //Add Payload Emoji Count to emojiCount and Reset Count if EmojiType Changes
           if(oldUser){
-            if(oldUser.emojiType == msg.message.emojiType){
+            //if(oldUser.emojiType == msg.message.emojiType){
               emojiCount = oldUser.emoji + msg.message.emoji;
-            }else{emojiCount = 1;}
+            //}else{emojiCount = 1;}
           }else{
             emojiCount = msg.message.emoji;
           }
@@ -123,7 +127,6 @@ export default class App extends Component {
             users: tempMap
           })
         }
-        console.log(msg.message)
     });
 
 
@@ -146,7 +149,6 @@ export default class App extends Component {
       position => {
         const { latitude, longitude } = position.coords;
         this.setState({ latitude,longitude });
-        console.log(this.state.emoji);
         this.pubnub.publish({
           message: {latitude: this.state.latitude, longitude: this.state.longitude, uuid: this.pubnub.getUUID(), emoji: this.state.emoji,},
           channel: 'channel1'
@@ -180,13 +182,13 @@ export default class App extends Component {
 
   });
 
-  // //Increment Emoji Count
-  // showEmoji = () => {
-  //   this.pubnub.publish({
-  //     message: {latitude: this.state.latitude, longitude: this.state.longitude, uuid: this.pubnub.getUUID(), emoji: 1},
-  //     channel: 'channel1'
-  //   });
-  // };
+  //Increment Emoji Count
+  showEmoji = () => {
+    this.pubnub.publish({
+      message: {latitude: this.state.latitude, longitude: this.state.longitude, uuid: this.pubnub.getUUID(), emoji: 1},
+      channel: 'channel1'
+    });
+  };
 
   showText = () => {
     if(this.state.show == true){
@@ -247,7 +249,6 @@ export default class App extends Component {
     let usersArray = Array.from(this.state.users.values());
 
     killEmoji = () => {
-      console.log(this.state.emoji);
       this.pubnub.publish({
         message: {
           latitude: this.state.latitude,
@@ -274,8 +275,8 @@ export default class App extends Component {
                       function() {
                           let rows = [];
                           for(let i = 0 ; i < item.emoji; i++){
-                            rows.push(<Animatable.View style={styles.marker} animation="fadeOutUp" duration={2000} iterationCount={1} direction="normal" easing = "ease-out" onAnimationEnd = {() => this.killEmoji()} key = {i}>
-                                      {(item.emojiType == 1) && <Image source={require('./src/Images/ic_like.png')} style={{height: 35, width:35, }} />}
+                            rows.push(<Animatable.View style={styles.emoji} animation="fadeOutUp" duration={1000} iterationCount={1} direction="normal" easing = "ease-out" onAnimationEnd = {() => this.killEmoji()} key = {i}>
+                                      {(item.emojiType == 1) && <Image source={require('./src/Images/like2.png')} style={{height: 35, width:35, }} />}
                                       {(item.emojiType == 2) && <Image source={require('./src/Images/love2.png')} style={{height: 35, width:35, }} />}
                                       {(item.emojiType == 3) && <Image source={require('./src/Images/haha2.png')} style={{height: 35, width:35, }} />}
                                       {(item.emojiType == 4) && <Image source={require('./src/Images/wow2.png')} style={{height: 35, width:35, }} />}
@@ -315,7 +316,7 @@ export default class App extends Component {
             </TouchableOpacity>
           </View>
         </View>
-
+        <MessageInput {...this.state} pubnub={this.pubnub}/>
         <EmojiBar {...this.state} pubnub={this.pubnub}/>
     </View>
    );
@@ -404,6 +405,9 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(0, 0, 0, 0.1)',
   },
   marker: {
+    position: 'absolute',
+  },
+  emoji: {
     position: 'absolute',
   },
 });
