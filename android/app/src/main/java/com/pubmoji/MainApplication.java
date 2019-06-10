@@ -3,10 +3,20 @@ package com.pubmoji;
 import android.app.Application;
 
 import com.facebook.react.ReactApplication;
+<<<<<<< HEAD
 import com.zmxv.RNSound.RNSoundPackage;
 import com.oblador.vectoricons.VectorIconsPackage;
 import com.airbnb.android.react.maps.MapsPackage;
 import com.dylanvann.fastimage.FastImageViewPackage;
+=======
+import com.oblador.vectoricons.VectorIconsPackage;
+<<<<<<< HEAD
+import com.dylanvann.fastimage.FastImageViewPackage;
+import com.zmxv.RNSound.RNSoundPackage;
+=======
+import com.airbnb.android.react.maps.MapsPackage;
+>>>>>>> ac4de3b0204dcfac618ffbbc9f9702f4692dd29b
+>>>>>>> 58a218ebf76f3caf26fdb6e40b7dc54057507075
 import com.facebook.react.ReactNativeHost;
 import com.facebook.react.ReactPackage;
 import com.facebook.react.shell.MainReactPackage;
@@ -27,10 +37,20 @@ public class MainApplication extends Application implements ReactApplication {
     protected List<ReactPackage> getPackages() {
       return Arrays.<ReactPackage>asList(
           new MainReactPackage(),
+<<<<<<< HEAD
             new RNSoundPackage(),
             new VectorIconsPackage(),
             new MapsPackage(),
             new FastImageViewPackage()
+=======
+            new VectorIconsPackage(),
+<<<<<<< HEAD
+            new FastImageViewPackage(),
+            new RNSoundPackage(),
+=======
+>>>>>>> ac4de3b0204dcfac618ffbbc9f9702f4692dd29b
+            new MapsPackage()
+>>>>>>> 58a218ebf76f3caf26fdb6e40b7dc54057507075
       );
     }
 

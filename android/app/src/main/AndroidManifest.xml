@@ -2,6 +2,12 @@
   package="com.pubmoji">
 
     <uses-permission android:name="android.permission.INTERNET" />
+<<<<<<< HEAD
+=======
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+>>>>>>> 58a218ebf76f3caf26fdb6e40b7dc54057507075
 
     <application
       android:name=".MainApplication"
@@ -10,6 +16,14 @@
       android:roundIcon="@mipmap/ic_launcher_round"
       android:allowBackup="false"
       android:theme="@style/AppTheme">
+<<<<<<< HEAD
+=======
+
+      <meta-data
+        android:name="com.google.android.geo.API_KEY"
+        android:value="@string/api_key"/>
+
+>>>>>>> 58a218ebf76f3caf26fdb6e40b7dc54057507075
       <activity
         android:name=".MainActivity"
         android:label="@string/app_name"
