@@ -5,15 +5,11 @@ import {
   Platform,
   StyleSheet,
   Text,
-  TextInput,
   Button,
   View,
   Image,
   Switch,
   TouchableOpacity,
-  TouchableWithoutFeedback,
-  Header,
-  Alert
 } from "react-native";
 import MapView, { Marker } from "react-native-maps";
 import PubNubReact from "pubnub-react";
@@ -58,7 +54,7 @@ export default class App extends Component {
   //Track User GPS Data
   componentDidMount() {
     //PubNub
-    this.pubnub.getMessage("channel1.messages", msg => {
+    this.pubnub.getMessage("message", msg => {
       console.log("MSG: ", msg);
       if (this.state.users.has(msg.publisher)) {
         let messages = this.state.messages;
@@ -71,7 +67,7 @@ export default class App extends Component {
         });
       }
     });
-    this.pubnub.getMessage("channel1.emoji", msg => {
+    this.pubnub.getMessage("emoji", msg => {
       console.log("Emoji Message", msg.message);
       let oldEmoji = this.state.emojis.get(msg.publisher); //Obtain User's Previous State Object
       let emojis = this.state.emojis;
@@ -81,13 +77,14 @@ export default class App extends Component {
       let emojiType;
       if (msg.message.emojiCount != -1) {
         //Add Payload Emoji Count to emojiCount
+
         emojiType = msg.message.emojiType;
         if (oldEmoji) {
-          if (oldEmoji.emojiType == emojiType) {
+          // if (oldEmoji.emojiType == emojiType) {
             emojiCount = oldEmoji.emojiCount + msg.message.emojiCount;
-          } else {
-            emojiCount = 1;
-          }
+          //  else {
+          //   emojiCount = 1;
+          // }
         } else {
           emojiCount = msg.message.emojiCount;
         }
@@ -114,7 +111,7 @@ export default class App extends Component {
       );
     });
 
-    this.pubnub.getMessage("channel1", msg => {
+    this.pubnub.getMessage("location", msg => {
       coord = [msg.message.latitude, msg.message.longitude]; //Format GPS Coordinates for Payload
 
       if (msg.publisher == this.state.fixedOnUUID) {
@@ -158,16 +155,16 @@ export default class App extends Component {
       }
     });
     this.pubnub.subscribe({
-      channels: ["channel1"],
+      channels: ["location"],
       withPresence: true
     });
     this.pubnub.subscribe({
-      channels: ["channel1.emoji"],
+      channels: ["emoji"],
       withPresence: true
     });
     this.pubnub.subscribe(
       {
-        channels: ["channel1.messages"],
+        channels: ["message"],
         withPresence: true
       },
       function(status, response) {
@@ -176,7 +173,7 @@ export default class App extends Component {
     );
     //this.pubnub.getStatus()
     // this.pubnub.getPresence(
-    //   "channel1",
+    //   "",
     //   presence => {
     //     console.log("Presence", presence);
     //   },
@@ -195,7 +192,7 @@ export default class App extends Component {
               image: this.state.currentPicture,
               username: this.state.username
             },
-            channel: "channel1"
+            channel: "location"
           });
           let users = this.state.users;
           let tempUser = {
@@ -229,7 +226,7 @@ export default class App extends Component {
               image: this.state.currentPicture,
               username: this.state.username
             },
-            channel: "channel1"
+            channel: "location"
           });
           if (this.state.focusOnMe) {
             this.animateToCurrent(position.coords, 1000);
@@ -267,7 +264,7 @@ export default class App extends Component {
     this.pubnub.publish(
       {
         message: { message: Math.random() },
-        channel: "channel1.messages"
+        channel: "message"
       },
       function(status, response) {
         console.log(status, response);
@@ -283,7 +280,7 @@ export default class App extends Component {
         image: this.state.currentPicture,
         hideUser: true
       },
-      channel: "channel1"
+      channel: "location"
     });
     this.pubnub.unsubscribeAll();
     navigator.geolocation.clearWatch(this.watchID);
@@ -311,7 +308,7 @@ export default class App extends Component {
           () => {
             this.pubnub.publish({
               message: tempUser,
-              channel: "channel1"
+              channel: "location"
             });
           }
         );
@@ -336,7 +333,7 @@ export default class App extends Component {
             image: this.state.currentPicture,
             hideUser: true
           },
-          channel: "channel1"
+          channel: "location"
         });
       }
     }
@@ -467,7 +464,7 @@ export default class App extends Component {
         emojiCount: -1,
         emojiType: this.state.emojiType
       },
-      channel: "channel1.emoji"
+      channel: "emoji"
     });
   };
   //Increment Emoji Count
@@ -478,7 +475,7 @@ export default class App extends Component {
           emojiCount: 1,
           emojiType: this.state.emojiType
         },
-        channel: "channel1.emoji"
+        channel: "emoji"
       },
       function(status, response) {
         console.log(status, response);
@@ -546,7 +543,7 @@ export default class App extends Component {
                     rows.push(
                       <Animatable.View
                         animation="fadeOutUp"
-                        duration={2000}
+                        duration={1000}
                         iterationCount={1}
                         direction="normal"
                         easing="ease-out"
@@ -555,7 +552,7 @@ export default class App extends Component {
                       >
                         {item.emojiType == 1 && (
                           <Image
-                            source={require("./src/Images/ic_like.png")}
+                            source={require("./src/Images/like2.png")}
                             style={styles.emoji}
                           />
                         )}
@@ -604,7 +601,7 @@ export default class App extends Component {
             </Marker>
           ))}
         </MapView>
-        
+
 
         <View style={styles.topBar}>
           <TouchableOpacity onPress={this.displayMesasges}>
@@ -630,20 +627,31 @@ export default class App extends Component {
         </View>
 
 
-        <MessageInput {...this.state} pubnub={this.pubnub}/>
-        <EmojiBar {...this.state} pubnub={this.pubnub} />
 
           <View style={styles.bottom}>
-            <TouchableOpacity onPress={this.focusLoc}>
-              <Image style={styles.focusLoc} source={gpsImage} />
-            </TouchableOpacity>
+            <EmojiBar {...this.state} pubnub={this.pubnub} />
+            <View style={styles.bottomRow}>
+              <MessageInput {...this.state} pubnub={this.pubnub}/>
+                <TouchableOpacity onPress={this.focusLoc}>
+                  <Image style={styles.focusLoc} source={gpsImage} />
+                </TouchableOpacity>
+            </View>
+
+
+
           </View>
       </View>
     );
+
   }
 }
 
 const styles = StyleSheet.create({
+  bottomRow:{
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center"
+  },
   aboutView: {
     backgroundColor: "#9FA8DA"
   },
@@ -685,16 +693,19 @@ const styles = StyleSheet.create({
   },
   bottom: {
     position: "absolute",
-    bottom: 64,
-    right: 0,
+    bottom: 16,
+    //right: 0,
     justifyContent: "flex-end",
-    alignSelf: "flex-end",
+    alignSelf: "center",
     marginHorizontal: 16,
-    marginVertical: 25
+    marginBottom: 16,
+    borderWidth:0,
+    borderColor: 'blue'
   },
   focusLoc: {
     width: 30,
-    height: 30
+    height: 30,
+    right: 16,
   },
   map: {
     ...StyleSheet.absoluteFillObject

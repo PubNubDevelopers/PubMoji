@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { StyleSheet } from 'react-native'
+import { StyleSheet, View } from 'react-native'
 import { Container, Header, Item, Input, Icon, Button, Text } from 'native-base';
 
 export default class MessageInput extends Component {
@@ -12,7 +12,7 @@ export default class MessageInput extends Component {
   publishMessage = (event) => {
     this.props.pubnub.publish({
       message: { message: event.nativeEvent.text},
-      channel: 'channel1.messages'
+      channel: 'message'
     });
     this.setState({
       message: ""
@@ -20,8 +20,7 @@ export default class MessageInput extends Component {
   }
   render() {
     return (
-      <Container style={styles.custom}>
-        <Header style={styles.custom} searchBar rounded>
+        <View style={styles.custom} searchBar rounded>
           <Item style={styles.messageBox}>
             <Icon name="chatbubbles" />
             <Input
@@ -32,8 +31,7 @@ export default class MessageInput extends Component {
               onChangeText={(text) => this.setState({ message: text })}/>
             <Icon name="return-right" />
           </Item>
-        </Header>
-      </Container>
+        </View>
     );
   }
 }
@@ -43,15 +41,21 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFillObject,
   },
   custom: {
-    marginTop: 0,
+
     width: 300,
-    marginLeft: 35,
+    marginLeft: 8,
+
     marginRight: 35,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: '#00000000'
+    backgroundColor: '#00000000',
+    borderColor: 'red',
+    borderWidth: 0
   },
   messageBox: {
+    borderRadius: 24,
+    paddingRight: 8,
+    paddingLeft: 16,
     backgroundColor: 'white'
   }
 })

@@ -723,7 +723,7 @@ export default class AnimationScreen extends Component {
     }
     this.props.pubnub.publish({
       message: { emojiType: this.whichIconUserChoose, emojiCount: 1 },
-      channel: "channel1.emoji"
+      channel: "emoji"
     });
   };
 
