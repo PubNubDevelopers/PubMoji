@@ -68,14 +68,11 @@
 		<string>MaterialCommunityIcons.ttf</string>
 		<string>MaterialIcons.ttf</string>
 		<string>Octicons.ttf</string>
-		<string>SimpleLineIcons.ttf</string>
-		<string>Zocial.ttf</string>
-<<<<<<< HEAD
-=======
 		<string>Roboto_medium.ttf</string>
 		<string>Roboto.ttf</string>
 		<string>rubicon-icon-font.ttf</string>
->>>>>>> 91d21e74758dfd133cd3da9df17fe7fbb33d62d9
+		<string>SimpleLineIcons.ttf</string>
+		<string>Zocial.ttf</string>
 	</array>
 </dict>
 </plist>

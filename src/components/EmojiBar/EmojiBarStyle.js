@@ -41,7 +41,7 @@ export default StyleSheet.create({
     borderWidth: 0,
     borderColor: "purple",
     marginTop: 550,
-    marginBottom: 100
+    marginBottom: 16
   },
 
   // Top blank space

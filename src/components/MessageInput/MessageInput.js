@@ -11,7 +11,7 @@ export default class MessageInput extends Component {
   }
   publishMessage = (event) => {
     this.props.pubnub.publish({
-      message: {uuid: this.props.pubnub.getUUID(), message: event.nativeEvent.text},
+      message: { message: event.nativeEvent.text},
       channel: 'channel1.messages'
     });
     this.setState({
@@ -24,11 +24,11 @@ export default class MessageInput extends Component {
         <Header style={styles.custom} searchBar rounded>
           <Item style={styles.messageBox}>
             <Icon name="chatbubbles" />
-            <Input 
-              placeholder="Type a message..." 
+            <Input
+              placeholder="Type a message..."
               onSubmitEditing={(event) => this.publishMessage(event)}
-              ref={input => { this.textInput = input }} 
-              value={this.state.message} 
+              ref={input => { this.textInput = input }}
+              value={this.state.message}
               onChangeText={(text) => this.setState({ message: text })}/>
             <Icon name="return-right" />
           </Item>

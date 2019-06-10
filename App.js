@@ -628,14 +628,15 @@ export default class App extends Component {
           </View>
         </View>
 
-        <View style={styles.bottom}>
-          <TouchableOpacity onPress={this.focusLoc}>
-            <Image style={styles.focusLoc} source={gpsImage} />
-          </TouchableOpacity>
-        </View>
-        <Button title="show Emoji" onPress={this.showEmoji} />
+
         <MessageInput {...this.state} pubnub={this.pubnub}/>
         <EmojiBar {...this.state} pubnub={this.pubnub} />
+
+          <View style={styles.bottom}>
+            <TouchableOpacity onPress={this.focusLoc}>
+              <Image style={styles.focusLoc} source={gpsImage} />
+            </TouchableOpacity>
+          </View>
       </View>
     );
   }
@@ -683,11 +684,11 @@ const styles = StyleSheet.create({
   },
   bottom: {
     position: "absolute",
-    bottom: 0,
+    bottom: 64,
     right: 0,
     justifyContent: "flex-end",
     alignSelf: "flex-end",
-    marginHorizontal: 25,
+    marginHorizontal: 16,
     marginVertical: 25
   },
   focusLoc: {
