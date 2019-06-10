@@ -226,7 +226,7 @@ export default class App extends React.Component {
                           let rows = [];
                           for(let i = 0 ; i < item.emoji; i++){
                             rows.push(<Animatable.View style={styles.emoji} animation="fadeOutUp" duration={1000} iterationCount={1} direction="normal" easing = "ease-out" onAnimationEnd = {() => this.killEmoji()} key = {i}>
-                                      {(item.emojiType == 1) && <Image source={require('./src/Images/ic_like.png')} style={{height: 35, width:35, }} />}
+                                      {(item.emojiType == 1) && <Image source={require('./src/Images/like2.png')} style={{height: 35, width:35, }} />}
                                       {(item.emojiType == 2) && <Image source={require('./src/Images/love2.png')} style={{height: 35, width:35, }} />}
                                       {(item.emojiType == 3) && <Image source={require('./src/Images/haha2.png')} style={{height: 35, width:35, }} />}
                                       {(item.emojiType == 4) && <Image source={require('./src/Images/wow2.png')} style={{height: 35, width:35, }} />}
