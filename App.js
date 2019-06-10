@@ -604,6 +604,7 @@ export default class App extends Component {
             </Marker>
           ))}
         </MapView>
+        
 
         <View style={styles.topBar}>
           <TouchableOpacity onPress={this.displayMesasges}>
