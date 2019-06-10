@@ -40,7 +40,8 @@ export default StyleSheet.create({
   viewBody: {
     borderWidth: 0,
     borderColor: "purple",
-    marginTop: 550
+    marginTop: 550,
+    marginBottom: 100
   },
 
   // Top blank space

@@ -21,6 +21,8 @@ import * as Animatable from "react-native-animatable";
 import Modal from "react-native-modal";
 import Timeout from "smart-timeout";
 import EmojiBar from "./src/components/EmojiBar/EmojiBar";
+import MessageInput from './src/components/MessageInput/MessageInput';
+
 
 export default class App extends Component {
   constructor(props) {
@@ -632,7 +634,7 @@ export default class App extends Component {
           </TouchableOpacity>
         </View>
         <Button title="show Emoji" onPress={this.showEmoji} />
-
+        <MessageInput {...this.state} pubnub={this.pubnub}/>
         <EmojiBar {...this.state} pubnub={this.pubnub} />
       </View>
     );

@@ -4,6 +4,7 @@ import android.app.Application;
 
 import com.facebook.react.ReactApplication;
 <<<<<<< HEAD
+<<<<<<< HEAD
 import com.zmxv.RNSound.RNSoundPackage;
 import com.oblador.vectoricons.VectorIconsPackage;
 import com.airbnb.android.react.maps.MapsPackage;
@@ -11,6 +12,9 @@ import com.dylanvann.fastimage.FastImageViewPackage;
 =======
 import com.oblador.vectoricons.VectorIconsPackage;
 <<<<<<< HEAD
+=======
+import com.oblador.vectoricons.VectorIconsPackage;
+>>>>>>> 91d21e74758dfd133cd3da9df17fe7fbb33d62d9
 import com.dylanvann.fastimage.FastImageViewPackage;
 import com.zmxv.RNSound.RNSoundPackage;
 =======
@@ -38,6 +42,7 @@ public class MainApplication extends Application implements ReactApplication {
       return Arrays.<ReactPackage>asList(
           new MainReactPackage(),
 <<<<<<< HEAD
+<<<<<<< HEAD
             new RNSoundPackage(),
             new VectorIconsPackage(),
             new MapsPackage(),
@@ -45,6 +50,9 @@ public class MainApplication extends Application implements ReactApplication {
 =======
             new VectorIconsPackage(),
 <<<<<<< HEAD
+=======
+            new VectorIconsPackage(),
+>>>>>>> 91d21e74758dfd133cd3da9df17fe7fbb33d62d9
             new FastImageViewPackage(),
             new RNSoundPackage(),
 =======

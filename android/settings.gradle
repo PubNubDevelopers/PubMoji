@@ -1,6 +1,9 @@
 rootProject.name = 'PubMoji'
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> 91d21e74758dfd133cd3da9df17fe7fbb33d62d9
 include ':react-native-vector-icons'
 project(':react-native-vector-icons').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-vector-icons/android')
 include ':react-native-fast-image'
