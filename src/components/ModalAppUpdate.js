@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import {StyleSheet, Text, Button, View, Image, TextInput, Alert} from 'react-native';
+import {StyleSheet, Text, TouchableHighlight, View, Image, TextInput, Alert, TouchableOpacity} from 'react-native';
 import { ButtonGroup } from 'react-native-elements';
 
 const img1 = require('../../assets/images/favicon.png');
@@ -19,7 +19,9 @@ export default class ModalAppUpdate extends Component {
             selectedIndexRowOne: -1,
             selectedIndexRowTwo: -1,
             text: '',
-            isFocused: false ,
+            isFocused: false,
+            pressStatusConfirm: false,
+            pressStatusCancel: false
          };
       }
 
@@ -86,6 +88,22 @@ export default class ModalAppUpdate extends Component {
         this.props.closeModalUpdate(false);
       }
     }
+
+    onHideUnderlayCancelButton = () => {
+      this.setState({ pressStatusCancel: false });
+    }
+
+    onShowUnderlayCancelButton = () => {
+      this.setState({ pressStatusCancel: true });
+    }   
+    
+    onHideUnderlayConfirmButton = () => {
+      this.setState({ pressStatusConfirm: false });
+    }
+
+    onShowUnderlayConfirmButton = () => {
+      this.setState({ pressStatusConfirm: true });
+    }   
 
     render() {
         const { isFocused } = this.state;
@@ -158,23 +176,55 @@ export default class ModalAppUpdate extends Component {
                       onChangeText={(text) => this.setState({text})}                 
                     />            
                 </View>
-
                 <View style={styles.buttonContainer}>
-                  <View style={styles.button}>
-                      <Button
-                      onPress={this.cancelProfile}
-                      title="Cancel"
-                      />
-                  </View>
-                  <View style={styles.button}>
-                      <Button
-                      onPress={this.updateProfile}
-                      title="Confirm"
-                      />
-                  </View>
+                    <TouchableHighlight
+                        activeOpacity={1}
+                        underlayColor={'white'}
+                        style={
+                          this.state.pressStatusCancel
+                              ? styles.buttonPressed
+                              : styles.buttonNotPressed
+                        }     
+                          onHideUnderlay={this.onHideUnderlayCancelButton}
+                          onShowUnderlay={this.onShowUnderlayCancelButton}               
+                          onPress={this.cancelProfile}
+                        >
+                          <Text 
+                            style={
+                            this.state.pressStatusCancel
+                                ? styles.cancelPressed
+                                : styles.cancelNotPressed
+                                }
+                            > 
+                            Cancel
+                          </Text>
+                    </TouchableHighlight>
+
+                    <TouchableHighlight
+                        activeOpacity={1}
+                        underlayColor={'white'}
+                        style={
+                          this.state.pressStatusConfirm
+                              ? styles.buttonPressed
+                              : styles.buttonNotPressed
+                        }     
+                          onHideUnderlay={this.onHideUnderlayConfirmButton}
+                          onShowUnderlay={this.onShowUnderlayConfirmButton}               
+                          onPress={this.updateProfile}
+                        >
+                          <Text 
+                            style={
+                            this.state.pressStatusConfirm
+                                ? styles.cancelPressed
+                                : styles.cancelNotPressed
+                                }
+                            > 
+                            Confirm
+                          </Text>
+                    </TouchableHighlight>
+                </View>
               </View>
             </View>
-          </View>
         );
     }       
 }
@@ -184,13 +234,25 @@ const styles = StyleSheet.create({
   buttonContainer: {
     flexDirection: 'row',
   },
-  button: {
-    flex: 1
+  buttonPressed:{
+    borderColor: 'rgb(208,33,41)',
+    borderWidth: 1,
+    padding: 10,
+    borderRadius: 5,
   },
-  text: {
-      color: '#3f2949',
-      marginTop: 10,
-      alignItems: 'center',
+  buttonNotPressed: {
+    backgroundColor: 'rgb(208,33,41)',
+    borderColor: 'rgb(208,33,41)',
+    borderWidth: 1,
+    padding: 10,
+    borderRadius: 5,
+
+  },
+  cancelPressed:{
+    color: 'rgb(208,33,41)'
+  },
+  cancelNotPressed: {
+    color: 'white'
   },
   username:{
     flexDirection: 'row', 
@@ -205,7 +267,7 @@ const styles = StyleSheet.create({
   text: {
     fontFamily: 'proxima-nova',
     color: 'rgb(208,33,41)',  
-    fontSize: 37,
+    fontSize: 34,
     fontWeight: 'bold',
   },
   content: {
@@ -213,7 +275,7 @@ const styles = StyleSheet.create({
     padding: 22,
     justifyContent: 'center',
     alignItems: 'center',
-    borderRadius: 4,
+    borderRadius: 5,
     borderColor: 'rgba(0, 0, 0, 0.1)',
   },    
 });

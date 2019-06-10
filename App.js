@@ -29,11 +29,11 @@ export default class App extends Component {
       longitude: 106.759550,
       error:null,
       users: new Map(),
-      isLoading: false,
+      isLoading: true,
       selectedIndexRowOne: -1,
       selectedIndexRowTwo: -1,
       currentPicture: null,
-      visibleModalStart: false,
+      visibleModalStart: true,
       visibleModalUpdate: false,
       text: '',
       isFocused: false ,
@@ -286,7 +286,7 @@ export default class App extends Component {
                           return rows;
                       }()
                     }
-                       <Image source={require('./assets/images/marker.png')} style={{height: 35, width:35, }} />
+                       <Image source={this.state.currentPicture} style={{height: 35, width:35, }} />
                  </Marker>
                )) }
        </MapView>

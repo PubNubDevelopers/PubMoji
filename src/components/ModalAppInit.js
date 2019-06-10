@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import {StyleSheet, Text, Button, View, Image, TextInput, Alert} from 'react-native';
+import {StyleSheet, Text, Button, View, Image, TextInput, Alert, TouchableHighlight} from 'react-native';
 import { ButtonGroup } from 'react-native-elements';
 
 const img1 = require('../../assets/images/favicon.png');
@@ -20,7 +20,7 @@ export default class ModalAppInit extends Component {
             selectedIndexRowTwo: -1,
             text: '',
             isFocused: false ,
-            textTemp: 'hi'
+            pressStatus: false
          };
       }
 
@@ -72,6 +72,14 @@ export default class ModalAppInit extends Component {
         this.props.closeModalInit(false);
       }
     }
+
+    onHideUnderlay = () => {
+      this.setState({ pressStatus: false });
+    }
+
+    onShowUnderlay = () => {
+      this.setState({ pressStatus: true });
+    }   
 
     render() {
         const { isFocused } = this.state;
@@ -144,13 +152,31 @@ export default class ModalAppInit extends Component {
                         onChangeText={(text) => this.setState({text})}                 
                     />            
                 </View>
+
                 <View style={styles.buttonContainer}>
-                    <View style={styles.button}>
-                        <Button
-                        onPress={this.confirmProfile}
-                        title="Confirm"
-                        />
-                    </View>
+                  <TouchableHighlight
+                          activeOpacity={1}
+                          underlayColor={'white'}
+                          style={
+                            this.state.pressStatus
+                                ? styles.buttonPressed
+                                : styles.buttonNotPressed
+                          }     
+                            onHideUnderlay={this.onHideUnderlay}
+                            onShowUnderlay={this.onShowUnderlay}               
+                            onPress={this.confirmProfile}
+                          >
+                            <Text 
+                              style={
+                              this.state.pressStatus
+                                  ? styles.cancelPressed
+                                  : styles.cancelNotPressed
+                                  }
+                              > 
+                              Confirm
+                            </Text>
+                      </TouchableHighlight>
+
                 </View>
             </View>
           </View>
@@ -165,6 +191,25 @@ const styles = StyleSheet.create({
   button: {
     flex: 1
   },
+  buttonPressed:{
+    borderColor: 'rgb(208,33,41)',
+    borderWidth: 1,
+    padding: 10,
+    borderRadius: 5
+  },
+  buttonNotPressed: {
+    backgroundColor: 'rgb(208,33,41)',
+    borderColor: 'rgb(208,33,41)',
+    borderWidth: 1,
+    padding: 10,
+    borderRadius: 5
+  },
+  cancelPressed:{
+    color: 'rgb(208,33,41)'
+  },
+  cancelNotPressed: {
+    color: 'white'
+  },
   textContent: {
     alignItems: 'center',
     marginBottom: 10,
@@ -172,7 +217,7 @@ const styles = StyleSheet.create({
   text: {
     fontFamily: 'proxima-nova',
     color: 'rgb(208,33,41)',  
-    fontSize: 37,
+    fontSize: 34,
     fontWeight: 'bold',
   },
   username:{
@@ -186,7 +231,7 @@ const styles = StyleSheet.create({
     padding: 22,
     justifyContent: 'center',
     alignItems: 'center',
-    borderRadius: 4,
+    borderRadius: 5,
     borderColor: 'rgba(0, 0, 0, 0.1)',
   },
 });
