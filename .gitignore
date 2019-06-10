@@ -1,7 +1,6 @@
 # OSX
 #
 .DS_Store
-package-lock.json
 # Xcode
 #
 build/
@@ -55,7 +54,3 @@ buck-out/
 
 # Bundle artifact
 *.jsbundle
-
-ios/
-src/components/BitmojiName.js
-src/components/ToastExample.js
