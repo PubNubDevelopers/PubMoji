@@ -2,12 +2,12 @@ import React, { Component } from 'react';
 import {StyleSheet, Text, Button, View, Image, TextInput, Alert, TouchableHighlight} from 'react-native';
 import { ButtonGroup } from 'react-native-elements';
 
-const img1 = require('../../assets/images/favicon.png');
-const img2 = require('../../assets/images/apple-logo.png');
-const img3 = require('../../assets/images/twitter-logo.png');
-const img4 = require('../../assets/images/linkedin-logo.png');
-const img5 = require('../../assets/images/microsoft-logo.png');
-const img6 = require('../../assets/images/chrome-logo.png');
+const img1 = require('../../assets/images/person-male.png');
+const img2 = require('../../assets/images/person-female.png');
+const img3 = require('../../assets/images/cat.png');
+const img4 = require('../../assets/images/doge.png');
+const img5 = require('../../assets/images/anonymous-mask.png');
+const img6 = require('../../assets/images/corgi.png');
 const imgArrayRowOne = [img1, img2, img3];
 const imgArrayRowTwo = [img4, img5, img6];
 

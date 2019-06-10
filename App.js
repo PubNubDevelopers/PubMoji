@@ -34,7 +34,7 @@ export default class App extends Component {
       selectedIndexRowOne: -1,
       selectedIndexRowTwo: -1,
       currentPicture: null,
-      visibleModalStart: true,
+      visibleModalStart: false,
       visibleModalUpdate: false,
       text: '',
       isFocused: false ,
@@ -48,7 +48,7 @@ export default class App extends Component {
   }
 
   //Subscribe to a PubNub Channel
-  componentWillMount() {
+  async componentWillMount() {
     this.pubnub.subscribe({
       channels: ['channel1'],
       withPresence: true
@@ -73,7 +73,6 @@ export default class App extends Component {
 
   //Track User GPS Data
   async componentDidMount() {
-
     // Store boolean value so modal init only opens on app boot
     const wasShown = await AsyncStorage.getItem('key'); // get key
 
