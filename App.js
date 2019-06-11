@@ -19,6 +19,7 @@ import Timeout from "smart-timeout";
 import EmojiBar from "./src/components/EmojiBar/EmojiBar";
 import MessageInput from './src/components/MessageInput/MessageInput';
 
+console.disableYellowBox = true;
 
 export default class App extends Component {
   constructor(props) {
@@ -674,7 +675,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold"
   },
   topBar: {
-    top: 50,
+    top: Platform.OS === "android" ? 20 : 50,
     right: 10,
     flexDirection: "row",
     justifyContent: "space-between",
