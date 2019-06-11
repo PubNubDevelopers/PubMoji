@@ -16,6 +16,7 @@ import SplashScreen from './src/components/SplashScreen';
 import EmojiBar from './src/components/EmojiBar/EmojiBar';
 import ModalAppInit from './src/components/ModalAppInit';
 import ModalAppUpdate from './src/components/ModalAppUpdate';
+import InfoModal from './src/components/InfoModal';
 import AsyncStorage from '@react-native-community/async-storage';
 import MessageInput from './src/components/MessageInput/MessageInput';
 import Timeout from "smart-timeout";
@@ -43,7 +44,7 @@ export default class App extends Component {
       currentPicture: null,
       visibleModalStart: false,
       visibleModalUpdate: true,
-      modalInfo: false,
+      infoModal: false,
       isFocused: false ,
       messages: new Map(),
       emojis: new Map(),
@@ -64,13 +65,6 @@ export default class App extends Component {
         3000
       )
     );
-  }
-
-  //Unsubscribe PubNub Channel
-  componentWillUnmount() {
-    this.pubnub.unsubscribe({
-      channels: ['channel1']
-    });
   }
 
   //Track User GPS Data
@@ -423,7 +417,7 @@ export default class App extends Component {
   toggleAbout = () => {
     this.publishMessage();
     this.setState({
-      showAbout: !this.state.showAbout
+      infoModal: !this.state.infoModal
     });
   };
   toggleGPS = () => {
@@ -573,14 +567,14 @@ export default class App extends Component {
           />           
         </Modal>
 
-        <View style={styles.view}>
-         <Modal isVisible={this.state.infoModal}>
-           <View style={styles.modal}>
-             <Image source={require("./assets/images/Pubmoji.png")} style={{height: 180, width:250, }} />
-             <Text style={styles.text}>I am the modal content!</Text>
-           </View>
-         </Modal>
-        </View>
+
+        <Modal isVisible={this.state.infoModal}>
+          <InfoModal
+          />           
+        </Modal>
+
+
+
 
         <MapView
           style={styles.map}
@@ -815,4 +809,5 @@ const styles = StyleSheet.create({
   buttonContainer: {
     flexDirection: "row"
   },
+
 });
