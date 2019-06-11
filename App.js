@@ -576,7 +576,7 @@ export default class App extends Component {
         <View style={styles.view}>
          <Modal isVisible={this.state.infoModal}>
            <View style={styles.modal}>
-             <Image style={styles.image} source={require('./Pubmoji.png')} style={{height: 180, width:250, }} />
+             <Image source={require("./assets/images/Pubmoji.png")} style={{height: 180, width:250, }} />
              <Text style={styles.text}>I am the modal content!</Text>
            </View>
          </Modal>
