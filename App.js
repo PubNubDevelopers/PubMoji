@@ -43,13 +43,14 @@ export default class App extends Component {
       currentPicture: null,
       visibleModalStart: false,
       visibleModalUpdate: true,
+      modalInfo: false,
       isFocused: false ,
       messages: new Map(),
       emojis: new Map(),
       allowGPS: true,
       showAbout: false,
       emojiCount: 0,
-      emojiType: 1
+      emojiType: 1,
     };
 
     this.pubnub.init(this);
@@ -571,6 +572,16 @@ export default class App extends Component {
           closeModalInit={this.closeModalInit}
           />           
         </Modal>
+
+        <View style={styles.view}>
+         <Modal isVisible={this.state.infoModal}>
+           <View style={styles.modal}>
+             <Image style={styles.image} source={require('./Pubmoji.png')} style={{height: 180, width:250, }} />
+             <Text style={styles.text}>I am the modal content!</Text>
+           </View>
+         </Modal>
+        </View>
+
         <MapView
           style={styles.map}
           ref={ref => (this.map = ref)}
