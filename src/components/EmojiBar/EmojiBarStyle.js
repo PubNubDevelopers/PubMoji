@@ -39,7 +39,7 @@ export default StyleSheet.create({
   // Body
   viewBody: {
     borderWidth: 0,
-    borderColor: "purple",
+    borderColor: 'purple'
   },
 
   // Top blank space
