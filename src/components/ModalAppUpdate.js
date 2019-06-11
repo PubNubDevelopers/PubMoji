@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import {StyleSheet, Text, TouchableHighlight, View, Image, TextInput, Alert, TouchableOpacity} from 'react-native';
+import {StyleSheet, Text, TouchableHighlight, View, Image, TextInput, Alert, TouchableOpacity, Button} from 'react-native';
 import { ButtonGroup } from 'react-native-elements';
 
 const img1 = require('../../assets/images/person-male.png');
@@ -137,98 +137,105 @@ export default class ModalAppUpdate extends Component {
         const buttonsTwo = [{ element: component4, id: 4 }, { element: component5, id: 5 }, { element: component6, id: 6 }];
                 
         return (
-          <View>
-            <View style={styles.content}>
-                <View style={styles.textContent}> 
-                    <Text style={styles.text}>Profile Picture</Text> 
-                </View>
-                <ButtonGroup
-                  selectedIndex={this.state.selectedIndexRowOne}
-                  buttons={buttonsOne}
-                  onPress={this.updateIndexOne}
-                  containerStyle={{height: 70}}
-                />   
-                <ButtonGroup
-                  selectedIndex={this.state.selectedIndexRowTwo}
-                  buttons={buttonsTwo}
-                  onPress={this.updateIndexTwo}
-                  containerStyle={{height: 70}}
-                />    
+          <View style={styles.content}>
+            <View style={styles.textContent}> 
+                <Text style={styles.text}>Profile Picture</Text> 
+            </View>
+            <ButtonGroup
+              selectedIndex={this.state.selectedIndexRowOne}
+              buttons={buttonsOne}
+              onPress={this.updateIndexOne}
+              containerStyle={{height: 70}}
+            />   
+            <ButtonGroup
+              selectedIndex={this.state.selectedIndexRowTwo}
+              buttons={buttonsTwo}
+              onPress={this.updateIndexTwo}
+              containerStyle={{height: 70}}
+            />    
 
-                <View style={styles.username}>
-                    <TextInput 
-                      style={{flex: 1}}
-                      type="TextInput" 
-                      name="myTextInput" 
-                      placeholder='Change your username' 
-                      underlineColorAndroid={
-                      isFocused ?
-                      "rgb(208,33,41)" : "#D3D3D3"
-                      }
-                      onFocus={this.handleFocus}
-                      onBlur={this.handleBlur}
-                      value={this.state.text}
-                      onChangeText={(text) => this.setState({text})}                 
-                    />            
-                </View>
-                <View style={styles.buttonContainer}>
-                    <TouchableHighlight
-                        activeOpacity={1}
-                        underlayColor={'white'}
-                        style={
+            <View style={styles.username}>
+                <TextInput 
+                  style={{flex: 1}}
+                  type="TextInput" 
+                  name="myTextInput" 
+                  placeholder='Change your username' 
+                  underlineColorAndroid={
+                  isFocused ?
+                  "rgb(208,33,41)" : "#D3D3D3"
+                  }
+                  onFocus={this.handleFocus}
+                  onBlur={this.handleBlur}
+                  value={this.state.text}
+                  onChangeText={(text) => this.setState({text})}                 
+                />            
+            </View>
+
+            <View style={styles.container}>
+              <View style={styles.buttonContainer}>
+                <TouchableHighlight
+                      activeOpacity={1}
+                      underlayColor={'white'}
+                      style={
+                        this.state.pressStatusCancel
+                            ? styles.buttonPressed
+                            : styles.buttonNotPressed
+                      }     
+                        onHideUnderlay={this.onHideUnderlayCancelButton}
+                        onShowUnderlay={this.onShowUnderlayCancelButton}               
+                        onPress={this.cancelProfile}
+                      >
+                        <Text 
+                          style={
                           this.state.pressStatusCancel
-                              ? styles.buttonPressed
-                              : styles.buttonNotPressed
-                        }     
-                          onHideUnderlay={this.onHideUnderlayCancelButton}
-                          onShowUnderlay={this.onShowUnderlayCancelButton}               
-                          onPress={this.cancelProfile}
-                        >
-                          <Text 
-                            style={
-                            this.state.pressStatusCancel
-                                ? styles.cancelPressed
-                                : styles.cancelNotPressed
-                                }
-                            > 
-                            Cancel
-                          </Text>
-                    </TouchableHighlight>
-
-                    <TouchableHighlight
-                        activeOpacity={1}
-                        underlayColor={'white'}
-                        style={
+                              ? styles.cancelPressed
+                              : styles.cancelNotPressed
+                              }
+                          > 
+                          Cancel
+                        </Text>
+                  </TouchableHighlight>
+              </View>
+              <View style={styles.buttonContainer}>
+                <TouchableHighlight
+                      activeOpacity={1}
+                      underlayColor={'white'}
+                      style={
+                        this.state.pressStatusConfirm
+                            ? styles.buttonPressed
+                            : styles.buttonNotPressed
+                      }     
+                        onHideUnderlay={this.onHideUnderlayConfirmButton}
+                        onShowUnderlay={this.onShowUnderlayConfirmButton}               
+                        onPress={this.updateProfile}
+                      >
+                        <Text 
+                          style={
                           this.state.pressStatusConfirm
-                              ? styles.buttonPressed
-                              : styles.buttonNotPressed
-                        }     
-                          onHideUnderlay={this.onHideUnderlayConfirmButton}
-                          onShowUnderlay={this.onShowUnderlayConfirmButton}               
-                          onPress={this.updateProfile}
-                        >
-                          <Text 
-                            style={
-                            this.state.pressStatusConfirm
-                                ? styles.cancelPressed
-                                : styles.cancelNotPressed
-                                }
-                            > 
-                            Confirm
-                          </Text>
-                    </TouchableHighlight>
-                </View>
+                              ? styles.cancelPressed
+                              : styles.cancelNotPressed
+                              }
+                          > 
+                          Confirm
+                        </Text>
+                  </TouchableHighlight>
               </View>
             </View>
+          </View>
         );
     }       
 }
 
 
 const styles = StyleSheet.create({
-  buttonContainer: {
+  container: {
     flexDirection: 'row',
   },
+  buttonContainer: {
+    paddingRight: 5,
+    paddingLeft: 6
+  },
+
   buttonPressed:{
     borderColor: 'rgb(208,33,41)',
     borderWidth: 1,

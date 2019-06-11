@@ -28,6 +28,8 @@ export default class App extends Component {
       subscribeKey: "sub-c-1ef826d4-78df-11e9-945c-2ea711aa6b65"
     });
 
+    console.disableYellowBox = true;
+
     //Base State
     this.state = {
       currentLoc: {
@@ -39,10 +41,10 @@ export default class App extends Component {
       fixedOnUUID: "",
       focusOnMe: false,
       users: new Map(),
-      isLoading: true,
+      isLoading: false,
       currentPicture: null,
       visibleModalStart: false,
-      visibleModalUpdate: true,
+      visibleModalUpdate: false,
       isFocused: false ,
       messages: new Map(),
       emojis: new Map(),
@@ -88,6 +90,7 @@ export default class App extends Component {
      
     // get profile pic if available
     const storeProfilePic =  await AsyncStorage.getItem('profile_pic_key');
+    console.log(storeProfilePic);
     if(storeProfilePic !=  null){
       this.setState({currentPicture: parseInt(storeProfilePic)});
     }
