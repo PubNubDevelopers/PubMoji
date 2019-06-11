@@ -15,7 +15,7 @@ const imgArrayRowTwo = [img4, img5, img6];
 export default class ModalAppUpdate extends Component {
     constructor(props) {
         super(props);
-        this.state = { 
+        this.state = {
             selectedIndexRowOne: -1,
             selectedIndexRowTwo: -1,
             text: '',
@@ -27,30 +27,30 @@ export default class ModalAppUpdate extends Component {
 
     updateIndexOne = (selectedIndexRowOne) => {
     if(this.state.selectedIndexRowTwo != -1){
-        this.setState({selectedIndexRowTwo: -1}); 
-    }  
+        this.setState({selectedIndexRowTwo: -1});
+    }
     this.setState({selectedIndexRowOne});
     }
 
     updateIndexTwo =  (selectedIndexRowTwo) => {
     if(this.state.selectedIndexRowOne != -1){
-        this.setState({selectedIndexRowOne: -1});  
-    }  
+        this.setState({selectedIndexRowOne: -1});
+    }
     this.setState({selectedIndexRowTwo});
     }
 
     handleFocus = () => {
       this.setState({isFocused: true});
     }
-  
+
     handleBlur = () => {
       this.setState({isFocused: false});
     }
-    
+
     cancelProfile = () => {
-      this.setState({selectedIndexRowOne: -1}); 
-      this.setState({selectedIndexRowTwo: -1}); 
-      this.setState({text: ''}); 
+      this.setState({selectedIndexRowOne: -1});
+      this.setState({selectedIndexRowTwo: -1});
+      this.setState({text: ''});
       this.props.closeModalUpdate(false);
     }
 
@@ -62,24 +62,29 @@ export default class ModalAppUpdate extends Component {
       if(selectedIndexRowOne === -1 && selectedIndexRowTwo === -1){
         if(text.length === 0){
           Alert.alert('Error','No changes were made');
-        }
-        else if(text.length > 16){
-          Alert.alert('Error', 'Username should be less than 16 characters');         
-        }
-        else{ 
-          console.log('profile updated');
-          this.setState({text: ''}); 
-          this.setState({ visibleModalUpdate: false });
+        }else if(text.length > 16){
+          Alert.alert('Error', 'Username should be less than 16 characters');
+        }else{
+          this.props.changeProfile(-1,this.state.text);
+          this.setState({text: ''});
+          this.props.closeModalUpdate(false);
         }
       }
       else{
+
         let getRowPic = (selectedIndexRowOne  > -1) ? true: false;
-        getRowPic = (getRowPic) ? imgArrayRowOne[selectedIndexRowOne]:
-          imgArrayRowTwo[selectedIndexRowTwo];
-        this.props.changeProfilePicture(getRowPic);
-        this.setState({selectedIndexRowOne: -1}); 
-        this.setState({selectedIndexRowTwo: -1}); 
-        this.setState({text: ''}); 
+        getRowPic = (getRowPic) ? imgArrayRowOne[selectedIndexRowOne]: imgArrayRowTwo[selectedIndexRowTwo];
+
+        if(text.length != 0 && text.length < 16){
+          this.props.changeProfile(getRowPic,this.state.text);
+          this.setState({text: ''});
+        }else{
+          this.props.changeProfile(getRowPic,"");
+        }
+
+        this.setState({selectedIndexRowOne: -1});
+        this.setState({selectedIndexRowTwo: -1});
+        this.setState({text: ''});
         this.props.closeModalUpdate(false);
       }
     }
@@ -90,77 +95,77 @@ export default class ModalAppUpdate extends Component {
 
     onShowUnderlayCancelButton = () => {
       this.setState({ pressStatusCancel: true });
-    }   
-    
+    }
+
     onHideUnderlayConfirmButton = () => {
       this.setState({ pressStatusConfirm: false });
     }
 
     onShowUnderlayConfirmButton = () => {
       this.setState({ pressStatusConfirm: true });
-    }   
+    }
 
     render() {
         const { isFocused } = this.state;
 
-        const component1 = () => 
+        const component1 = () =>
         <Image
           source={img1}
         />
-    
-        const component2 = () =>     
+
+        const component2 = () =>
         <Image
         source={img2}
         />
-    
-        const component3 = () => 
+
+        const component3 = () =>
         <Image
         source={img3}
         />
-    
-        const component4 = () =>                 
+
+        const component4 = () =>
         <Image
         source={img4}
         />
-    
-        const component5 = () =>                 
+
+        const component5 = () =>
         <Image
         source={img5}
         />
-    
-        const component6 = () =>                 
+
+        const component6 = () =>
         <Image
         source={img6}
         />
-    
+
         const buttonsOne = [{ element: component1}, { element: component2, id: 2 }, { element: component3, id: 3 }];
         const buttonsTwo = [{ element: component4, id: 4 }, { element: component5, id: 5 }, { element: component6, id: 6 }];
-                
+
         return (
           <View>
             <View style={styles.content}>
-                <View style={styles.textContent}> 
-                    <Text style={styles.text}>Profile Picture</Text> 
+                <View style={styles.textContent}>
+                    <Text style={styles.text}>Profile Picture</Text>
                 </View>
                 <ButtonGroup
                   selectedIndex={this.state.selectedIndexRowOne}
                   buttons={buttonsOne}
                   onPress={this.updateIndexOne}
                   containerStyle={{height: 70}}
-                />   
+                />
                 <ButtonGroup
                   selectedIndex={this.state.selectedIndexRowTwo}
                   buttons={buttonsTwo}
                   onPress={this.updateIndexTwo}
                   containerStyle={{height: 70}}
-                />    
+                />
 
                 <View style={styles.username}>
-                    <TextInput 
+                    <TextInput
                       style={{flex: 1}}
-                      type="TextInput" 
-                      name="myTextInput" 
-                      placeholder='Change your username' 
+                      type="TextInput"
+                      name="myTextInput"
+                      placeholder= {this.props.currentUsername}
                       underlineColorAndroid={
                       isFocused ?
                       "rgb(208,33,41)" : "#D3D3D3"
@@ -168,8 +173,8 @@ export default class ModalAppUpdate extends Component {
                       onFocus={this.handleFocus}
                       onBlur={this.handleBlur}
                       value={this.state.text}
-                      onChangeText={(text) => this.setState({text})}                 
-                    />            
+                      onChangeText={(text) => this.setState({text})}
+                    />
                 </View>
                 <View style={styles.buttonContainer}>
                     <TouchableHighlight
@@ -179,18 +184,18 @@ export default class ModalAppUpdate extends Component {
                           this.state.pressStatusCancel
                               ? styles.buttonPressed
                               : styles.buttonNotPressed
-                        }     
+                        }
                           onHideUnderlay={this.onHideUnderlayCancelButton}
-                          onShowUnderlay={this.onShowUnderlayCancelButton}               
+                          onShowUnderlay={this.onShowUnderlayCancelButton}
                           onPress={this.cancelProfile}
                         >
-                          <Text 
+                          <Text
                             style={
                             this.state.pressStatusCancel
                                 ? styles.cancelPressed
                                 : styles.cancelNotPressed
                                 }
-                            > 
+                            >
                             Cancel
                           </Text>
                     </TouchableHighlight>
@@ -202,18 +207,18 @@ export default class ModalAppUpdate extends Component {
                           this.state.pressStatusConfirm
                               ? styles.buttonPressed
                               : styles.buttonNotPressed
-                        }     
+                        }
                           onHideUnderlay={this.onHideUnderlayConfirmButton}
-                          onShowUnderlay={this.onShowUnderlayConfirmButton}               
+                          onShowUnderlay={this.onShowUnderlayConfirmButton}
                           onPress={this.updateProfile}
                         >
-                          <Text 
+                          <Text
                             style={
                             this.state.pressStatusConfirm
                                 ? styles.cancelPressed
                                 : styles.cancelNotPressed
                                 }
-                            > 
+                            >
                             Confirm
                           </Text>
                     </TouchableHighlight>
@@ -221,7 +226,7 @@ export default class ModalAppUpdate extends Component {
               </View>
             </View>
         );
-    }       
+    }
 }
 
 
@@ -250,8 +255,8 @@ const styles = StyleSheet.create({
     color: 'white'
   },
   username:{
-    flexDirection: 'row', 
-    height: 40, 
+    flexDirection: 'row',
+    height: 40,
     marginBottom: 10,
     paddingLeft: 6
   },
@@ -261,7 +266,7 @@ const styles = StyleSheet.create({
   },
   text: {
     fontFamily: 'roboto',
-    color: 'rgb(208,33,41)',  
+    color: 'rgb(208,33,41)',
     fontSize: 34,
     fontWeight: 'bold',
   },
@@ -272,5 +277,5 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderRadius: 5,
     borderColor: 'rgba(0, 0, 0, 0.1)',
-  },    
+  },
 });
