@@ -39,12 +39,8 @@ export default StyleSheet.create({
   // Body
   viewBody: {
     borderWidth: 0,
-<<<<<<< HEAD
     borderColor: 'purple',
     marginTop: Platform.OS === 'android' ? 475: 550
-=======
-    borderColor: "purple",
->>>>>>> master
   },
 
   // Top blank space

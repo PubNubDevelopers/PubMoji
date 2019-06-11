@@ -42,7 +42,7 @@ export default class App extends Component {
       isLoading: true,
       currentPicture: null,
       visibleModalStart: false,
-      visibleModalUpdate: false,
+      visibleModalUpdate: true,
       isFocused: false ,
       messages: new Map(),
       emojis: new Map(),
@@ -128,7 +128,6 @@ export default class App extends Component {
           emojiCount = msg.message.emojiCount;
         }
       } else {
-        console.log("got kill emojis");
         emojiCount = 0; //reset EmojiCount to 0
       }
       newEmoji = {
@@ -137,8 +136,6 @@ export default class App extends Component {
         emojiType: emojiType
       };
       emojis.set(msg.publisher, newEmoji);
-
-      //console.log("emojiCount: ", msg.message.emojiCount);
 
       this.setState(
         {
@@ -541,7 +538,6 @@ export default class App extends Component {
     this.setState({visibleModalUpdate: e });
   }
 
-
   render() {
     if(this.state.isLoading){
       return <SplashScreen />;
@@ -567,8 +563,6 @@ export default class App extends Component {
       }
     }
     let usersArray = Array.from(usersMap.values());
-    //console.log(usersArray)
-    //console.log(usersArray)
     return (
       <View style={styles.container}>
         <Modal isVisible={this.state.visibleModalStart}>
@@ -693,6 +687,11 @@ export default class App extends Component {
                   source={require('./assets/images/info.png')}
                 />
               </TouchableOpacity>
+              <Switch
+              value={this.state.allowGPS}
+              style={styles.locationSwitch}
+              onValueChange={this.toggleGPS}
+            />
           </View>
         </View>
 
@@ -738,7 +737,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold"
   },
   topBar: {
-    top: 50,
+    top: 30,
     right: 10,
     flexDirection: "row",
     justifyContent: "space-between",

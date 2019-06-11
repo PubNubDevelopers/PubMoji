@@ -67,20 +67,15 @@ export default class ModalAppUpdate extends Component {
           Alert.alert('Error', 'Username should be less than 16 characters');         
         }
         else{ 
-          // if(text.length > 0){
-          //   // publish username to channel and database
-          // }
           console.log('profile updated');
           this.setState({text: ''}); 
           this.setState({ visibleModalUpdate: false });
         }
       }
-      // else if(text.length)
       else{
         let getRowPic = (selectedIndexRowOne  > -1) ? true: false;
         getRowPic = (getRowPic) ? imgArrayRowOne[selectedIndexRowOne]:
           imgArrayRowTwo[selectedIndexRowTwo];
-        // console.log('getRowPic' + getRowPic);  
         this.props.changeProfilePicture(getRowPic);
         this.setState({selectedIndexRowOne: -1}); 
         this.setState({selectedIndexRowTwo: -1}); 
@@ -265,7 +260,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   text: {
-    fontFamily: 'proxima-nova',
+    fontFamily: 'roboto',
     color: 'rgb(208,33,41)',  
     fontSize: 34,
     fontWeight: 'bold',
