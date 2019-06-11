@@ -79,7 +79,7 @@ export default class ModalAppUpdate extends Component {
           this.props.changeProfile(getRowPic,this.state.text);
           this.setState({text: ''});
         }else{
-          this.props.changeProfilePicture(getRowPic,"");
+          this.props.changeProfile(getRowPic,"");
         }
 
         this.setState({selectedIndexRowOne: -1});
