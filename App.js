@@ -415,7 +415,6 @@ export default class App extends Component {
     this.map.animateToRegion(region, speed);
   };
   toggleAbout = () => {
-    this.publishMessage();
     this.setState({
       infoModal: !this.state.infoModal
     });
@@ -529,6 +528,7 @@ export default class App extends Component {
     this.setState({visibleModalStart: e });
   }
   
+  
   closeModalUpdate = (e) => {
     this.setState({visibleModalUpdate: e });
   }
@@ -570,6 +570,7 @@ export default class App extends Component {
 
         <Modal isVisible={this.state.infoModal}>
           <InfoModal
+          toggleAbout={this.toggleAbout}
           />           
         </Modal>
 
