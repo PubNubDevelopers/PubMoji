@@ -21,14 +21,14 @@ const styles = StyleSheet.create({
       marginBottom: -140
     },
     text: {
-      fontFamily: 'proxima-nova',
+      fontFamily: 'roboto',
     //   marginBottom: 250,
       color: 'rgb(208,33,41)',  
       fontSize: 80,
       fontWeight: 'bold',
     },
     bottom: {
-      fontFamily: 'proxima-nova',
+      fontFamily: 'roboto',
       color: 'rgb(208,33,41)',  
       fontSize: 30,
       }

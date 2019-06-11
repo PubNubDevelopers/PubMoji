@@ -117,11 +117,15 @@ android {
         }
     }
     buildTypes {
+        debug {
+            resValue 'string', "api_key", Google_Maps_ApiKey
+        }
         release {
             minifyEnabled enableProguardInReleaseBuilds
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
+            resValue 'string', "api_key", Google_Maps_ApiKey
         }
-    }
+    }    
     // applicationVariants are e.g. debug, release
     applicationVariants.all { variant ->
         variant.outputs.each { output ->
@@ -139,6 +143,8 @@ android {
 
 dependencies {
     implementation project(':react-native-vector-icons')
+    implementation project(':@react-native-community_async-storage')
+    implementation project(':react-native-maps')
     implementation project(':react-native-fast-image')
     implementation project(':react-native-sound')
     implementation fileTree(dir: "libs", include: ["*.jar"])

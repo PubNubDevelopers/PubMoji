@@ -1,6 +1,4 @@
-// Modal implented with modifying profile pic in map
-
-import React, { Component } from "react";
+import React, {Component} from 'react';
 import {
   Platform,
   StyleSheet,
@@ -10,15 +8,17 @@ import {
   Image,
   Switch,
   TouchableOpacity,
-} from "react-native";
-import MapView, { Marker } from "react-native-maps";
-import PubNubReact from "pubnub-react";
-import * as Animatable from "react-native-animatable";
+} from "react-native";import MapView, {Marker} from 'react-native-maps';
+import PubNubReact from 'pubnub-react';
+import * as Animatable from 'react-native-animatable';
 import Modal from "react-native-modal";
-import Timeout from "smart-timeout";
-import EmojiBar from "./src/components/EmojiBar/EmojiBar";
+import SplashScreen from './src/components/SplashScreen';
+import EmojiBar from './src/components/EmojiBar/EmojiBar';
+import ModalAppInit from './src/components/ModalAppInit';
+import ModalAppUpdate from './src/components/ModalAppUpdate';
+import AsyncStorage from '@react-native-community/async-storage';
 import MessageInput from './src/components/MessageInput/MessageInput';
-
+import Timeout from "smart-timeout";
 
 export default class App extends Component {
   constructor(props) {
@@ -39,20 +39,59 @@ export default class App extends Component {
       fixedOnUUID: "",
       focusOnMe: false,
       users: new Map(),
+      isLoading: true,
+      currentPicture: null,
+      visibleModalStart: false,
+      visibleModalUpdate: true,
+      isFocused: false ,
       messages: new Map(),
       emojis: new Map(),
       allowGPS: true,
       showAbout: false,
-      currentPicture: require("./boss.png"),
       emojiCount: 0,
       emojiType: 1
     };
 
     this.pubnub.init(this);
+
+  }
+
+  performTimeConsumingTask = async() => {
+    return new Promise((resolve) =>
+      setTimeout(
+        () => { resolve('result') },
+        3000
+      )
+    );
+  }
+
+  //Unsubscribe PubNub Channel
+  componentWillUnmount() {
+    this.pubnub.unsubscribe({
+      channels: ['channel1']
+    });
   }
 
   //Track User GPS Data
-  componentDidMount() {
+  async componentDidMount() {
+    // Store boolean value so modal init only opens on app boot
+    const wasShown = await AsyncStorage.getItem('key'); // get key
+
+    if(wasShown === null) {
+      await AsyncStorage.setItem('key', '"true"');
+      this.setState({visibleModalStart: true, wasShown});
+    }
+
+    else{
+      this.setState({visibleModalStart: false, wasShown});   
+    }
+     
+    // get profile pic if available
+    const storeProfilePic =  await AsyncStorage.getItem('profile_pic_key');
+    if(storeProfilePic !=  null){
+      this.setState({currentPicture: parseInt(storeProfilePic)});
+    }
+    
     //PubNub
     this.pubnub.getMessage("message", msg => {
       console.log("MSG: ", msg);
@@ -89,7 +128,6 @@ export default class App extends Component {
           emojiCount = msg.message.emojiCount;
         }
       } else {
-        console.log("got kill emojis");
         emojiCount = 0; //reset EmojiCount to 0
       }
       newEmoji = {
@@ -98,8 +136,6 @@ export default class App extends Component {
         emojiType: emojiType
       };
       emojis.set(msg.publisher, newEmoji);
-
-      //console.log("emojiCount: ", msg.message.emojiCount);
 
       this.setState(
         {
@@ -241,6 +277,11 @@ export default class App extends Component {
         distanceFilter: 100
       }
     );
+    const data = await this.performTimeConsumingTask();
+  
+    if (data !== null) {
+      this.setState({ isLoading: false });
+    }
   }
 
   clearMessage = uuid => {
@@ -272,6 +313,7 @@ export default class App extends Component {
     );
     console.log("publishing");
   };
+
   componentWillUnmount() {
     this.pubnub.publish({
       message: {
@@ -285,6 +327,7 @@ export default class App extends Component {
     this.pubnub.unsubscribeAll();
     navigator.geolocation.clearWatch(this.watchID);
   }
+
   componentDidUpdate(prevProps, prevState) {
     if (prevState.allowGPS != this.state.allowGPS) {
       if (this.state.allowGPS) {
@@ -458,7 +501,6 @@ export default class App extends Component {
     }
   };
   killEmoji = () => {
-    console.log("PENIIIIIS");
     this.pubnub.publish({
       message: {
         emojiCount: -1,
@@ -483,7 +525,24 @@ export default class App extends Component {
     );
   };
 
+  changeProfilePicture = async (e) => {
+    await AsyncStorage.setItem('profile_pic_key', JSON.stringify(e));
+    this.setState({currentPicture: e });
+  }
+
+  closeModalInit = (e) => {
+    this.setState({visibleModalStart: e });
+  }
+  
+  closeModalUpdate = (e) => {
+    this.setState({visibleModalUpdate: e });
+  }
+
   render() {
+    if(this.state.isLoading){
+      return <SplashScreen />;
+    }
+
     let about;
     let usersMap = this.state.users;
     let messagesMap = this.state.messages;
@@ -504,10 +563,14 @@ export default class App extends Component {
       }
     }
     let usersArray = Array.from(usersMap.values());
-    //console.log(usersArray)
-    //console.log(usersArray)
     return (
       <View style={styles.container}>
+        <Modal isVisible={this.state.visibleModalStart}>
+          <ModalAppInit 
+          changeProfilePicture={this.changeProfilePicture}
+          closeModalInit={this.closeModalInit}
+          />           
+        </Modal>
         <MapView
           style={styles.map}
           ref={ref => (this.map = ref)}
@@ -601,24 +664,30 @@ export default class App extends Component {
             </Marker>
           ))}
         </MapView>
-
-
-        <View style={styles.topBar}>
-          <TouchableOpacity onPress={this.displayMesasges}>
-            <Image
-              style={styles.profile}
-              source={require("./assets/images/profile.png")}
-            />
-          </TouchableOpacity>
-
-          <View style={styles.rightBar}>
-            <TouchableOpacity onPress={this.toggleAbout}>
+                
+          <View style={styles.topBar}> 
+            <TouchableOpacity onPress={() => this.setState({ visibleModalUpdate: !this.state.visibleModalUpdate })}>
               <Image
-                style={styles.info}
-                source={require("./assets/images/info.png")}
+                style={styles.profile}
+                source={require('./assets/images/profile.png')}
               />
             </TouchableOpacity>
-            <Switch
+
+            <Modal isVisible={this.state.visibleModalUpdate}>
+              <ModalAppUpdate 
+                changeProfilePicture={this.changeProfilePicture}
+                closeModalUpdate={this.closeModalUpdate}
+                />            
+            </Modal>
+
+            <View style={styles.rightBar}>
+              <TouchableOpacity onPress={this.toggleAbout}>
+                <Image
+                  style={styles.info}
+                  source={require('./assets/images/info.png')}
+                />
+              </TouchableOpacity>
+              <Switch
               value={this.state.allowGPS}
               style={styles.locationSwitch}
               onValueChange={this.toggleGPS}
@@ -626,9 +695,7 @@ export default class App extends Component {
           </View>
         </View>
 
-
-
-          <View style={styles.bottom}>
+        <View style={styles.bottom}>
             <EmojiBar {...this.state} pubnub={this.pubnub} />
             <View style={styles.bottomRow}>
               <MessageInput {...this.state} pubnub={this.pubnub}/>
@@ -636,13 +703,9 @@ export default class App extends Component {
                   <Image style={styles.focusLoc} source={gpsImage} />
                 </TouchableOpacity>
             </View>
-
-
-
-          </View>
+        </View>
       </View>
-    );
-
+   );
   }
 }
 
@@ -741,5 +804,4 @@ const styles = StyleSheet.create({
   buttonContainer: {
     flexDirection: "row"
   },
-
 });
