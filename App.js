@@ -65,12 +65,7 @@ export default class App extends Component {
     );
   }
 
-  //Unsubscribe PubNub Channel
-  componentWillUnmount() {
-    this.pubnub.unsubscribe({
-      channels: ['channel1']
-    });
-  }
+
 
   //Track User GPS Data
   async componentDidMount() {
@@ -586,7 +581,7 @@ export default class App extends Component {
     if(this.state.isLoading){
       return <SplashScreen />;
     }
-
+    
     let about;
     let usersMap = this.state.users;
     let messagesMap = this.state.messages;
