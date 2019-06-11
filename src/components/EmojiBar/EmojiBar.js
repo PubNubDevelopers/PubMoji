@@ -6,6 +6,7 @@ import {
   PanResponder,
   Text,
   TouchableOpacity,
+  Platform,
   View
 } from "react-native";
 import Sound from "react-native-sound";
@@ -180,7 +181,7 @@ export default class AnimationScreen extends Component {
     // so the range we check is about 150 -> 450
     if (
       gestureState.y0 + gestureState.dy >= 600 &&
-      gestureState.y0 + gestureState.dy <= 1000
+      gestureState.y0 + gestureState.dy <= 900
     ) {
       this.isDragging = true;
       this.isDraggingOutside = false;

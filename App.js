@@ -737,7 +737,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold"
   },
   topBar: {
-    top: 30,
+    top: 50,
     right: 10,
     flexDirection: "row",
     justifyContent: "space-between",
