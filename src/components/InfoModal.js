@@ -17,11 +17,9 @@ render() {
             <View style={styles.content}>
                 <View style={styles.textContent}> 
                     <Image source={img1} style={{height: 180, width:250, marginLeft: 15 }}/>
-
                     <Text style={styles.text}>Pubmoji is an interactive phone application designed to demonstrate PubNub's capabilities.</Text>
                     <Text style={styles.text}>Let others know how you're feeling by spamming the different emojis or typing in a message!</Text>  
                     <Text style={styles.text}>Zoom in the map and watch as emojis and messages fly out of people's avatars in realtime!</Text>
-
                 </View>
             </View>
         </View>
@@ -45,7 +43,7 @@ const styles = StyleSheet.create({
       fontSize: 30,
       },
     text: {
-      color: 'rgb(208,33,41)',  
+      color: 'rgb(208,33,41)',  //or #1E1E1E
       fontSize: 18,
       fontWeight: 'bold',
       alignContent: 'center',
