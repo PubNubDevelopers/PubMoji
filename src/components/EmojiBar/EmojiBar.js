@@ -723,7 +723,7 @@ export default class AnimationScreen extends Component {
       this.soundIconChoose.play();
     }
     this.props.pubnub.publish({
-      message: { emojiType: this.whichIconUserChoose, emojiCount: 1 },
+      message: { latitude:this.props.currentLoc.latitude, longitude: this.props.currentLoc.longitude, emojiType: this.whichIconUserChoose, emojiCount: 1 },
       channel: "emoji"
     });
   };
