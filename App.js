@@ -16,6 +16,7 @@ import SplashScreen from './src/components/SplashScreen';
 import EmojiBar from './src/components/EmojiBar/EmojiBar';
 import ModalAppInit from './src/components/ModalAppInit';
 import ModalAppUpdate from './src/components/ModalAppUpdate';
+import InfoModal from './src/components/InfoModal';
 import AsyncStorage from '@react-native-community/async-storage';
 import MessageInput from './src/components/MessageInput/MessageInput';
 import Timeout from "smart-timeout";
@@ -49,7 +50,7 @@ export default class App extends Component {
       allowGPS: true,
       showAbout: false,
       emojiCount: 0,
-      emojiType: 1
+      emojiType: 1,
     };
 
     this.pubnub.init(this);
@@ -420,9 +421,8 @@ export default class App extends Component {
     this.map.animateToRegion(region, speed);
   };
   toggleAbout = () => {
-    this.publishMessage();
     this.setState({
-      showAbout: !this.state.showAbout
+      infoModal: !this.state.infoModal
     });
   };
   toggleGPS = () => {
@@ -572,7 +572,6 @@ export default class App extends Component {
   closeModalInit = (e) => {
     this.setState({visibleModalStart: e });
   }
-
   closeModalUpdate = (e) => {
     this.setState({visibleModalUpdate: e });
   }
@@ -610,6 +609,17 @@ export default class App extends Component {
             closeModalInit={this.closeModalInit}
           />
         </Modal>
+
+
+        <Modal isVisible={this.state.infoModal}>
+          <InfoModal
+          toggleAbout={this.toggleAbout}
+          />           
+        </Modal>
+
+
+
+
         <MapView
           style={styles.map}
           ref={ref => (this.map = ref)}
@@ -843,4 +853,5 @@ const styles = StyleSheet.create({
   buttonContainer: {
     flexDirection: "row"
   },
+
 });
