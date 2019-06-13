@@ -7,8 +7,10 @@ import {
   Text,
   TouchableOpacity,
   Platform,
-  View
+  View,
+
 } from "react-native";
+import {widthPercentageToDP as wp, heightPercentageToDP as hp} from 'react-native-responsive-screen';
 import Sound from "react-native-sound";
 
 import styles from "./EmojiBarStyle";
@@ -179,8 +181,8 @@ export default class AnimationScreen extends Component {
     // the margin top the box is 100
     // and plus the height of toolbar and the status bar
     // so the range we check is about 150 -> 450
-    if ((Platform.OS === 'android' && gestureState.y0 + gestureState.dy >= 600 && gestureState.y0 + gestureState.dy <= 1000)
-      || (Platform.OS === 'ios' && gestureState.y0 + gestureState.dy >= 600 && gestureState.y0 + gestureState.dy <= 1000)) {
+    if (gestureState.y0 + gestureState.dy >= hp('80%') && gestureState.y0 + gestureState.dy <= hp('87%')){
+
       this.isDragging = true;
       this.isDraggingOutside = false;
 
@@ -736,10 +738,7 @@ export default class AnimationScreen extends Component {
   render() {
     return (
       <View style={styles.viewBody} {...this.rootPanResponder.panHandlers}>
-        {/* Top space */}
-        {/*          <View style={styles.viewTopSpace}/>
-         */}
-        {/* Content */}
+
         <View style={styles.viewContent}>
           {/* Box */}
           <Animated.View
