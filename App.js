@@ -588,16 +588,10 @@ export default class App extends Component {
               />
             </TouchableOpacity>
 
-            <Modal isVisible={this.state.visibleModalUpdate}>
-              <ModalAppUpdate
-                currentUsername={this.state.username}
-                changeProfile={this.changeProfile}
-                closeModalUpdate={this.closeModalUpdate}
-                />
-            </Modal>
+
 
             <View style={styles.rightBar}>
-              <TouchableOpacity onPress={this.toggleAbout}>
+              <TouchableOpacity onPress={() => {console.log("coming soon")}}>
                 <Image
                   style={styles.info}
                   source={require('./assets/images/info.png')}
@@ -620,7 +614,14 @@ export default class App extends Component {
                 </TouchableOpacity>
             </View>
         </View>
-        <View style={{ height: hp("40%") }} />
+        <Modal isVisible={this.state.visibleModalUpdate}>
+          <ModalAppUpdate
+            currentUsername={this.state.username}
+            changeProfile={this.changeProfile}
+            closeModalUpdate={this.closeModalUpdate}
+            />
+        </Modal>
+
       </KeyboardAvoidingView>
    );
   }
