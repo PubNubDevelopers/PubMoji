@@ -5,7 +5,7 @@ import {
   Text,
   Button,
   View,
-  Image,
+  Image, Animated,
   Switch,
   TouchableOpacity,
 } from "react-native";import MapView, {Marker} from 'react-native-maps';
@@ -28,7 +28,7 @@ export default class App extends Component {
       publishKey: "pub-c-d93d7b15-4e46-42f4-ba03-c5d997844b9e",
       subscribeKey: "sub-c-1ef826d4-78df-11e9-945c-2ea711aa6b65"
     });
-
+    this.moveAnimation = new Animated.ValueXY({ x: 10, y: 450 })
     //Base State
     this.state = {
       currentLoc: {
@@ -40,7 +40,7 @@ export default class App extends Component {
       fixedOnUUID: "",
       focusOnMe: false,
       users: new Map(),
-      isLoading: true,
+      isLoading: false,
       currentPicture: null,
       visibleModalStart: false,
       visibleModalUpdate: false,
@@ -247,7 +247,7 @@ export default class App extends Component {
         }
       },
       error => console.log("Maps Error: ", error),
-      { enableHighAccuracy: true, timeout: 2000, maximumAge: 1000 }
+      { enableHighAccuracy: true, timeout: 5000, maximumAge: 1000 }
     );
     //Track motional Coordinates
     navigator.geolocation.watchPosition(
@@ -273,7 +273,7 @@ export default class App extends Component {
       error => console.log("Maps Error: ", error),
       {
         enableHighAccuracy: true,
-        timeout: 2000,
+        timeout: 5000,
         maximumAge: 1000,
         distanceFilter: 100
       }
@@ -580,7 +580,7 @@ export default class App extends Component {
     if(this.state.isLoading){
       return <SplashScreen />;
     }
-    
+
     let about;
     let usersMap = this.state.users;
     let messagesMap = this.state.messages;
@@ -614,7 +614,7 @@ export default class App extends Component {
         <Modal isVisible={this.state.infoModal}>
           <InfoModal
           toggleAbout={this.toggleAbout}
-          />           
+          />
         </Modal>
 
 
@@ -651,53 +651,37 @@ export default class App extends Component {
                 {(function() {
                   let rows = [];
                   for (let i = 0; i < item.emojiCount; i++) {
-                    console.log(item.emojiCount);
+                    //console.log(item.emojiCount);
+                    let emoji;
+                    switch (item.emojiType) {
+                      case 1: emoji = require("./src/Images/like2.png")
+                        break;
+                      case 2: emoji = require("./src/Images/love2.png")
+                        break;
+                      case 3: emoji = require("./src/Images/haha2.png")
+                        break;
+                      case 4: emoji = require("./src/Images/wow2.png")
+                        break;
+                      case 5: emoji = require("./src/Images/sad2.png")
+                        break;
+                      case 6: emoji = require("./src/Images/angry2.png")
+                        break;
+
+                      default:
+
+                    }
                     rows.push(
-                      <Animatable.View
+                      <Animatable.Image
                         animation="fadeOutUp"
-                        duration={1000}
+                        duration={1500}
                         iterationCount={1}
                         direction="normal"
                         easing="ease-out"
                         key={i}
+                        source={emoji}
+                        style={styles.emoji}
                       >
-                        {item.emojiType == 1 && (
-                          <Image
-                            source={require("./src/Images/like2.png")}
-                            style={styles.emoji}
-                          />
-                        )}
-                        {item.emojiType == 2 && (
-                          <Image
-                            source={require("./src/Images/love2.png")}
-                            style={styles.emoji}
-                          />
-                        )}
-                        {item.emojiType == 3 && (
-                          <Image
-                            source={require("./src/Images/haha2.png")}
-                            style={styles.emoji}
-                          />
-                        )}
-                        {item.emojiType == 4 && (
-                          <Image
-                            source={require("./src/Images/wow2.png")}
-                            style={styles.emoji}
-                          />
-                        )}
-                        {item.emojiType == 5 && (
-                          <Image
-                            source={require("./src/Images/sad2.png")}
-                            style={styles.emoji}
-                          />
-                        )}
-                        {item.emojiType == 6 && (
-                          <Image
-                            source={require("./src/Images/angry2.png")}
-                            style={styles.emoji}
-                          />
-                        )}
-                      </Animatable.View>
+                    </Animatable.Image>
                     );
                   }
                   return rows;
@@ -768,8 +752,10 @@ const styles = StyleSheet.create({
     backgroundColor: "#9FA8DA"
   },
   marker: {
+
     justifyContent: "center",
-    alignItems: "center"
+    alignItems: "center",
+    marginTop: Platform.OS === "android" ? 50 : 0,
   },
   textBackground: {
     backgroundColor: "#D22028",
@@ -786,7 +772,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold"
   },
   topBar: {
-    top: 50,
+    top: Platform.OS === "android" ? 20 : 50,
     right: 10,
     flexDirection: "row",
     justifyContent: "space-between",
@@ -811,8 +797,7 @@ const styles = StyleSheet.create({
     alignSelf: "center",
     marginHorizontal: 16,
     marginBottom: 16,
-    borderWidth:0,
-    borderColor: 'blue'
+
   },
   focusLoc: {
     width: 30,
@@ -823,9 +808,10 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFillObject
   },
   emoji: {
-    height: 35,
-    width: 35,
+    height: 25,
+    width: 25,
     position: "absolute",
+
   },
   info: {
     width: 30,

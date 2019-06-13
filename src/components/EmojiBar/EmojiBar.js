@@ -179,7 +179,7 @@ export default class AnimationScreen extends Component {
     // the margin top the box is 100
     // and plus the height of toolbar and the status bar
     // so the range we check is about 150 -> 450
-    if ((Platform.OS === 'android' && gestureState.y0 + gestureState.dy >= 450 && gestureState.y0 + gestureState.dy <= 600)
+    if ((Platform.OS === 'android' && gestureState.y0 + gestureState.dy >= 600 && gestureState.y0 + gestureState.dy <= 1000)
       || (Platform.OS === 'ios' && gestureState.y0 + gestureState.dy >= 600 && gestureState.y0 + gestureState.dy <= 1000)) {
       this.isDragging = true;
       this.isDraggingOutside = false;
