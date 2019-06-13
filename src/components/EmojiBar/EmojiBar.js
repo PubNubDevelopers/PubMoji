@@ -7,7 +7,8 @@ import {
   Text,
   TouchableOpacity,
   Platform,
-  View
+  View,
+  Dimensions
 } from "react-native";
 import Sound from "react-native-sound";
 
@@ -15,6 +16,7 @@ import styles from "./EmojiBarStyle";
 import images from "../../Images/Images.js";
 
 import FastImage from "react-native-fast-image";
+
 
 export default class AnimationScreen extends Component {
   constructor(props) {
@@ -179,8 +181,10 @@ export default class AnimationScreen extends Component {
     // the margin top the box is 100
     // and plus the height of toolbar and the status bar
     // so the range we check is about 150 -> 450
-    if ((Platform.OS === 'android' && gestureState.y0 + gestureState.dy >= 450 && gestureState.y0 + gestureState.dy <= 600)
-      || (Platform.OS === 'ios' && gestureState.y0 + gestureState.dy >= 600 && gestureState.y0 + gestureState.dy <= 1000)) {
+    var { height, width } = Dimensions.get('window');
+    var minHeight = 0.80 * height;
+    var maxHeight = 0.90 * height;
+    if (gestureState.y0 + gestureState.dy >= minHeight && gestureState.y0 + gestureState.dy <= maxHeight) {
       this.isDragging = true;
       this.isDraggingOutside = false;
 
@@ -721,7 +725,12 @@ export default class AnimationScreen extends Component {
       this.soundIconChoose.play();
     }
     this.props.pubnub.publish({
-      message: { latitude:this.props.currentLoc.latitude, longitude: this.props.currentLoc.longitude, emojiType: this.whichIconUserChoose, emojiCount: 1 },
+      message: {
+        latitude:this.props.currentLoc.latitude,
+        longitude: this.props.currentLoc.longitude,
+        emojiType: this.whichIconUserChoose,
+        emojiCount: 1
+      },
       channel: "emoji"
     });
   };
