@@ -1,16 +1,13 @@
 import React, { Component } from 'react';
-import {StyleSheet, Dimensions, Text, TouchableHighlight, View, Image, TextInput, Alert, TouchableOpacity, Button} from 'react-native';
+import {StyleSheet, Text, TouchableHighlight, View, Image, TextInput, Alert, TouchableOpacity, Button} from 'react-native';
 import { ButtonGroup } from 'react-native-elements';
 
-const window = Dimensions.get('window');
-const {width, height, scale} = window;
-
-const img1 = require('../../assets/images/anon_mask.png');
-const img2 = require('../../assets/images/bear.png');
-const img3 = require('../../assets/images/rabbit.png');
-const img4 = require('../../assets/images/corgi.png');
-const img5 = require('../../assets/images/cat.png');
-const img6 = require('../../assets/images/dolphin.png');
+const img1 = require('../../assets/images/person-male.png');
+const img2 = require('../../assets/images/person-female.png');
+const img3 = require('../../assets/images/cat.png');
+const img4 = require('../../assets/images/doge.png');
+const img5 = require('../../assets/images/anonymous-mask.png');
+const img6 = require('../../assets/images/corgi.png');
 const imgArrayRowOne = [img1, img2, img3];
 const imgArrayRowTwo = [img4, img5, img6];
 
@@ -181,123 +178,97 @@ export default class ModalAppUpdate extends Component {
                       onChangeText={(text) => this.setState({text})}
                     />
                 </View>
-
-                <View style={styles.container}>
-                    <View style={styles.buttonContainer}>
-                        <TouchableHighlight
-                          activeOpacity={1}
-                          underlayColor={'white'}
-                          style={
+                <View style={styles.buttonContainer}>
+                    <TouchableHighlight
+                        activeOpacity={1}
+                        underlayColor={'white'}
+                        style={
+                          this.state.pressStatusCancel
+                              ? styles.buttonPressed
+                              : styles.buttonNotPressed
+                        }
+                          onHideUnderlay={this.onHideUnderlayCancelButton}
+                          onShowUnderlay={this.onShowUnderlayCancelButton}
+                          onPress={this.cancelProfile}
+                        >
+                          <Text
+                            style={
                             this.state.pressStatusCancel
-                                ? styles.buttonPressed
-                                : styles.buttonNotPressed
-                          }     
-                            onHideUnderlay={this.onHideUnderlayCancelButton}
-                            onShowUnderlay={this.onShowUnderlayCancelButton}               
-                            onPress={this.cancelProfile}
-                          >
-                            <Text 
-                              style={
-                              this.state.pressStatusCancel
-                                  ? styles.cancelPressed
-                                  : styles.cancelNotPressed
-                                  }
-                              > 
-                              Cancel
-                            </Text>
-                      </TouchableHighlight>
-                    </View>
-                    <View style={styles.buttonBorder}/>
-                      <View style={styles.buttonContainer}>
-                          <TouchableHighlight
-                          activeOpacity={1}
-                          underlayColor={'white'}
-                          style={
-                            this.state.pressStatusConfirm
-                                ? styles.buttonPressed
-                                : styles.buttonNotPressed
-                          }     
-                            onHideUnderlay={this.onHideUnderlayConfirmButton}
-                            onShowUnderlay={this.onShowUnderlayConfirmButton}               
-                            onPress={this.updateProfile}
-                          >
-                            <Text 
-                              style={
-                              this.state.pressStatusConfirm
-                                  ? styles.cancelPressed
-                                  : styles.cancelNotPressed
-                                  }
-                              > 
-                              Confirm
-                            </Text>
-                      </TouchableHighlight>
-                    </View>
-                </View>   
+                                ? styles.cancelPressed
+                                : styles.cancelNotPressed
+                                }
+                            >
+                            Cancel
+                          </Text>
+                    </TouchableHighlight>
             </View>
           </View>
+        </View>
         );
-      }
-  }
+    }
+}
+
 
 const styles = StyleSheet.create({
   buttonGroupSelectedButton:{
     backgroundColor: 'rgb(208,33,41)'
   },
-  container: {
-    flexDirection: 'row',
-    marginBottom: 3,
-    paddingLeft: 6,
-    paddingRight: 6
+  // container: {
+  //   flex: 1,
+  //   // flexDirection: 'row',
+  //   // alignContent: 'center',
+  //  // alignItems: 'flex-start',   
+  //   // backgroundColor: 'white',
+  //   // marginBottom: 80,
+  //   // marginTop: 50,
+  // },
+  buttonContainer: {
+    // paddingRight: 5,
+    // paddingLeft: 6,
+    // justifyContent:'flex-end',
+    alignItems: 'stretch',
+    textAlign: 'center'
+    // alignItems: 'center'
+    // width: 10
   },
 
-  buttonContainer: {
-    flex: 1,
-    textAlign: 'center',
-  },
-  buttonBorder: {
-    borderLeftWidth: 4,
-    borderLeftColor: 'white'
-  },
   buttonPressed:{
     borderColor: 'rgb(208,33,41)',
-    alignSelf: 'stretch',
     borderWidth: 1,
+    padding: 10,
     borderRadius: 5,
+    // textAlign: 'center'
   },
   buttonNotPressed: {
     backgroundColor: 'rgb(208,33,41)',
-    alignSelf: 'stretch',
     borderColor: 'rgb(208,33,41)',
     borderWidth: 1,
+    padding: 10,
     borderRadius: 5,
+    // textAlign: 'center'
   },
   cancelPressed:{
     textAlign: 'center',
+    alignItems: 'center',
     color: 'rgb(208,33,41)',
-    paddingTop: 9,
-    paddingBottom: 9,
-    fontSize: 16,
   },
   cancelNotPressed: {
     textAlign: 'center',
-    color: 'white',
-    paddingTop: 9,
-    paddingBottom: 9,
-    fontSize: 16,
+    alignItems: 'center',
+    color: 'white'
   },
   username:{
     flexDirection: 'row',
     height: 40,
     marginBottom: 10,
-    paddingLeft: 6,
-    paddingRight: 6
+    paddingLeft: 6
   },
   textContent: {
     alignItems: 'center',
     marginBottom: 10,
   },
   text: {
-    fontFamily: 'ProximaNova-Regular',
+    fontFamily: 'roboto',
     color: 'rgb(208,33,41)',
     fontSize: 34,
     fontWeight: 'bold',
@@ -305,8 +276,13 @@ const styles = StyleSheet.create({
   content: {
     backgroundColor: 'white',
     padding: 5,
+    // justifyContent:'flex-end',
+    // alignItems: 'stretch',
+
     justifyContent: 'center',
+    // alignItems: 'stretch',
     borderRadius: 5,
     borderColor: 'rgba(0, 0, 0, 0.1)',
   },
 });
+modal with 1 button

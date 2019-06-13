@@ -19,7 +19,7 @@ import ModalAppUpdate from './src/components/ModalAppUpdate';
 import AsyncStorage from '@react-native-community/async-storage';
 import MessageInput from './src/components/MessageInput/MessageInput';
 import Timeout from "smart-timeout";
-
+console.disableYellowBox = true;
 export default class App extends Component {
   constructor(props) {
     super(props);
@@ -27,8 +27,6 @@ export default class App extends Component {
       publishKey: "pub-c-d93d7b15-4e46-42f4-ba03-c5d997844b9e",
       subscribeKey: "sub-c-1ef826d4-78df-11e9-945c-2ea711aa6b65"
     });
-
-    console.disableYellowBox = true;
 
     //Base State
     this.state = {
@@ -41,7 +39,7 @@ export default class App extends Component {
       fixedOnUUID: "",
       focusOnMe: false,
       users: new Map(),
-      isLoading: false,
+      isLoading: true,
       currentPicture: null,
       visibleModalStart: false,
       visibleModalUpdate: false,
@@ -55,7 +53,6 @@ export default class App extends Component {
     };
 
     this.pubnub.init(this);
-
   }
 
   performTimeConsumingTask = async() => {
@@ -67,12 +64,7 @@ export default class App extends Component {
     );
   }
 
-  //Unsubscribe PubNub Channel
-  componentWillUnmount() {
-    this.pubnub.unsubscribe({
-      channels: ['channel1']
-    });
-  }
+
 
   //Track User GPS Data
   async componentDidMount() {
@@ -85,16 +77,21 @@ export default class App extends Component {
     }
 
     else{
-      this.setState({visibleModalStart: false, wasShown});   
+      this.setState({visibleModalStart: false, wasShown});
     }
-     
+
     // get profile pic if available
     const storeProfilePic =  await AsyncStorage.getItem('profile_pic_key');
     console.log(storeProfilePic);
     if(storeProfilePic !=  null){
       this.setState({currentPicture: parseInt(storeProfilePic)});
     }
-    
+    //Get the username if availible
+    const username =  await AsyncStorage.getItem('username_key');
+    if(username !=  null){
+      this.setState({username});
+    }
+
     //PubNub
     this.pubnub.getMessage("message", msg => {
       console.log("MSG: ", msg);
@@ -276,12 +273,12 @@ export default class App extends Component {
       {
         enableHighAccuracy: true,
         timeout: 2000,
-        maximumAge: 1000,
+        maximumAge: 100,
         distanceFilter: 100
       }
     );
     const data = await this.performTimeConsumingTask();
-  
+
     if (data !== null) {
       this.setState({ isLoading: false });
     }
@@ -314,7 +311,6 @@ export default class App extends Component {
         console.log(status, response);
       }
     );
-    console.log("publishing");
   };
 
   componentWillUnmount() {
@@ -334,7 +330,6 @@ export default class App extends Component {
   componentDidUpdate(prevProps, prevState) {
     if (prevState.allowGPS != this.state.allowGPS) {
       if (this.state.allowGPS) {
-        console.log(this.state.users);
         if (this.state.focusOnMe) {
           this.animateToCurrent(this.state.currentLoc, 1000);
         }
@@ -481,7 +476,7 @@ export default class App extends Component {
     }
     return { height: 30, width: 30, borderRadius: 15 };
   };
-  messageOutPut = message => {
+  messageOutPut = (message) => {
     if (message) {
       return (
         <View style={styles.textBackground}>
@@ -490,12 +485,14 @@ export default class App extends Component {
       );
     }
   };
-  showUsername = user => {
-    if (
-      (this.state.focusOnMe && user.uuid == this.pubnub.getUUID()) ||
-      this.state.fixedOnUUID == user.uuid
-    ) {
-      //console.log("user",user.username)
+  showUsername = (user) => {
+    if (this.state.focusOnMe && user.uuid == this.pubnub.getUUID()){
+      return (
+        <View style={styles.textBackground}>
+          <Text style={styles.text}>{this.state.username}</Text>
+        </View>
+      );
+    }else if(this.state.fixedOnUUID == user.uuid){
       return (
         <View style={styles.textBackground}>
           <Text style={styles.text}>{user.username}</Text>
@@ -528,15 +525,51 @@ export default class App extends Component {
     );
   };
 
-  changeProfilePicture = async (e) => {
-    await AsyncStorage.setItem('profile_pic_key', JSON.stringify(e));
-    this.setState({currentPicture: e });
+  changeProfile = async (currentPicture,username) => {
+    if(currentPicture != -1 && username != ""){
+      this.pubnub.publish({
+        message: {
+          latitude: this.state.currentLoc.latitude,
+          longitude: this.state.currentLoc.longitude,
+          image: currentPicture,
+          username: username
+        },
+        channel: "location"
+      });
+      await AsyncStorage.setItem('profile_pic_key', JSON.stringify(currentPicture));
+      await AsyncStorage.setItem('username_key', username);
+      this.setState({currentPicture,username})
+    }else if(username == ""){
+      this.pubnub.publish({
+        message: {
+          latitude: this.state.currentLoc.latitude,
+          longitude: this.state.currentLoc.longitude,
+          image: currentPicture,
+          username: this.state.username
+        },
+        channel: "location"
+      });
+      await AsyncStorage.setItem('profile_pic_key', JSON.stringify(currentPicture));
+      this.setState({currentPicture})
+    }else{
+      this.pubnub.publish({
+        message: {
+          latitude: this.state.currentLoc.latitude,
+          longitude: this.state.currentLoc.longitude,
+          image: this.state.currentPicture,
+          username: username
+        },
+        channel: "location"
+      });
+      await AsyncStorage.setItem('username_key', username);
+      this.setState({username})
+    }
   }
 
   closeModalInit = (e) => {
     this.setState({visibleModalStart: e });
   }
-  
+
   closeModalUpdate = (e) => {
     this.setState({visibleModalUpdate: e });
   }
@@ -545,7 +578,7 @@ export default class App extends Component {
     if(this.state.isLoading){
       return <SplashScreen />;
     }
-
+    
     let about;
     let usersMap = this.state.users;
     let messagesMap = this.state.messages;
@@ -569,10 +602,10 @@ export default class App extends Component {
     return (
       <View style={styles.container}>
         <Modal isVisible={this.state.visibleModalStart}>
-          <ModalAppInit 
-          changeProfilePicture={this.changeProfilePicture}
-          closeModalInit={this.closeModalInit}
-          />           
+          <ModalAppInit
+            changeProfile={this.changeProfile}
+            closeModalInit={this.closeModalInit}
+          />
         </Modal>
         <MapView
           style={styles.map}
@@ -613,7 +646,6 @@ export default class App extends Component {
                         iterationCount={1}
                         direction="normal"
                         easing="ease-out"
-                        onAnimationEnd={this.killEmoji}
                         key={i}
                       >
                         {item.emojiType == 1 && (
@@ -659,7 +691,7 @@ export default class App extends Component {
                 })()}
                 {this.messageOutPut(this.state.messages.get(item.uuid))}
                 <Image
-                  source={this.state.currentPicture}
+                  source={item.image}
                   style={this.selectedStyle(item.uuid)}
                 />
                 {this.showUsername(item)}
@@ -667,8 +699,8 @@ export default class App extends Component {
             </Marker>
           ))}
         </MapView>
-                
-          <View style={styles.topBar}> 
+
+          <View style={styles.topBar}>
             <TouchableOpacity onPress={() => this.setState({ visibleModalUpdate: !this.state.visibleModalUpdate })}>
               <Image
                 style={styles.profile}
@@ -677,10 +709,11 @@ export default class App extends Component {
             </TouchableOpacity>
 
             <Modal isVisible={this.state.visibleModalUpdate}>
-              <ModalAppUpdate 
-                changeProfilePicture={this.changeProfilePicture}
+              <ModalAppUpdate
+                currentUsername={this.state.username}
+                changeProfile={this.changeProfile}
                 closeModalUpdate={this.closeModalUpdate}
-                />            
+                />
             </Modal>
 
             <View style={styles.rightBar}>
@@ -740,7 +773,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold"
   },
   topBar: {
-    top: 50,
+    top: 30,
     right: 10,
     flexDirection: "row",
     justifyContent: "space-between",
