@@ -11,8 +11,14 @@ export default class MessageInput extends Component {
   }
   publishMessage = (event) => {
     this.props.pubnub.publish({
-      message: { message: event.nativeEvent.text},
-      channel: 'message'
+      message: {
+        message: event.nativeEvent.text,
+        latitude: this.props.currentLoc.latitude,
+        longitude: this.props.currentLoc.longitude,
+        image: this.props.currentPicture,
+        username: this.props.username,
+      },
+      channel: 'global'
     });
     this.setState({
       message: ""

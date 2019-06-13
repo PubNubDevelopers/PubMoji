@@ -44,8 +44,6 @@ export default class App extends Component {
       visibleModalStart: false,
       visibleModalUpdate: false,
       isFocused: false ,
-      messages: new Map(),
-      emojis: new Map(),
       allowGPS: true,
       showAbout: false,
       emojiCount: 0,
@@ -53,7 +51,6 @@ export default class App extends Component {
     };
 
     this.pubnub.init(this);
-
   }
 
   performTimeConsumingTask = async() => {
@@ -65,8 +62,6 @@ export default class App extends Component {
     );
   }
 
-
-
   //Track User GPS Data
   async componentDidMount() {
     // Store boolean value so modal init only opens on app boot
@@ -75,12 +70,9 @@ export default class App extends Component {
     if(wasShown === null) {
       await AsyncStorage.setItem('key', '"true"');
       this.setState({visibleModalStart: true, wasShown});
-    }
-
-    else{
+    }else{
       this.setState({visibleModalStart: false, wasShown});
     }
-
     // get profile pic if available
     const storeProfilePic =  await AsyncStorage.getItem('profile_pic_key');
     if(storeProfilePic !=  null){
@@ -92,121 +84,88 @@ export default class App extends Component {
       this.setState({username});
     }
 
-    //PubNub
-    this.pubnub.getMessage("message", msg => {
-      console.log("MSG: ", msg);
-      if (this.state.users.has(msg.publisher)) {
-        let messages = this.state.messages;
 
-        Timeout.set(msg.publisher, this.clearMessage, 5000, msg.publisher);
-        let message = { uuid: msg.publisher, message: msg.message.message }; //, timerId: Timeout.set(msg.publisher,this.clearMessage,5000,msg.publisher)  }//setTimeout(this.clearMessage, 5000, msg.publisher)
-        messages.set(msg.publisher, message);
+
+    this.pubnub.getMessage("global", msg => {
+      //console.log(msg.message.message)
+      let users = this.state.users;
+      if (msg.message.hideUser) {
+        users.delete(msg.publisher);
         this.setState({
-          messages
+          users
         });
-      }
-    });
-    this.pubnub.getMessage("emoji", msg => {
-      console.log("Emoji Message", msg.message);
-      let oldEmoji = this.state.emojis.get(msg.publisher); //Obtain User's Previous State Object
-      let emojis = this.state.emojis;
-      let newEmoji;
-      //emojiCount
-      let emojiCount;
-      let emojiType;
-      if (msg.message.emojiCount != -1) {
-        //Add Payload Emoji Count to emojiCount
+      }else{
+        coord = [msg.message.latitude, msg.message.longitude]; //Format GPS Coordinates for Payload
 
-        emojiType = msg.message.emojiType;
-        if (oldEmoji) {
-          // if (oldEmoji.emojiType == emojiType) {
-            emojiCount = oldEmoji.emojiCount + msg.message.emojiCount;
-          //  else {
-          //   emojiCount = 1;
+        if (msg.publisher == this.state.fixedOnUUID) {
+          this.animateToCurrent(
+            {
+              latitude: msg.message.latitude,
+              longitude: msg.message.longitude
+            },
+            400
+          );
+        }
+        let oldUser = this.state.users.get(msg.publisher);
+        //emojiCount
+        let emojiCount;
+        let emojiType;
+        if (msg.message.emojiCount == 1) {
+          if (oldUser) {
+              emojiCount = oldUser.emojiCount + msg.message.emojiCount;
+          } else {
+            emojiCount = msg.message.emojiCount;
+          }
+          emojiType = msg.message.emojiType;
+        } else {
+          // if(oldUser){
+          //   emojiCount =
           // }
-        } else {
-          emojiCount = msg.message.emojiCount;
+          emojiCount = 0; //reset EmojiCount to 0
+          emojiType = 0;
         }
-      } else {
-        emojiCount = 0; //reset EmojiCount to 0
-      }
-      newEmoji = {
-        uuid: msg.publisher,
-        emojiCount: emojiCount,
-        emojiType: emojiType
-      };
-      emojis.set(msg.publisher, newEmoji);
-
-      this.setState(
-        {
-          emojis
-        },
-        () => {
-          console.log(emojis);
+        let newUser = {
+          uuid: msg.publisher,
+          latitude: msg.message.latitude,
+          longitude: msg.message.longitude,
+          image: msg.message.image,
+          username: msg.message.username,
+          emojiCount: emojiCount,
+          emojiType: emojiType,
+        };
+        if(msg.message.message){
+          Timeout.set(msg.publisher, this.clearMessage, 5000, msg.publisher);
+          newUser.message = msg.message.message;
+          //console.log(newUser.message)
         }
-      );
-    });
 
-    this.pubnub.getMessage("location", msg => {
-      coord = [msg.message.latitude, msg.message.longitude]; //Format GPS Coordinates for Payload
-
-      if (msg.publisher == this.state.fixedOnUUID) {
-        this.animateToCurrent(
-          {
-            latitude: msg.message.latitude,
-            longitude: msg.message.longitude
-          },
-          400
-        );
-      }
-      let oldUser = this.state.users.get(msg.publisher);
-      let newUser = {
-        uuid: msg.publisher,
-        latitude: msg.message.latitude,
-        longitude: msg.message.longitude,
-        image: msg.message.image,
-        username: msg.message.username
-      };
-      if (!this.isEquivalent(oldUser, newUser)) {
-        let users = this.state.users;
-
-        if (msg.message.hideUser) {
-          let emojis = this.state.emojis;
-          let messages = this.state.messages;
-
-          users.delete(newUser.uuid);
-          emojis.delete(newUser.uuid);
-          messages.delete(newUser.uuid);
-          this.setState({
-            emojis,
-            messages
-          });
-        } else {
-          users.set(newUser.uuid, newUser);
-        }
+        users.set(newUser.uuid, newUser);
 
         this.setState({
           users
         });
+
       }
+
+
     });
     this.pubnub.subscribe({
-      channels: ["location"],
+      channels: ["global"],
       withPresence: true
     });
-    this.pubnub.subscribe({
-      channels: ["emoji"],
-      withPresence: true
-    });
-    this.pubnub.subscribe(
-      {
-        channels: ["message"],
-        withPresence: true
-      },
-      function(status, response) {
-        console.log(status, response);
-      }
-    );
+    // this.pubnub.subscribe({
+    //   channels: ["emoji"],
+    //   withPresence: true
+    // });
+    // this.pubnub.subscribe(
+    //   {
+    //     channels: ["message"],
+    //     withPresence: true
+    //   },
+    //   function(status, response) {
+    //     console.log(status, response);
+    //   }
+    // );
     //this.pubnub.getStatus()
     // this.pubnub.getPresence(
     //   "",
@@ -226,9 +185,9 @@ export default class App extends Component {
               latitude: position.coords.latitude,
               longitude: position.coords.longitude,
               image: this.state.currentPicture,
-              username: this.state.username
+              username: this.state.username,
             },
-            channel: "location"
+            channel: "global"
           });
           let users = this.state.users;
           let tempUser = {
@@ -262,7 +221,7 @@ export default class App extends Component {
               image: this.state.currentPicture,
               username: this.state.username
             },
-            channel: "location"
+            channel: "global"
           });
           if (this.state.focusOnMe) {
             this.animateToCurrent(position.coords, 1000);
@@ -285,44 +244,23 @@ export default class App extends Component {
   }
 
   clearMessage = uuid => {
-    let messages = this.state.messages;
-    messages.delete(uuid);
+    let users = this.state.users;
+    let user = users.get(uuid)
+    delete user.message;
+    users.set(uuid,user);
     this.setState(
-      {
-        messages
-      },
-      () => {
-        console.log("piza", this.state.messages);
-      }
-    );
+    {
+      users,
+    });
   };
-  // stopMessageTimer = (timerId) => {
-  //   console.log("clearing timeout");
-  //   clearTimeout(timerId)
-  // }
-  publishMessage = () => {
-    const testMessage = "Testing messages";
-    this.pubnub.publish(
-      {
-        message: { message: Math.random() },
-        channel: "message"
-      },
-      function(status, response) {
-        console.log(status, response);
-      }
-    );
-    console.log("publishing");
-  };
+
 
   componentWillUnmount() {
     this.pubnub.publish({
       message: {
-        latitude: -1,
-        longitude: -1,
-        image: this.state.currentPicture,
         hideUser: true
       },
-      channel: "location"
+      channel: "global"
     });
     this.pubnub.unsubscribeAll();
     navigator.geolocation.clearWatch(this.watchID);
@@ -351,32 +289,23 @@ export default class App extends Component {
           () => {
             this.pubnub.publish({
               message: tempUser,
-              channel: "location"
+              channel: "global"
             });
           }
         );
       } else {
         let users = this.state.users;
-        let emojis = this.state.emojis;
-        let messages = this.state.messages;
         let uuid = this.pubnub.getUUID();
 
         users.delete(uuid);
-        emojis.delete(uuid);
-        messages.delete(uuid);
         this.setState({
           users,
-          emojis,
-          messages
         });
         this.pubnub.publish({
           message: {
-            latitude: -1,
-            longitude: -1,
-            image: this.state.currentPicture,
             hideUser: true
           },
-          channel: "location"
+          channel: "global"
         });
       }
     }
@@ -466,9 +395,7 @@ export default class App extends Component {
       });
     }
   };
-  displayMesasges = () => {
-    console.log(this.state.messages);
-  };
+
   selectedStyle = uuid => {
     if (
       (this.state.focusOnMe && uuid == this.pubnub.getUUID()) ||
@@ -482,7 +409,7 @@ export default class App extends Component {
     if (message) {
       return (
         <View style={styles.textBackground}>
-          <Text style={styles.text}>{message.message}</Text>
+          <Text style={styles.text}>{message}</Text>
         </View>
       );
     }
@@ -502,31 +429,7 @@ export default class App extends Component {
       );
     }
   };
-  killEmoji = () => {
-    console.log("butts")
-    this.pubnub.publish({
-      message: {
-        emojiCount: -1,
-        emojiType: this.state.emojiType
-      },
-      channel: "emoji"
-    });
-  };
-  //Increment Emoji Count
-  showEmoji = () => {
-    this.pubnub.publish(
-      {
-        message: {
-          emojiCount: 1,
-          emojiType: this.state.emojiType
-        },
-        channel: "emoji"
-      },
-      function(status, response) {
-        console.log(status, response);
-      }
-    );
-  };
+
 
   changeProfile = async (currentPicture,username) => {
     if(currentPicture != -1 && username != ""){
@@ -535,9 +438,9 @@ export default class App extends Component {
           latitude: this.state.currentLoc.latitude,
           longitude: this.state.currentLoc.longitude,
           image: currentPicture,
-          username: username
+          username: username,
         },
-        channel: "location"
+        channel: "global"
       });
       await AsyncStorage.setItem('profile_pic_key', JSON.stringify(currentPicture));
       await AsyncStorage.setItem('username_key', username);
@@ -550,7 +453,7 @@ export default class App extends Component {
           image: currentPicture,
           username: this.state.username
         },
-        channel: "location"
+        channel: "global"
       });
       await AsyncStorage.setItem('profile_pic_key', JSON.stringify(currentPicture));
       this.setState({currentPicture})
@@ -562,7 +465,7 @@ export default class App extends Component {
           image: this.state.currentPicture,
           username: username
         },
-        channel: "location"
+        channel: "global"
       });
       await AsyncStorage.setItem('username_key', username);
       this.setState({username})
@@ -582,10 +485,6 @@ export default class App extends Component {
       return <SplashScreen />;
     }
 
-    let about;
-    let usersMap = this.state.users;
-    let messagesMap = this.state.messages;
-    let emojiMap = this.state.emojis;
     let gpsImage;
     if (this.state.focusOnMe || this.state.fixedOnUUID) {
       gpsImage = require("./assets/images/fixedGPS.png");
@@ -593,15 +492,7 @@ export default class App extends Component {
       gpsImage = require("./assets/images/notFixedGPS.png");
     }
 
-    for (let key of emojiMap.keys()) {
-      let tempUser = usersMap.get(key);
-      if (tempUser) {
-        tempUser.emojiCount = emojiMap.get(key).emojiCount;
-        tempUser.emojiType = emojiMap.get(key).emojiType;
-        usersMap.set(key, tempUser);
-      }
-    }
-    let usersArray = Array.from(usersMap.values());
+    let usersArray = Array.from(this.state.users.values());
     return (
       <View style={styles.container}>
         <Modal isVisible={this.state.visibleModalStart}>
@@ -676,7 +567,7 @@ export default class App extends Component {
                   }
                   return rows;
                 })()}
-                {this.messageOutPut(this.state.messages.get(item.uuid))}
+                {this.messageOutPut(item.message)}
                 <Image
                   source={item.image}
                   style={this.selectedStyle(item.uuid)}
