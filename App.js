@@ -77,7 +77,6 @@ export default class App extends Component {
     }
     // get profile pic if available
     const storeProfilePic =  await AsyncStorage.getItem('profile_pic_key');
-    console.log(storeProfilePic);
     if(storeProfilePic !=  null){
       this.setState({currentPicture: parseInt(storeProfilePic)});
     }
