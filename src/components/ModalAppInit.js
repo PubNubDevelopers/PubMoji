@@ -198,8 +198,9 @@ const styles = StyleSheet.create({
   buttonContainer: {
     alignItems: 'stretch',
     textAlign: 'center',
-    paddingLeft: 6,
-    paddingRight: 6
+    paddingLeft: 7.5,
+    paddingRight: 7.5,
+    marginBottom: 3,
   },
   button: {
     flex: 1

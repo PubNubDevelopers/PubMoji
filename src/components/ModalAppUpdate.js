@@ -246,8 +246,8 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     marginBottom: 3,
-    paddingLeft: 6,
-    paddingRight: 6
+    paddingLeft: 7.5,
+    paddingRight: 7.5
   },
 
   buttonContainer: {

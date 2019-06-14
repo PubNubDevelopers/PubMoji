@@ -19,7 +19,7 @@ import ModalAppUpdate from './src/components/ModalAppUpdate';
 import AsyncStorage from '@react-native-community/async-storage';
 import MessageInput from './src/components/MessageInput/MessageInput';
 import Timeout from "smart-timeout";
-console.disableYellowBox = true;
+
 export default class App extends Component {
   constructor(props) {
     super(props);
@@ -27,6 +27,8 @@ export default class App extends Component {
       publishKey: "pub-c-d93d7b15-4e46-42f4-ba03-c5d997844b9e",
       subscribeKey: "sub-c-1ef826d4-78df-11e9-945c-2ea711aa6b65"
     });
+
+    console.disableYellowBox = true;
 
     //Base State
     this.state = {
@@ -39,7 +41,7 @@ export default class App extends Component {
       fixedOnUUID: "",
       focusOnMe: false,
       users: new Map(),
-      isLoading: true,
+      splashLoading: true,
       currentPicture: null,
       visibleModalStart: false,
       visibleModalUpdate: false,
@@ -59,7 +61,7 @@ export default class App extends Component {
     return new Promise((resolve) =>
       setTimeout(
         () => { resolve('result') },
-        3000
+        1000
       )
     );
   }
@@ -277,11 +279,12 @@ export default class App extends Component {
         distanceFilter: 100
       }
     );
-    const data = await this.performTimeConsumingTask();
+    this.setState({ splashLoading: false});
+    // const data = await this.performTimeConsumingTask();
 
-    if (data !== null) {
-      this.setState({ isLoading: false });
-    }
+    // if (data !== null) {
+    //   this.setState({ splashLoading: false });
+    // }
   }
 
   clearMessage = uuid => {
@@ -575,7 +578,7 @@ export default class App extends Component {
   }
 
   render() {
-    if(this.state.isLoading){
+    if(this.state.splashLoading){
       return <SplashScreen />;
     }
     
