@@ -507,30 +507,30 @@ export default class App extends Component {
     let usersArray = Array.from(this.state.users.values());
     return (
       <View style={styles.container}  >
+        <Modal isVisible={this.state.visibleModalStart}>
+          <ModalAppInit
+            changeProfile={this.changeProfile}
+            closeModalInit={this.closeModalInit}
+          />
+        </Modal>
+        <Modal isVisible={this.state.visibleModalUpdate}>
+          <ModalAppUpdate
+            currentUsername={this.state.username}
+            changeProfile={this.changeProfile}
+            closeModalUpdate={this.closeModalUpdate}
+            />
+        </Modal>
 
+
+        <Modal isVisible={this.state.infoModal}>
+          <InfoModal
+          toggleAbout={this.toggleAbout}
+          />
+        </Modal>
 
         <Animated.View style={[styles.container, { transform: [{translateY: this.state.shift}] }]}>
 
-          <Modal isVisible={this.state.visibleModalStart}>
-            <ModalAppInit
-              changeProfile={this.changeProfile}
-              closeModalInit={this.closeModalInit}
-            />
-          </Modal>
-          <Modal isVisible={this.state.visibleModalUpdate}>
-            <ModalAppUpdate
-              currentUsername={this.state.username}
-              changeProfile={this.changeProfile}
-              closeModalUpdate={this.closeModalUpdate}
-              />
-          </Modal>
 
-
-          <Modal isVisible={this.state.infoModal}>
-            <InfoModal
-            toggleAbout={this.toggleAbout}
-            />
-          </Modal>
           <MapView
             style={styles.map}
             ref={ref => (this.map = ref)}
