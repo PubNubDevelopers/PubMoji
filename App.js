@@ -87,8 +87,6 @@ export default class App extends Component {
       this.setState({username});
     }
 
-
-
     this.pubnub.getMessage("global", msg => {
       let users = this.state.users;
       if (msg.message.hideUser) {
@@ -151,7 +149,6 @@ export default class App extends Component {
         });
 
       }
-
 
     });
     this.pubnub.subscribe({
@@ -220,11 +217,11 @@ export default class App extends Component {
       }
     );
     this.setState({ splashLoading: false});
-    // const data = await this.performTimeConsumingTask();
+    const data = await this.performTimeConsumingTask();
 
-    // if (data !== null) {
-    //   this.setState({ splashLoading: false });
-    // }
+    if (data !== null) {
+      this.setState({ splashLoading: false });
+    }
   }
 
   clearMessage = uuid => {
@@ -488,9 +485,6 @@ export default class App extends Component {
           />
         </Modal>
 
-
-
-
         <MapView
           style={styles.map}
           ref={ref => (this.map = ref)}
@@ -709,5 +703,4 @@ const styles = StyleSheet.create({
   buttonContainer: {
     flexDirection: "row"
   },
-
 });
