@@ -55,15 +55,6 @@ export default class App extends Component {
     this.pubnub.init(this);
   }
 
-  performTimeConsumingTask = async() => {
-    return new Promise((resolve) =>
-      setTimeout(
-        () => { resolve('result') },
-        1000
-      )
-    );
-  }
-
   //Track User GPS Data
   async componentDidMount() {
     // Store boolean value so modal init only opens on app boot
@@ -216,11 +207,6 @@ export default class App extends Component {
       }
     );
     this.setState({ splashLoading: false});
-    const data = await this.performTimeConsumingTask();
-
-    if (data !== null) {
-      this.setState({ splashLoading: false });
-    }
   }
 
   clearMessage = uuid => {

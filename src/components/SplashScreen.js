@@ -22,13 +22,13 @@ const styles = StyleSheet.create({
     text: {
       fontFamily: 'ProximaNova-Regular',
       color: 'rgb(208,33,41)',  
-      fontSize: 75,
+      fontSize: 78,
       fontWeight: 'bold'
     },
     bottom: {
       fontFamily: 'ProximaNova-Regular',
       color: 'rgb(208,33,41)',  
       fontSize: 25,
-      marginBottom: -145
+      marginBottom: -165
     }
 });
