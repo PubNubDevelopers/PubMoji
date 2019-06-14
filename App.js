@@ -90,6 +90,7 @@ export default class App extends Component {
 
 
     this.pubnub.getMessage("global", msg => {
+      console.log("MSG: ", msg.message.hideUser)
       let users = this.state.users;
       if (msg.message.hideUser) {
         users.delete(msg.publisher);
@@ -188,7 +189,7 @@ export default class App extends Component {
         }
       },
       error => console.log("Maps Error: ", error),
-      { enableHighAccuracy: true, timeout: 5000, maximumAge: 1000 }
+      { enableHighAccuracy: true,}
     );
     //Track motional Coordinates
     navigator.geolocation.watchPosition(
@@ -214,8 +215,6 @@ export default class App extends Component {
       error => console.log("Maps Error: ", error),
       {
         enableHighAccuracy: true,
-        timeout: 5000,
-        maximumAge: 1000,
         distanceFilter: 100
       }
     );
@@ -382,9 +381,9 @@ export default class App extends Component {
       (this.state.focusOnMe && uuid == this.pubnub.getUUID()) ||
       this.state.fixedOnUUID == uuid
     ) {
-      return { height: 50, width: 50, borderRadius: 25 };
+      return { height: hp("7%"), width: hp("7%"), borderRadius: 25 };
     }
-    return { height: 30, width: 30, borderRadius: 15 };
+    return { height: hp("5%"), width: hp("5%"), borderRadius: 15 };
   };
   messageOutPut = (message) => {
     if (message) {
@@ -628,7 +627,7 @@ const styles = StyleSheet.create({
 
     justifyContent: "center",
     alignItems: "center",
-    marginTop: Platform.OS === "android" ? 50 : 0,
+    marginTop: Platform.OS === "android" ? 100 : 0,
   },
   textBackground: {
     backgroundColor: "#D22028",
@@ -688,8 +687,8 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFillObject
   },
   emoji: {
-    height: hp("4%"),
-    width: hp("4%"),
+    height: hp("5%"),
+    width: hp("5%"),
     position: "absolute",
 
   },

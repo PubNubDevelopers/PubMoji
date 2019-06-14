@@ -20,6 +20,7 @@ DerivedData
 *.ipa
 *.xcuserstate
 project.xcworkspace
+PubMoji.keystore
 
 # Android/IntelliJ
 #
@@ -28,7 +29,7 @@ build/
 .gradle
 local.properties
 *.iml
-android/gradle.properties 
+android/gradle.properties
 
 # node.js
 #
@@ -56,3 +57,5 @@ buck-out/
 *.jsbundle
 
 .vscode/
+
+android/app/PubMoji.keystore
