@@ -179,7 +179,7 @@ export default class AnimationScreen extends Component {
     // the margin top the box is 100
     // and plus the height of toolbar and the status bar
     // so the range we check is about 150 -> 450
-    if ((Platform.OS === 'android' && gestureState.y0 + gestureState.dy >= 450 && gestureState.y0 + gestureState.dy <= 600)
+    if ((Platform.OS === 'android' && gestureState.y0 + gestureState.dy >= 600 && gestureState.y0 + gestureState.dy <= 1000)
       || (Platform.OS === 'ios' && gestureState.y0 + gestureState.dy >= 600 && gestureState.y0 + gestureState.dy <= 1000)) {
       this.isDragging = true;
       this.isDraggingOutside = false;
@@ -721,8 +721,15 @@ export default class AnimationScreen extends Component {
       this.soundIconChoose.play();
     }
     this.props.pubnub.publish({
-      message: { emojiType: this.whichIconUserChoose, emojiCount: 1 },
-      channel: "emoji"
+      message: {
+        emojiType: this.whichIconUserChoose,
+        emojiCount: 1,
+        latitude: this.props.currentLoc.latitude,
+        longitude: this.props.currentLoc.longitude,
+        image: this.props.currentPicture,
+        username: this.props.username,
+       },
+      channel: "global"
     });
   };
 
@@ -1190,11 +1197,13 @@ export default class AnimationScreen extends Component {
     );
   }
 
+
   renderGroupJumpIcon() {
     let moveUpDownIcon = this.moveUpDownIconWhenRelease.interpolate({
       inputRange: [0, 0.4, 1],
       outputRange: [40, 100, 0]
     });
+
 
     return (
       <View style={styles.viewWrapGroupJumpIcon}>
