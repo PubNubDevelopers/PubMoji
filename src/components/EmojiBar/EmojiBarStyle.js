@@ -56,16 +56,16 @@ export default StyleSheet.create({
     borderWidth: 0,
     borderColor: "red",
     flexDirection: "row",
-    height: hp("17%"),
+    height: hp("10%"),
   },
 
   // Box
   viewBox: {
     borderRadius: 30,
-    width: wp("93%"),
-    marginHorizontal: wp("3.5%"),
+    width: wp("96%"),
+    marginHorizontal: wp("2%"),
     height: hp("6%"),
-    marginTop: hp("9%"),
+    marginTop: hp("2.4%"),
 
     position: "absolute",
     // Has to set color for elevation
@@ -99,8 +99,7 @@ export default StyleSheet.create({
   viewWrapGroupIcon: {
     flexDirection: "row",
     width: wp("100%"),
-
-    height: hp("14.5%"),
+    height: hp("8%"),
     position: "absolute",
     borderWidth: 0,
     borderColor: "blue",
@@ -123,8 +122,9 @@ export default StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     borderRadius: 10,
-    paddingLeft: 7,
-    paddingRight: 7,
+    width: wp("10%"),
+    paddingLeft: wp("1%"),
+    paddingRight: wp("1%"),
     paddingTop: 2,
     paddingBottom: 2,
     position: "absolute"
@@ -139,7 +139,7 @@ export default StyleSheet.create({
     flexDirection: "row",
     width: wp("93%"),
 
-    height: hp("17%"),
+    height: hp("10%"),
     borderWidth: 0,
     borderColor: "green",
 

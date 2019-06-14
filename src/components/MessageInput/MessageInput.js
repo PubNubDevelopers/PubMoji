@@ -49,21 +49,21 @@ const styles = StyleSheet.create({
   },
   custom: {
 
-    width: wp("80%"),
-    marginLeft: wp("3.5%"),
+    width: wp("84%"),
+    marginLeft: wp("2%"),
 
-    marginRight: wp("3%"),
+    marginRight: wp("2%"),
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: '#00000000',
+    backgroundColor: 'rgba(52, 52, 52, 0.0)',
     borderColor: 'red',
     borderWidth: 0
   },
   messageBox: {
     height:hp("6%"),
-    borderRadius: 24,
+    borderRadius: 30,
     paddingRight: 8,
     paddingLeft: 16,
-    backgroundColor: 'white'
+    backgroundColor: 'white',
   }
 })

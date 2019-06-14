@@ -686,7 +686,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginHorizontal: wp("3.5%"),
+    marginHorizontal: wp("2%"),
   },
   rightBar: {
     flexDirection: "row",
@@ -717,7 +717,7 @@ const styles = StyleSheet.create({
   focusLoc: {
     width: hp("4.5%"),
     height: hp("4.5%"),
-    marginRight: wp("5%")
+    marginRight: wp("2%")
 
   },
   map: {
@@ -732,7 +732,7 @@ const styles = StyleSheet.create({
   info: {
     width: hp("4.5%"),
     height: hp("4.5%"),
-    marginHorizontal: 15
+    marginHorizontal: 10
   },
   profile: {
     width: hp("4.5%"),
