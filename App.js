@@ -16,6 +16,7 @@ import SplashScreen from './src/components/SplashScreen';
 import EmojiBar from './src/components/EmojiBar/EmojiBar';
 import ModalAppInit from './src/components/ModalAppInit';
 import ModalAppUpdate from './src/components/ModalAppUpdate';
+import InfoModal from './src/components/InfoModal';
 import AsyncStorage from '@react-native-community/async-storage';
 import MessageInput from './src/components/MessageInput/MessageInput';
 import Timeout from "smart-timeout";
@@ -47,7 +48,7 @@ export default class App extends Component {
       allowGPS: true,
       showAbout: false,
       emojiCount: 0,
-      emojiType: 1
+      emojiType: 1,
     };
 
     this.pubnub.init(this);
@@ -87,7 +88,6 @@ export default class App extends Component {
 
 
     this.pubnub.getMessage("global", msg => {
-      //console.log(msg.message.message)
       let users = this.state.users;
       if (msg.message.hideUser) {
         users.delete(msg.publisher);
@@ -132,11 +132,14 @@ export default class App extends Component {
           username: msg.message.username,
           emojiCount: emojiCount,
           emojiType: emojiType,
+
         };
+
         if(msg.message.message){
           Timeout.set(msg.publisher, this.clearMessage, 5000, msg.publisher);
           newUser.message = msg.message.message;
-          //console.log(newUser.message)
+        }else if(oldUser){
+          newUser.message = oldUser.message
         }
 
         users.set(newUser.uuid, newUser);
@@ -153,29 +156,7 @@ export default class App extends Component {
       channels: ["global"],
       withPresence: true
     });
-    // this.pubnub.subscribe({
-    //   channels: ["emoji"],
-    //   withPresence: true
-    // });
-    // this.pubnub.subscribe(
-    //   {
-    //     channels: ["message"],
-    //     withPresence: true
-    //   },
-    //   function(status, response) {
-    //     console.log(status, response);
-    //   }
-    // );
-    //this.pubnub.getStatus()
-    // this.pubnub.getPresence(
-    //   "",
-    //   presence => {
-    //     console.log("Presence", presence);
-    //   },
-    //   function(status, response) {
-    //     console.log(status, response);
-    //   }
-    // );
+
     //Get Stationary Coordinate
     navigator.geolocation.getCurrentPosition(
       position => {
@@ -349,9 +330,8 @@ export default class App extends Component {
     this.map.animateToRegion(region, speed);
   };
   toggleAbout = () => {
-    this.publishMessage();
     this.setState({
-      showAbout: !this.state.showAbout
+      infoModal: !this.state.infoModal
     });
   };
   toggleGPS = () => {
@@ -385,7 +365,6 @@ export default class App extends Component {
     });
   };
   touchUser = uuid => {
-    console.log(uuid, " : ", this.pubnub.getUUID());
     if (uuid === this.pubnub.getUUID()) {
       this.focusLoc();
     } else {
@@ -475,7 +454,6 @@ export default class App extends Component {
   closeModalInit = (e) => {
     this.setState({visibleModalStart: e });
   }
-
   closeModalUpdate = (e) => {
     this.setState({visibleModalUpdate: e });
   }
@@ -501,6 +479,17 @@ export default class App extends Component {
             closeModalInit={this.closeModalInit}
           />
         </Modal>
+
+
+        <Modal isVisible={this.state.infoModal}>
+          <InfoModal
+          toggleAbout={this.toggleAbout}
+          />
+        </Modal>
+
+
+
+
         <MapView
           style={styles.map}
           ref={ref => (this.map = ref)}
@@ -532,7 +521,6 @@ export default class App extends Component {
                 {(function() {
                   let rows = [];
                   for (let i = 0; i < item.emojiCount; i++) {
-                    //console.log(item.emojiCount);
                     let emoji;
                     switch (item.emojiType) {
                       case 1: emoji = require("./src/Images/like2.png")
@@ -720,4 +708,5 @@ const styles = StyleSheet.create({
   buttonContainer: {
     flexDirection: "row"
   },
+
 });
