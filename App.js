@@ -578,7 +578,7 @@ export default class App extends Component {
 
 
             <View style={styles.rightBar}>
-              <TouchableOpacity onPress={() => {console.log("coming soon")}}>
+              <TouchableOpacity onPress={this.toggleAbout}>
                 <Image
                   style={styles.info}
                   source={require('./assets/images/info.png')}
