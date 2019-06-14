@@ -8,7 +8,9 @@ import {
   Image, Animated,
   Switch,
   TouchableOpacity,
+  KeyboardAvoidingView
 } from "react-native";import MapView, {Marker} from 'react-native-maps';
+import {widthPercentageToDP as wp, heightPercentageToDP as hp} from 'react-native-responsive-screen';
 import PubNubReact from 'pubnub-react';
 import * as Animatable from 'react-native-animatable';
 import Modal from "react-native-modal";
@@ -88,6 +90,7 @@ export default class App extends Component {
 
 
     this.pubnub.getMessage("global", msg => {
+      console.log("MSG: ", msg.message.hideUser)
       let users = this.state.users;
       if (msg.message.hideUser) {
         users.delete(msg.publisher);
@@ -186,7 +189,7 @@ export default class App extends Component {
         }
       },
       error => console.log("Maps Error: ", error),
-      { enableHighAccuracy: true, timeout: 5000, maximumAge: 1000 }
+      { enableHighAccuracy: true,}
     );
     //Track motional Coordinates
     navigator.geolocation.watchPosition(
@@ -212,8 +215,6 @@ export default class App extends Component {
       error => console.log("Maps Error: ", error),
       {
         enableHighAccuracy: true,
-        timeout: 5000,
-        maximumAge: 1000,
         distanceFilter: 100
       }
     );
@@ -380,9 +381,9 @@ export default class App extends Component {
       (this.state.focusOnMe && uuid == this.pubnub.getUUID()) ||
       this.state.fixedOnUUID == uuid
     ) {
-      return { height: 50, width: 50, borderRadius: 25 };
+      return { height: hp("7%"), width: hp("7%"), borderRadius: 25 };
     }
-    return { height: 30, width: 30, borderRadius: 15 };
+    return { height: hp("5%"), width: hp("5%"), borderRadius: 15 };
   };
   messageOutPut = (message) => {
     if (message) {
@@ -472,7 +473,7 @@ export default class App extends Component {
 
     let usersArray = Array.from(this.state.users.values());
     return (
-      <View style={styles.container}>
+      <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === "ios" ? "padding" : null} enabled>
         <Modal isVisible={this.state.visibleModalStart}>
           <ModalAppInit
             changeProfile={this.changeProfile}
@@ -574,13 +575,7 @@ export default class App extends Component {
               />
             </TouchableOpacity>
 
-            <Modal isVisible={this.state.visibleModalUpdate}>
-              <ModalAppUpdate
-                currentUsername={this.state.username}
-                changeProfile={this.changeProfile}
-                closeModalUpdate={this.closeModalUpdate}
-                />
-            </Modal>
+
 
             <View style={styles.rightBar}>
               <TouchableOpacity onPress={this.toggleAbout}>
@@ -606,7 +601,15 @@ export default class App extends Component {
                 </TouchableOpacity>
             </View>
         </View>
-      </View>
+        <Modal isVisible={this.state.visibleModalUpdate}>
+          <ModalAppUpdate
+            currentUsername={this.state.username}
+            changeProfile={this.changeProfile}
+            closeModalUpdate={this.closeModalUpdate}
+            />
+        </Modal>
+
+      </KeyboardAvoidingView>
    );
   }
 }
@@ -624,7 +627,7 @@ const styles = StyleSheet.create({
 
     justifyContent: "center",
     alignItems: "center",
-    marginTop: Platform.OS === "android" ? 50 : 0,
+    marginTop: Platform.OS === "android" ? 100 : 0,
   },
   textBackground: {
     backgroundColor: "#D22028",
@@ -641,11 +644,12 @@ const styles = StyleSheet.create({
     fontWeight: "bold"
   },
   topBar: {
-    top: Platform.OS === "android" ? 20 : 50,
-    right: 10,
+    top: Platform.OS === "android" ? hp('2%') : hp('5%'),
+
     flexDirection: "row",
     justifyContent: "space-between",
-    alignItems: "center"
+    alignItems: "center",
+    marginHorizontal: wp("2%"),
   },
   rightBar: {
     flexDirection: "row",
@@ -653,49 +657,50 @@ const styles = StyleSheet.create({
     alignItems: "center"
   },
   locationSwitch: {
-    right: 10
+    right: 0,
+
   },
   container: {
     flex: 1
   },
   bottom: {
     position: "absolute",
-    bottom: 16,
+    flexDirection:'column',
+    bottom: 0,
+    borderWidth: 0,
+    borderColor: 'red',
     //right: 0,
-    justifyContent: "flex-end",
+    justifyContent: "center",
     alignSelf: "center",
-    marginHorizontal: 16,
-    marginBottom: 16,
+
+    width: "100%",
+    marginBottom: hp("4%"),
 
   },
   focusLoc: {
-    width: 30,
-    height: 30,
-    right: 16,
+    width: hp("4.5%"),
+    height: hp("4.5%"),
+    marginRight: wp("2%")
+
   },
   map: {
     ...StyleSheet.absoluteFillObject
   },
   emoji: {
-    height: 25,
-    width: 25,
+    height: hp("5%"),
+    width: hp("5%"),
     position: "absolute",
 
   },
   info: {
-    width: 30,
-    height: 30,
-    marginHorizontal: 15
+    width: hp("4.5%"),
+    height: hp("4.5%"),
+    marginHorizontal: 10
   },
   profile: {
-    width: 30,
-    height: 30,
-    marginHorizontal: 25
-  },
+    width: hp("4.5%"),
+    height: hp("4.5%"),
 
-  textContent: {
-    alignItems: "center",
-    marginBottom: 10
   },
   content: {
     backgroundColor: "white",
@@ -704,9 +709,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     borderRadius: 4,
     borderColor: "rgba(0, 0, 0, 0.1)"
-  },
-  buttonContainer: {
-    flexDirection: "row"
   },
 
 });
