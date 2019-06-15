@@ -5,10 +5,11 @@ import {
   Text,
   Button,
   View,
-  Image, Animated,
+  Image,
+  Animated,
   Switch,
   TouchableOpacity,
-  KeyboardAvoidingView
+  Dimensions, Keyboard,
 } from "react-native";import MapView, {Marker} from 'react-native-maps';
 import {widthPercentageToDP as wp, heightPercentageToDP as hp} from 'react-native-responsive-screen';
 import PubNubReact from 'pubnub-react';
@@ -43,6 +44,7 @@ export default class App extends Component {
       focusOnMe: false,
       users: new Map(),
       isLoading: false,
+      shift: new Animated.Value(0),
       currentPicture: null,
       visibleModalStart: false,
       visibleModalUpdate: false,
@@ -67,6 +69,8 @@ export default class App extends Component {
 
   //Track User GPS Data
   async componentDidMount() {
+    this.keyboardDidShowSub = Keyboard.addListener('keyboardWillShow', this.handleKeyboardDidShow);
+    this.keyboardDidHideSub = Keyboard.addListener('keyboardWillHide', this.handleKeyboardDidHide);
     // Store boolean value so modal init only opens on app boot
     const wasShown = await AsyncStorage.getItem('key'); // get key
 
@@ -90,7 +94,7 @@ export default class App extends Component {
 
 
     this.pubnub.getMessage("global", msg => {
-      console.log("message: ", msg.)
+      console.log("message: ", msg)
       let users = this.state.users;
       if (msg.message.hideUser) {
         users.delete(msg.publisher);
@@ -246,6 +250,8 @@ export default class App extends Component {
     });
     this.pubnub.unsubscribeAll();
     navigator.geolocation.clearWatch(this.watchID);
+    this.keyboardDidShowSub.remove();
+    this.keyboardDidHideSub.remove();
   }
 
   componentDidUpdate(prevProps, prevState) {
@@ -458,6 +464,33 @@ export default class App extends Component {
   closeModalUpdate = (e) => {
     this.setState({visibleModalUpdate: e });
   }
+  handleKeyboardDidShow = (event) => {
+    const { height: windowHeight } = Dimensions.get('window');
+    const keyboardHeight = event.endCoordinates.height;
+    console.log(keyboardHeight)
+      const gap = (keyboardHeight * -1 ) + 20
+
+      Animated.timing(
+        this.state.shift,
+        {
+          toValue: gap,
+          duration: 180,
+          useNativeDriver: true,
+        }
+      ).start();
+  }
+  handleKeyboardDidHide = () => {
+    Animated.timing(
+      this.state.shift,
+      {
+        toValue: 0,
+        duration: 150,
+        useNativeDriver: true,
+      }
+    ).start();
+  }
+
+
 
   render() {
     if(this.state.isLoading){
@@ -473,12 +506,19 @@ export default class App extends Component {
 
     let usersArray = Array.from(this.state.users.values());
     return (
-      <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === "ios" ? "padding" : null} enabled>
+      <View style={styles.container}  >
         <Modal isVisible={this.state.visibleModalStart}>
           <ModalAppInit
             changeProfile={this.changeProfile}
             closeModalInit={this.closeModalInit}
           />
+        </Modal>
+        <Modal isVisible={this.state.visibleModalUpdate}>
+          <ModalAppUpdate
+            currentUsername={this.state.username}
+            changeProfile={this.changeProfile}
+            closeModalUpdate={this.closeModalUpdate}
+            />
         </Modal>
 
 
@@ -488,128 +528,125 @@ export default class App extends Component {
           />
         </Modal>
 
+        <Animated.View style={[styles.container, { transform: [{translateY: this.state.shift}] }]}>
 
 
+          <MapView
+            style={styles.map}
+            ref={ref => (this.map = ref)}
+            onMoveShouldSetResponder={this.draggedMap}
+            initialRegion={{
+              latitude: 36.81808,
+              longitude: -98.640297,
+              latitudeDelta: 60.0001,
+              longitudeDelta: 60.0001
+            }}
+          >
+            {usersArray.map((item, index) => (
+              //TRY SWITCHING UP TO CALLOUTS
+              <Marker
+                onPress={() => {
+                  this.touchUser(item.uuid);
+                }}
+                style={styles.marker}
+                key={index}
+                coordinate={{
+                  latitude: item.latitude,
+                  longitude: item.longitude
+                }}
+                ref={marker => {
+                  this.marker = marker;
+                }}
+              >
+                <View style={styles.marker}>
+                  {(function() {
+                    let rows = [];
+                    for (let i = 0; i < item.emojiCount; i++) {
+                      let emoji;
+                      switch (item.emojiType) {
+                        case 1: emoji = require("./src/Images/like2.png")
+                          break;
+                        case 2: emoji = require("./src/Images/love2.png")
+                          break;
+                        case 3: emoji = require("./src/Images/haha2.png")
+                          break;
+                        case 4: emoji = require("./src/Images/wow2.png")
+                          break;
+                        case 5: emoji = require("./src/Images/sad2.png")
+                          break;
+                        case 6: emoji = require("./src/Images/angry2.png")
+                          break;
 
-        <MapView
-          style={styles.map}
-          ref={ref => (this.map = ref)}
-          onMoveShouldSetResponder={this.draggedMap}
-          initialRegion={{
-            latitude: 36.81808,
-            longitude: -98.640297,
-            latitudeDelta: 60.0001,
-            longitudeDelta: 60.0001
-          }}
-        >
-          {usersArray.map((item, index) => (
-            //TRY SWITCHING UP TO CALLOUTS
-            <Marker
-              onPress={() => {
-                this.touchUser(item.uuid);
-              }}
-              style={styles.marker}
-              key={index}
-              coordinate={{
-                latitude: item.latitude,
-                longitude: item.longitude
-              }}
-              ref={marker => {
-                this.marker = marker;
-              }}
-            >
-              <View style={styles.marker}>
-                {(function() {
-                  let rows = [];
-                  for (let i = 0; i < item.emojiCount; i++) {
-                    let emoji;
-                    switch (item.emojiType) {
-                      case 1: emoji = require("./src/Images/like2.png")
-                        break;
-                      case 2: emoji = require("./src/Images/love2.png")
-                        break;
-                      case 3: emoji = require("./src/Images/haha2.png")
-                        break;
-                      case 4: emoji = require("./src/Images/wow2.png")
-                        break;
-                      case 5: emoji = require("./src/Images/sad2.png")
-                        break;
-                      case 6: emoji = require("./src/Images/angry2.png")
-                        break;
+                        default:
 
-                      default:
-
+                      }
+                      rows.push(
+                        <Animatable.Image
+                          animation="fadeOutUp"
+                          duration={1500}
+                          iterationCount={1}
+                          direction="normal"
+                          easing="ease-out"
+                          key={i}
+                          source={emoji}
+                          style={styles.emoji}
+                        >
+                      </Animatable.Image>
+                      );
                     }
-                    rows.push(
-                      <Animatable.Image
-                        animation="fadeOutUp"
-                        duration={1500}
-                        iterationCount={1}
-                        direction="normal"
-                        easing="ease-out"
-                        key={i}
-                        source={emoji}
-                        style={styles.emoji}
-                      >
-                    </Animatable.Image>
-                    );
-                  }
-                  return rows;
-                })()}
-                {this.messageOutPut(item.message)}
+                    return rows;
+                  })()}
+                  {this.messageOutPut(item.message)}
+                  <Image
+                    source={item.image}
+                    style={this.selectedStyle(item.uuid)}
+                  />
+                  {this.showUsername(item)}
+                </View>
+              </Marker>
+            ))}
+          </MapView>
+
+            <View style={styles.topBar}>
+              <TouchableOpacity onPress={() => this.setState({ visibleModalUpdate: !this.state.visibleModalUpdate })}>
                 <Image
-                  source={item.image}
-                  style={this.selectedStyle(item.uuid)}
-                />
-                {this.showUsername(item)}
-              </View>
-            </Marker>
-          ))}
-        </MapView>
-
-          <View style={styles.topBar}>
-            <TouchableOpacity onPress={() => this.setState({ visibleModalUpdate: !this.state.visibleModalUpdate })}>
-              <Image
-                style={styles.profile}
-                source={require('./assets/images/profile.png')}
-              />
-            </TouchableOpacity>
-
-
-
-            <View style={styles.rightBar}>
-              <TouchableOpacity onPress={this.toggleAbout}>
-                <Image
-                  style={styles.info}
-                  source={require('./assets/images/info.png')}
+                  style={styles.profile}
+                  source={require('./assets/images/profile.png')}
                 />
               </TouchableOpacity>
-              <Switch
-              value={this.state.allowGPS}
-              style={styles.locationSwitch}
-              onValueChange={this.toggleGPS}
-            />
-          </View>
-        </View>
 
-        <View style={styles.bottom}>
-            <EmojiBar {...this.state} pubnub={this.pubnub} />
-            <View style={styles.bottomRow}>
-              <MessageInput {...this.state} pubnub={this.pubnub}/>
-                <TouchableOpacity onPress={this.focusLoc}>
-                  <Image style={styles.focusLoc} source={gpsImage} />
+
+
+              <View style={styles.rightBar}>
+                <TouchableOpacity onPress={this.toggleAbout}>
+                  <Image
+                    style={styles.info}
+                    source={require('./assets/images/info.png')}
+                  />
                 </TouchableOpacity>
+                <Switch
+                value={this.state.allowGPS}
+                style={styles.locationSwitch}
+                onValueChange={this.toggleGPS}
+              />
             </View>
-        </View>
-        <Modal isVisible={this.state.visibleModalUpdate}>
-          <ModalAppUpdate
-            currentUsername={this.state.username}
-            changeProfile={this.changeProfile}
-            closeModalUpdate={this.closeModalUpdate}
-            />
-        </Modal>
+          </View>
 
-      </KeyboardAvoidingView>
+
+            <View style={styles.bottom}>
+                <EmojiBar {...this.state} pubnub={this.pubnub} />
+                <View style={styles.bottomRow}>
+                  <MessageInput {...this.state} pubnub={this.pubnub}/>
+                    <TouchableOpacity onPress={this.focusLoc}>
+                      <Image style={styles.focusLoc} source={gpsImage} />
+                    </TouchableOpacity>
+                </View>
+            </View>
+
+      </Animated.View>
+
+
+      </View>
    );
   }
 }

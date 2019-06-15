@@ -751,17 +751,6 @@ export default class AnimationScreen extends Component {
               styles.viewBox,
               {
                 opacity: this.fadeBoxAnim,
-{/*                 transform: [
-                   {
-                     scale: this.isDragging
-                       ? this.previousIconFocus === 0
-                         ? this.zoomBoxWhenDragInside
-                         : 0.95
-                       : this.isDraggingOutside
-                       ? this.zoomBoxWhenDragOutside
-                       : 1.0
-                   }
-                 ]*/}
               }
             ]}
           />
@@ -1216,7 +1205,7 @@ export default class AnimationScreen extends Component {
             style={{
               width: 40,
               height: 40,
-              left: this.moveLeftIconLikeWhenRelease,
+              left: this.moveLeftIconLoveWhenRelease,
               bottom: moveUpDownIcon,
               transform: [{ scale: this.zoomIconWhenRelease }],
               position: "absolute"
