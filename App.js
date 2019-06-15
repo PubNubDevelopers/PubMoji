@@ -90,7 +90,7 @@ export default class App extends Component {
 
 
     this.pubnub.getMessage("global", msg => {
-      console.log("MSG: ", msg.message.hideUser)
+      console.log("message: ", msg.)
       let users = this.state.users;
       if (msg.message.hideUser) {
         users.delete(msg.publisher);
