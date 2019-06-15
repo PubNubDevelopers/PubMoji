@@ -118,27 +118,27 @@ export default class ModalAppUpdate extends Component {
 
         const component2 = () =>
         <Image
-        source={img2}
+          source={img2}
         />
 
         const component3 = () =>
         <Image
-        source={img3}
+          source={img3}
         />
 
         const component4 = () =>
         <Image
-        source={img4}
+          source={img4}
         />
 
         const component5 = () =>
         <Image
-        source={img5}
+          source={img5}
         />
 
         const component6 = () =>
         <Image
-        source={img6}
+          source={img6}
         />
 
         const buttonsOne = [{ element: component1 }, { element: component2 }, { element: component3 }];
@@ -245,7 +245,7 @@ const styles = StyleSheet.create({
   },
   container: {
     flexDirection: 'row',
-    marginBottom: 3,
+    marginBottom: 5,
     paddingLeft: 7.5,
     paddingRight: 7.5
   },
@@ -289,8 +289,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     height: 40,
     marginBottom: 10,
-    paddingLeft: 6,
-    paddingRight: 6
+    paddingLeft: 7.5,
+    paddingRight: 7.5
   },
   textContent: {
     alignItems: 'center',

@@ -45,7 +45,7 @@ export default class App extends Component {
       currentPicture: null,
       visibleModalStart: false,
       visibleModalUpdate: false,
-      isFocused: false ,
+      isFocused: false,
       allowGPS: true,
       showAbout: false,
       emojiCount: 0,

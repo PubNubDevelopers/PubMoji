@@ -88,36 +88,32 @@ export default class ModalAppInit extends Component {
 
         const component1 = () =>
         <Image
-          defaultSource={img1}
           source={img1}
         />
 
         const component2 = () =>
         <Image
-          defaultSource={img2}
-        source={img2}
+          source={img2}
         />
 
         const component3 = () =>
         <Image
-          defaultSource={img3}
           source={img3}
         />
 
         const component4 = () =>
         <Image
-          defaultSource={img4}
           source={img4}
         />
 
         const component5 = () =>
         <Image
-        source={img5}
+          source={img5}
         />
 
         const component6 = () =>
         <Image
-        source={img6}
+          source={img6}
         />
 
         const buttonsOne = [{ element: component1 }, { element: component2 }, { element: component3 }];
@@ -200,7 +196,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     paddingLeft: 7.5,
     paddingRight: 7.5,
-    marginBottom: 3,
+    marginBottom: 5,
   },
   button: {
     flex: 1
@@ -232,7 +228,9 @@ const styles = StyleSheet.create({
   },
   textContent: {
     alignItems: 'center',
-    marginBottom: 10,  },
+    marginBottom: 10,  
+    marginTop: 3
+  },
   text: {
     fontFamily: 'ProximaNova-Regular',
     color: 'rgb(208,33,41)',
