@@ -1211,7 +1211,7 @@ export default class AnimationScreen extends Component {
             style={{
               width: 40,
               height: 40,
-              left: this.moveLeftIconLikeWhenRelease,
+              left: this.moveLeftIconLoveWhenRelease,
               bottom: moveUpDownIcon,
               transform: [{ scale: this.zoomIconWhenRelease }],
               position: "absolute"
