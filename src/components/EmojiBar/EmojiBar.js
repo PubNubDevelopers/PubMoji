@@ -7,8 +7,10 @@ import {
   Text,
   TouchableOpacity,
   Platform,
-  View
+  View,
+
 } from "react-native";
+import {widthPercentageToDP as wp, heightPercentageToDP as hp} from 'react-native-responsive-screen';
 import Sound from "react-native-sound";
 
 import styles from "./EmojiBarStyle";
@@ -179,8 +181,8 @@ export default class AnimationScreen extends Component {
     // the margin top the box is 100
     // and plus the height of toolbar and the status bar
     // so the range we check is about 150 -> 450
-    if ((Platform.OS === 'android' && gestureState.y0 + gestureState.dy >= 600 && gestureState.y0 + gestureState.dy <= 1000)
-      || (Platform.OS === 'ios' && gestureState.y0 + gestureState.dy >= 600 && gestureState.y0 + gestureState.dy <= 1000)) {
+    if (gestureState.y0 + gestureState.dy >= hp('80%') && gestureState.y0 + gestureState.dy <= hp('87%')){
+
       this.isDragging = true;
       this.isDraggingOutside = false;
 
@@ -189,43 +191,43 @@ export default class AnimationScreen extends Component {
       }
 
       if (
-        gestureState.x0 + gestureState.dx >= 35 &&
-        gestureState.x0 + gestureState.dx < 88.33
+        gestureState.x0 + gestureState.dx >= wp("0%") &&
+        gestureState.x0 + gestureState.dx < wp("16.6%")
       ) {
         if (this.currentIconFocus !== 1) {
           this.handleWhenDragBetweenIcon(1);
         }
       } else if (
-        gestureState.x0 + gestureState.dx >= 88.33 &&
-        gestureState.x0 + gestureState.dx < 141.66
+        gestureState.x0 + gestureState.dx >= wp("16.6%") &&
+        gestureState.x0 + gestureState.dx < wp("33.2%")
       ) {
         if (this.currentIconFocus !== 2) {
           this.handleWhenDragBetweenIcon(2);
         }
       } else if (
-        gestureState.x0 + gestureState.dx >= 141.66 &&
-        gestureState.x0 + gestureState.dx < 194.99
+        gestureState.x0 + gestureState.dx >= wp("33.2%") &&
+        gestureState.x0 + gestureState.dx < wp("49.8%")
       ) {
         if (this.currentIconFocus !== 3) {
           this.handleWhenDragBetweenIcon(3);
         }
       } else if (
-        gestureState.x0 + gestureState.dx >= 194.99 &&
-        gestureState.x0 + gestureState.dx < 248.32
+        gestureState.x0 + gestureState.dx >= wp("49.8%") &&
+        gestureState.x0 + gestureState.dx < wp("66.4%")
       ) {
         if (this.currentIconFocus !== 4) {
           this.handleWhenDragBetweenIcon(4);
         }
       } else if (
-        gestureState.x0 + gestureState.dx >= 248.32 &&
-        gestureState.x0 + gestureState.dx < 301.65
+        gestureState.x0 + gestureState.dx >= wp("66.4%") &&
+        gestureState.x0 + gestureState.dx < wp("83%")
       ) {
         if (this.currentIconFocus !== 5) {
           this.handleWhenDragBetweenIcon(5);
         }
       } else if (
-        gestureState.x0 + gestureState.dx >= 301.65 &&
-        gestureState.x0 + gestureState.dx <= 354.98
+        gestureState.x0 + gestureState.dx >= wp("83%") &&
+        gestureState.x0 + gestureState.dx <= wp("100%")
       ) {
         if (this.currentIconFocus !== 6) {
           this.handleWhenDragBetweenIcon(6);
@@ -736,10 +738,7 @@ export default class AnimationScreen extends Component {
   render() {
     return (
       <View style={styles.viewBody} {...this.rootPanResponder.panHandlers}>
-        {/* Top space */}
-        {/*          <View style={styles.viewTopSpace}/>
-         */}
-        {/* Content */}
+
         <View style={styles.viewContent}>
           {/* Box */}
           <Animated.View
@@ -747,17 +746,17 @@ export default class AnimationScreen extends Component {
               styles.viewBox,
               {
                 opacity: this.fadeBoxAnim,
-                transform: [
-                  {
-                    scale: this.isDragging
-                      ? this.previousIconFocus === 0
-                        ? this.zoomBoxWhenDragInside
-                        : 0.95
-                      : this.isDraggingOutside
-                      ? this.zoomBoxWhenDragOutside
-                      : 1.0
-                  }
-                ]
+                // transform: [
+                //   {
+                //     scale: this.isDragging
+                //       ? this.previousIconFocus === 0
+                //         ? this.zoomBoxWhenDragInside
+                //         : 0.95
+                //       : this.isDraggingOutside
+                //       ? this.zoomBoxWhenDragOutside
+                //       : 1.0
+                //   }
+                // ]
               }
             ]}
           />
@@ -1204,7 +1203,6 @@ export default class AnimationScreen extends Component {
       outputRange: [40, 100, 0]
     });
 
-
     return (
       <View style={styles.viewWrapGroupJumpIcon}>
         {/*Icon like*/}
@@ -1217,18 +1215,15 @@ export default class AnimationScreen extends Component {
               bottom: moveUpDownIcon,
               transform: [{ scale: this.zoomIconWhenRelease }],
               position: "absolute"
-            }}
-          >
+            }}>
             <FastImage
               style={styles.imgIcon}
               source={{
                 uri:
                   "https://raw.githubusercontent.com/PubNubDevelopers/PubMoji/EmojiImplementation/src/Images/like.gif"
-              }}
-            />
+              }}/>
           </Animated.View>
         ) : null}
-
         {/*Icon love*/}
         {this.whichIconUserChoose === 2 && !this.isDragging ? (
           <Animated.View

@@ -1,4 +1,5 @@
 import { StyleSheet, Platform } from "react-native";
+import {widthPercentageToDP as wp, heightPercentageToDP as hp} from 'react-native-responsive-screen';
 
 export default StyleSheet.create({
   // Container
@@ -8,13 +9,15 @@ export default StyleSheet.create({
   },
 
   // Toolbar
-  toolbar: {
-    width: "100%",
-    height: Platform.OS === "android" ? 48 : 68,
-    alignItems: "center",
-    backgroundColor: "#3b5998",
-    flexDirection: "row"
-  },
+  // toolbar: {
+  //   width: "100%",
+  //   height: Platform.OS === "android" ? 48 : 68,
+  //   alignItems: "center",
+  //   backgroundColor: "#3b5998",
+  //   borderWidth:2,
+  //   borderColor:'black',
+  //   flexDirection: "row"
+  // },
   icBack: {
     width: 23,
     height: 23,
@@ -43,28 +46,27 @@ export default StyleSheet.create({
   },
 
   // Top blank space
-  viewTopSpace: {
-    width: "100%",
-    height: 100
-  },
+  // viewTopSpace: {
+  //   width: "100%",
+  //   height: 100
+  // },
 
   // Main content
   viewContent: {
     borderWidth: 0,
     borderColor: "red",
     flexDirection: "row",
-    height: 140,
-    marginLeft: 10,
-    marginRight: 10
+    height: hp("10%"),
   },
 
   // Box
   viewBox: {
     borderRadius: 30,
-    width: 350,
-    height: 50,
-    marginTop: 75,
-    marginLeft: 0,
+    width: wp("96%"),
+    marginHorizontal: wp("2%"),
+    height: hp("6%"),
+    marginTop: hp("2.4%"),
+
     position: "absolute",
     // Has to set color for elevation
     backgroundColor: "white"
@@ -74,13 +76,13 @@ export default StyleSheet.create({
   // Button like
   viewBtn: {
     flexDirection: "row",
-    width: 100,
+    width: hp("12%"),
     justifyContent: "space-around",
     alignItems: "center",
     borderWidth: 0,
     padding: 10,
     borderRadius: 3,
-    marginTop: 170,
+    marginTop: hp("19%"),
     backgroundColor: "white"
   },
   textBtn: {
@@ -96,8 +98,8 @@ export default StyleSheet.create({
   // Group icon
   viewWrapGroupIcon: {
     flexDirection: "row",
-    width: 350,
-    height: 120,
+    width: wp("100%"),
+    height: hp("8%"),
     position: "absolute",
     borderWidth: 0,
     borderColor: "blue",
@@ -111,16 +113,18 @@ export default StyleSheet.create({
     alignItems: "center"
   },
   imgIcon: {
-    width: 36,
-    height: 36
+    width: hp("5%"),
+    height: hp("5%"),
+
   },
   viewWrapTextDescription: {
     backgroundColor: "rgba(0, 0, 0, 0.3)",
     alignItems: "center",
     justifyContent: "center",
     borderRadius: 10,
-    paddingLeft: 7,
-    paddingRight: 7,
+    width: wp("10%"),
+    paddingLeft: wp("1%"),
+    paddingRight: wp("1%"),
     paddingTop: 2,
     paddingBottom: 2,
     position: "absolute"
@@ -133,12 +137,12 @@ export default StyleSheet.create({
   // Group jump icon
   viewWrapGroupJumpIcon: {
     flexDirection: "row",
-    width: 350,
-    height: 140,
+    width: wp("93%"),
+
+    height: hp("10%"),
     borderWidth: 0,
     borderColor: "green",
-    marginLeft: 10,
-    marginRight: 10,
+
     position: "absolute",
     alignItems: "flex-end",
     flex: 1

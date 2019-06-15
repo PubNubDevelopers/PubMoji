@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { StyleSheet, View } from 'react-native'
 import { Container, Header, Item, Input, Icon, Button, Text } from 'native-base';
+import {widthPercentageToDP as wp, heightPercentageToDP as hp} from 'react-native-responsive-screen';
 
 export default class MessageInput extends Component {
   constructor(props) {
@@ -48,20 +49,21 @@ const styles = StyleSheet.create({
   },
   custom: {
 
-    width: 300,
-    marginLeft: 8,
+    width: wp("84%"),
+    marginLeft: wp("2%"),
 
-    marginRight: 35,
+    marginRight: wp("2%"),
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: '#00000000',
+    backgroundColor: 'rgba(52, 52, 52, 0.0)',
     borderColor: 'red',
     borderWidth: 0
   },
   messageBox: {
-    borderRadius: 24,
+    height:hp("6%"),
+    borderRadius: 30,
     paddingRight: 8,
     paddingLeft: 16,
-    backgroundColor: 'white'
+    backgroundColor: 'white',
   }
 })
