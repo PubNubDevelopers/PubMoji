@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import {StyleSheet, Text, Button, View, Image, TextInput, Alert, TouchableHighlight} from 'react-native';
+import {StyleSheet, Text, TouchableHighlight, View, Image, TextInput, Animated,Dimensions, Keyboard,Alert, TouchableOpacity} from 'react-native';
 import { ButtonGroup } from 'react-native-elements';
 
 const img1 = require('../../assets/images/anon_mask.png');
@@ -19,11 +19,48 @@ export default class ModalAppInit extends Component {
             selectedIndexRowOne: -1,
             selectedIndexRowTwo: -1,
             text: '',
+            shift: new Animated.Value(0),
             isFocused: false ,
             pressStatus: false
          };
       }
+      componentDidMount() {
+        this.keyboardDidShowSub = Keyboard.addListener('keyboardWillShow', this.handleKeyboardDidShow);
+        this.keyboardDidHideSub = Keyboard.addListener('keyboardWillHide', this.handleKeyboardDidHide);
+      }
+      componentWillUnmount(){
+        this.keyboardDidShowSub.remove();
+        this.keyboardDidHideSub.remove();
+      }
+      handleKeyboardDidShow = (event) => {
+        const { height: windowHeight } = Dimensions.get('window');
+        const keyboardHeight = event.endCoordinates.height;
+        this.textInput.measure( (fx, fy, width, height, px, py) => {
 
+          console.log('Y offset to page: ' + py)
+          const gap = (windowHeight - keyboardHeight ) - (py + height)
+
+          Animated.timing(
+            this.state.shift,
+            {
+              toValue: gap,
+              duration: 180,
+              useNativeDriver: true,
+            }
+          ).start();
+        })
+
+      }
+      handleKeyboardDidHide = () => {
+        Animated.timing(
+          this.state.shift,
+          {
+            toValue: 0,
+            duration: 150,
+            useNativeDriver: true,
+          }
+        ).start();
+      }
     updateIndexOne = (selectedIndexRowOne) => {
     if(this.state.selectedIndexRowTwo != -1){
         this.setState({selectedIndexRowTwo: -1});
@@ -125,9 +162,9 @@ export default class ModalAppInit extends Component {
 
         return (
           <View>
-            <View style={styles.content}>
+            <Animated.View style={[styles.content, { transform: [{translateY: this.state.shift}] }]}>
                 <View style={styles.textContent}>
-                    <Text style={styles.text}>Profile Picture</Text>
+                    <Text style={styles.text}>Profile</Text>
                 </View>
                 <ButtonGroup
                     selectedIndex={this.state.selectedIndexRowOne}
@@ -146,6 +183,7 @@ export default class ModalAppInit extends Component {
 
                 <View style={styles.username}>
                     <TextInput
+                        ref={view => { this.textInput = view; }}
                         style={{flex: 1}}
                         type="TextInput"
                         name="myTextInput"
@@ -185,7 +223,7 @@ export default class ModalAppInit extends Component {
                             </Text>
                       </TouchableHighlight>
                 </View>
-            </View>
+            </Animated.View>
           </View>
         );
     }
@@ -232,7 +270,8 @@ const styles = StyleSheet.create({
   },
   textContent: {
     alignItems: 'center',
-    marginBottom: 10,  },
+    marginBottom: 10,  
+  },
   text: {
     fontFamily: 'ProximaNova-Regular',
     color: 'rgb(208,33,41)',
