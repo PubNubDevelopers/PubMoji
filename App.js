@@ -1,206 +1,510 @@
 import React, {Component} from 'react';
-import {Platform, StyleSheet, Text, View, Image, Button, TouchableOpacity} from 'react-native';
-import MapView, {Marker} from 'react-native-maps';
+import {
+  Platform,
+  StyleSheet,
+  Text,
+  Button,
+  View,
+  Image,
+  Animated,
+  Switch,
+  TouchableOpacity,
+  Dimensions, Keyboard,
+} from "react-native";import MapView, {Marker} from 'react-native-maps';
+import {widthPercentageToDP as wp, heightPercentageToDP as hp} from 'react-native-responsive-screen';
 import PubNubReact from 'pubnub-react';
 import * as Animatable from 'react-native-animatable';
 import Modal from "react-native-modal";
+import SplashScreen from './src/components/SplashScreen';
 import EmojiBar from './src/components/EmojiBar/EmojiBar';
+import ModalAppInit from './src/components/ModalAppInit';
+import ModalAppUpdate from './src/components/ModalAppUpdate';
+import InfoModal from './src/components/InfoModal';
+import AsyncStorage from '@react-native-community/async-storage';
+import MessageInput from './src/components/MessageInput/MessageInput';
 import UserCount from './src/components/UserCount/UserCount';
-
-
-const instructions = Platform.select({
-  ios: 'Press Cmd+R to reload,\n' + 'Cmd+D or shake for dev menu',
-  android:
-    'Double tap R on your keyboard to reload,\n' +
-    'Shake or press menu button for dev menu',
-});
-
-
-export default class App extends React.Component {
-
+import Timeout from "smart-timeout";
+console.disableYellowBox = true;
+export default class App extends Component {
   constructor(props) {
     super(props);
-
-    //Pub Sub Keys
     this.pubnub = new PubNubReact({
-        publishKey: 'pub-c-a64b528c-0749-416f-bf75-50abbfa905f9',
-        subscribeKey: 'sub-c-8a8e493c-f876-11e6-80ea-0619f8945a4f'
+      publishKey: "pub-c-d93d7b15-4e46-42f4-ba03-c5d997844b9e",
+      subscribeKey: "sub-c-1ef826d4-78df-11e9-945c-2ea711aa6b65"
     });
-
-    console.disableYellowBox = true;
-
+    this.moveAnimation = new Animated.ValueXY({ x: 10, y: 450 })
     //Base State
     this.state = {
-      latitude: -6.270565,
-      longitude: 106.759550,
-      error:null,
+      currentLoc: {
+        latitude: -1,
+        longitude: -1
+      },
+      numUsers: 0,
+      username: "A Naughty Moose",
+      fixedOnUUID: "",
+      focusOnMe: false,
       users: new Map(),
       emoji: 0,
       emojiType: 0,
+      isLoading: false,
+      shift: new Animated.Value(0),
+      currentPicture: null,
+      visibleModalStart: false,
+      visibleModalUpdate: false,
+      isFocused: false ,
+      allowGPS: true,
+      showAbout: false,
+      emojiCount: 0,
+      emojiType: 1,
       userCount: 0
     };
 
-    //Initialize PubNub Instance
     this.pubnub.init(this);
-
   }
 
-
-  //Subscribe to a PubNub Channel
-  componentWillMount() {
-    this.pubnub.subscribe({
-      channels: ['channel1'],
-      withPresence: true
-    });
-  }
-
-  //Unsubscribe PubNub Channel
-  componentWillUnmount() {
-    this.pubnub.unsubscribe({
-      channels: ['channel1']
-    });
+  performTimeConsumingTask = async() => {
+    return new Promise((resolve) =>
+      setTimeout(
+        () => { resolve('result') },
+        3000
+      )
+    );
   }
 
   //Track User GPS Data
-  componentDidMount() {
-    this.pubnub.getMessage('channel1', (msg) => {
-        coord = [msg.message.latitude,msg.message.longitude]; //Format GPS Coordinates for Payload
-        let oldUser = this.state.users.get(msg.message.uuid); //Obtain User's Previous State Object
+  async componentDidMount() {
+    this.keyboardDidShowSub = Keyboard.addListener('keyboardWillShow', this.handleKeyboardDidShow);
+    this.keyboardDidHideSub = Keyboard.addListener('keyboardWillHide', this.handleKeyboardDidHide);
+    // Store boolean value so modal init only opens on app boot
+    const wasShown = await AsyncStorage.getItem('key'); // get key
+
+    if(wasShown === null) {
+      await AsyncStorage.setItem('key', '"true"');
+      this.setState({visibleModalStart: true, wasShown});
+    }else{
+      this.setState({visibleModalStart: false, wasShown});
+    }
+    // get profile pic if available
+    const storeProfilePic =  await AsyncStorage.getItem('profile_pic_key');
+    if(storeProfilePic !=  null){
+      this.setState({currentPicture: parseInt(storeProfilePic)});
+    }
+    //Get the username if availible
+    const username =  await AsyncStorage.getItem('username_key');
+    if(username !=  null){
+      this.setState({username});
+    }
+
+
+
+    this.pubnub.getMessage("global", msg => {
+      console.log("message: ", msg)
+      let users = this.state.users;
+      if (msg.message.hideUser) {
+        users.delete(msg.publisher);
+        this.setState({
+          users
+        });
+      }else{
+        coord = [msg.message.latitude, msg.message.longitude]; //Format GPS Coordinates for Payload
+
+        if (msg.publisher == this.state.fixedOnUUID) {
+          this.animateToCurrent(
+            {
+              latitude: msg.message.latitude,
+              longitude: msg.message.longitude
+            },
+            400
+          );
+        }
+        let oldUser = this.state.users.get(msg.publisher);
         //emojiCount
         let emojiCount;
-        //emojiType
         let emojiType;
-        if(msg.message.emoji != -1){ //Add Payload Emoji Count to emojiCount and Reset Count if EmojiType Changes
-          if(oldUser){
-            if(oldUser.emojiType == msg.message.emojiType){
-              emojiCount = oldUser.emoji + msg.message.emoji;
-            }else{emojiCount = 1;}
-          }else{
-            emojiCount = msg.message.emoji;
+        if (msg.message.emojiCount == 1) {
+          if (oldUser) {
+              emojiCount = oldUser.emojiCount + msg.message.emojiCount;
+          } else {
+            emojiCount = msg.message.emojiCount;
           }
-        }else{
+          emojiType = msg.message.emojiType;
+        } else {
+          // if(oldUser){
+          //   emojiCount =
+          // }
           emojiCount = 0; //reset EmojiCount to 0
+          emojiType = 0;
         }
-        emojiType = msg.message.emojiType;
-        let newUser = {uuid: msg.message.uuid, coords: coord, emoji: msg.message.emoji, emojiType: emojiType }; //User's Updated State
-        //Check If State Has Changed With User
-        if(!this.isEquivalent(oldUser, newUser)){
-          let tempMap = this.state.users;
-          newUser = {uuid: msg.message.uuid, coords: coord, emoji: emojiCount, emojiType: emojiType}; //add in the emoji count
-          //Add/Remove User depending on hideUser
-          if(msg.message.hideUser){
-            tempMap.delete(newUser.uuid)
-          }else{
-            tempMap.set(newUser.uuid, newUser);
-          }
+        let newUser = {
+          uuid: msg.publisher,
+          latitude: msg.message.latitude,
+          longitude: msg.message.longitude,
+          image: msg.message.image,
+          username: msg.message.username,
+          emojiCount: emojiCount,
+          emojiType: emojiType,
 
-          this.setState({
-            users: tempMap
-          })
+        };
+
+        if(msg.message.message){
+          Timeout.set(msg.publisher, this.clearMessage, 5000, msg.publisher);
+          newUser.message = msg.message.message;
+        }else if(oldUser){
+          newUser.message = oldUser.message
         }
         this.updateUserCount();
-        console.log(msg.message)
-    });
+        users.set(newUser.uuid, newUser);
 
+        this.setState({
+          users
+        });
+
+      }
+
+    });
+    this.pubnub.subscribe({
+      channels: ["global"],
+      withPresence: true
+    });
 
     //Get Stationary Coordinate
     navigator.geolocation.getCurrentPosition(
       position => {
-       // console.log(position);
-        this.setState({
-          latitude: position.coords.latitude,
-          longitude: position.coords.longitude,
-          error: null
-        });
+        if (this.state.allowGPS) {
+          this.pubnub.publish({
+            message: {
+              latitude: position.coords.latitude,
+              longitude: position.coords.longitude,
+              image: this.state.currentPicture,
+              username: this.state.username,
+            },
+            channel: "global"
+          });
+          let users = this.state.users;
+          let tempUser = {
+            uuid: this.pubnub.getUUID(),
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude,
+            image: this.state.currentPicture,
+            username: this.state.username
+          };
+          users.set(tempUser.uuid, tempUser);
+          this.setState({
+            users,
+            currentLoc: position.coords
+          });
+        }
       },
-      error => this.setState({ error: error.message }),
-      { enableHighAccuracy: true, timeout: 200000, maximumAge: 1000 }
+      error => console.log("Maps Error: ", error),
+      { enableHighAccuracy: true,}
     );
-
-
     //Track motional Coordinates
     navigator.geolocation.watchPosition(
       position => {
-        const { latitude, longitude } = position.coords;
-        this.setState({ latitude,longitude });
-        this.pubnub.publish({
-          message: {latitude: this.state.latitude, longitude: this.state.longitude, uuid: this.pubnub.getUUID(), emoji: this.state.emoji,},
-          channel: 'channel1'
+        this.setState({
+          currentLoc: position.coords
         });
-
+        if (this.state.allowGPS) {
+          this.pubnub.publish({
+            message: {
+              latitude: position.coords.latitude,
+              longitude: position.coords.longitude,
+              image: this.state.currentPicture,
+              username: this.state.username
+            },
+            channel: "global"
+          });
+          if (this.state.focusOnMe) {
+            this.animateToCurrent(position.coords, 1000);
+          }
+        }
       },
-      error => console.log(error),
+      error => console.log("Maps Error: ", error),
       {
         enableHighAccuracy: true,
-        timeout: 20000,
-        maximumAge: 1000,
         distanceFilter: 100
       }
     );
+    const data = await this.performTimeConsumingTask();
+
+    if (data !== null) {
+      this.setState({ isLoading: false });
+    }
   }
 
-  componentWillUnmount() {
-    navigator.geolocation.clearWatch(this.watchID);
-  }
-
-  //Coordinate Setter
-  setRegion = () => ({
-   latitude: this.state.latitude,
-   longitude: this.state.longitude,
-   latitudeDelta: 0,
-   longitudeDelta: 0
-
-  });
-
-
-
-  //Increment Emoji Count
-  showEmoji = () => {
-        this.pubnub.publish({
-          message: {latitude: this.state.latitude, longitude: this.state.longitude, uuid: this.pubnub.getUUID(), emoji: 1},
-          channel: 'channel1'
-        });
-
+  clearMessage = uuid => {
+    let users = this.state.users;
+    let user = users.get(uuid)
+    delete user.message;
+    users.set(uuid,user);
+    this.setState(
+    {
+      users,
+    });
   };
 
-  showText = () => {
-    if(this.state.show == true){
-      this.setState({show: false});
-    }else{
-      this.setState({show:true});
+
+  componentWillUnmount() {
+    this.pubnub.publish({
+      message: {
+        hideUser: true
+      },
+      channel: "global"
+    });
+    this.pubnub.unsubscribeAll();
+    navigator.geolocation.clearWatch(this.watchID);
+    this.keyboardDidShowSub.remove();
+    this.keyboardDidHideSub.remove();
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+    if (prevState.allowGPS != this.state.allowGPS) {
+      if (this.state.allowGPS) {
+        console.log(this.state.users);
+        if (this.state.focusOnMe) {
+          this.animateToCurrent(this.state.currentLoc, 1000);
+        }
+        let users = this.state.users;
+        let tempUser = {
+          uuid: this.pubnub.getUUID(),
+          latitude: this.state.currentLoc.latitude,
+          longitude: this.state.currentLoc.longitude,
+          image: this.state.currentPicture,
+          username: this.state.username
+        };
+        users.set(tempUser.uuid, tempUser);
+        this.setState(
+          {
+            users
+          },
+          () => {
+            this.pubnub.publish({
+              message: tempUser,
+              channel: "global"
+            });
+          }
+        );
+      } else {
+        let users = this.state.users;
+        let uuid = this.pubnub.getUUID();
+
+        users.delete(uuid);
+        this.setState({
+          users,
+        });
+        this.pubnub.publish({
+          message: {
+            hideUser: true
+          },
+          channel: "global"
+        });
+      }
+    }
+  }
+  isEquivalent = (a, b) => {
+    if (!a || !b) {
+      if (a === b) return true;
+      return false;
+    }
+    // Create arrays of property names
+    var aProps = Object.getOwnPropertyNames(a);
+    var bProps = Object.getOwnPropertyNames(b);
+
+    // If number of properties is different,
+    // objects are not equivalent
+    if (aProps.length != bProps.length) {
+      return false;
     }
 
-}
+    for (var i = 0; i < aProps.length; i++) {
+      var propName = aProps[i];
 
-  isEquivalent = (a, b) => {
-
-      if(!a || !b){
-        if(a === b) return true;
-        return false
-      }
-      // Create arrays of property names
-      var aProps = Object.getOwnPropertyNames(a);
-      var bProps = Object.getOwnPropertyNames(b);
-
-      // If number of properties is different,
+      // If values of same property are not equal,
       // objects are not equivalent
-      if (aProps.length != bProps.length) {
-          return false;
+      if (a[propName] !== b[propName]) {
+        return false;
       }
+    }
 
-      for (var i = 0; i < aProps.length; i++) {
-          var propName = aProps[i];
+    // If we made it this far, objects
+    // are considered equivalent
+    return true;
+  };
+  animateToCurrent = (coords, speed) => {
+    region = {
+      latitude: coords.latitude,
+      longitude: coords.longitude,
+      latitudeDelta: 0.01,
+      longitudeDelta: 0.01
+    };
+    this.map.animateToRegion(region, speed);
+  };
+  toggleAbout = () => {
+    this.setState({
+      infoModal: !this.state.infoModal
+    });
+  };
+  toggleGPS = () => {
+    this.setState({
+      allowGPS: !this.state.allowGPS
+    });
+  };
+  focusLoc = () => {
+    if (this.state.focusOnMe || this.state.fixedOnUUID) {
+      this.setState({
+        focusOnMe: false,
+        fixedOnUUID: ""
+      });
+    } else {
+      region = {
+        latitude: this.state.currentLoc.latitude,
+        longitude: this.state.currentLoc.longitude,
+        latitudeDelta: 0.01,
+        longitudeDelta: 0.01
+      };
+      this.setState({
+        focusOnMe: true
+      });
+      this.map.animateToRegion(region, 2000);
+    }
+  };
+  draggedMap = () => {
+    this.setState({
+      focusOnMe: false,
+      fixedOnUUID: ""
+    });
+  };
+  touchUser = uuid => {
+    if (uuid === this.pubnub.getUUID()) {
+      this.focusLoc();
+    } else {
+      this.setState({
+        fixedOnUUID: uuid,
+        focusOnMe: false
+      });
+    }
+  };
 
-          // If values of same property are not equal,
-          // objects are not equivalent
-          if (a[propName] !== b[propName]) {
-              return false;
-          }
+  selectedStyle = uuid => {
+    if (
+      (this.state.focusOnMe && uuid == this.pubnub.getUUID()) ||
+      this.state.fixedOnUUID == uuid
+    ) {
+      return { height: hp("7%"), width: hp("7%"), borderRadius: 25 };
+    }
+    return { height: hp("5%"), width: hp("5%"), borderRadius: 15 };
+  };
+  messageOutPut = (message) => {
+    if (message) {
+      return (
+        <View style={styles.textBackground}>
+          <Text style={styles.text}>{message}</Text>
+        </View>
+      );
+    }
+  };
+  showUsername = (user) => {
+    if (this.state.focusOnMe && user.uuid == this.pubnub.getUUID()){
+      return (
+        <View style={styles.textBackground}>
+          <Text style={styles.text}>{this.state.username}</Text>
+        </View>
+      );
+    }else if(this.state.fixedOnUUID == user.uuid){
+      return (
+        <View style={styles.textBackground}>
+          <Text style={styles.text}>{user.username}</Text>
+        </View>
+      );
+    }
+  };
+
+
+  changeProfile = async (currentPicture,username) => {
+    if(currentPicture != -1 && username != ""){
+      this.pubnub.publish({
+        message: {
+          latitude: this.state.currentLoc.latitude,
+          longitude: this.state.currentLoc.longitude,
+          image: currentPicture,
+          username: username,
+        },
+        channel: "global"
+      });
+      await AsyncStorage.setItem('profile_pic_key', JSON.stringify(currentPicture));
+      await AsyncStorage.setItem('username_key', username);
+      this.setState({currentPicture,username})
+    }else if(username == ""){
+      this.pubnub.publish({
+        message: {
+          latitude: this.state.currentLoc.latitude,
+          longitude: this.state.currentLoc.longitude,
+          image: currentPicture,
+          username: this.state.username
+        },
+        channel: "global"
+      });
+      await AsyncStorage.setItem('profile_pic_key', JSON.stringify(currentPicture));
+      this.setState({currentPicture})
+    }else{
+      this.pubnub.publish({
+        message: {
+          latitude: this.state.currentLoc.latitude,
+          longitude: this.state.currentLoc.longitude,
+          image: this.state.currentPicture,
+          username: username
+        },
+        channel: "global"
+      });
+      await AsyncStorage.setItem('username_key', username);
+      this.setState({username})
+    }
+  }
+
+  closeModalInit = (e) => {
+    this.setState({visibleModalStart: e });
+  }
+  closeModalUpdate = (e) => {
+    this.setState({visibleModalUpdate: e });
+  }
+  handleKeyboardDidShow = (event) => {
+    const { height: windowHeight } = Dimensions.get('window');
+    const keyboardHeight = event.endCoordinates.height;
+    console.log(keyboardHeight)
+      const gap = (keyboardHeight * -1 ) + 20
+
+      Animated.timing(
+        this.state.shift,
+        {
+          toValue: gap,
+          duration: 180,
+          useNativeDriver: true,
+        }
+      ).start();
+  }
+  handleKeyboardDidHide = () => {
+    Animated.timing(
+      this.state.shift,
+      {
+        toValue: 0,
+        duration: 150,
+        useNativeDriver: true,
       }
+    ).start();
+  }
 
-      // If we made it this far, objects
-      // are considered equivalent
-      return true;
+
+
+  render() {
+    if(this.state.isLoading){
+      return <SplashScreen />;
+    }
+
+    let gpsImage;
+    if (this.state.focusOnMe || this.state.fixedOnUUID) {
+      gpsImage = require("./assets/images/fixedGPS.png");
+    } else {
+      gpsImage = require("./assets/images/notFixedGPS.png");
     }
   updateUserCount = () => {
     var presenceUsers = 0;
@@ -217,111 +521,249 @@ export default class App extends React.Component {
 
   };
 
-  render() {
     let usersArray = Array.from(this.state.users.values());
-    //Decrement Emoji Count
-    //Reset Emoji Count
-    killEmoji = () => {
-      this.pubnub.publish({
-        message: {
-          latitude: this.state.latitude,
-          longitude: this.state.longitude,
-          uuid: this.pubnub.getUUID(),
-          emoji: -1,
-          emojiType: this.state.emojiType},
-        channel: 'channel1'});
-    };
     return (
-    <View>
-    <View style={styles.container}>
-       <MapView style={styles.map} region={this.setRegion()}>
-               { usersArray.map((item, index) => (
-                 <Marker key={index} coordinate={{latitude: item.coords[0], longitude: item.coords[1]}}>
-                    {
-                      function() {
-                          let rows = [];
-                          for(let i = 0 ; i < item.emoji; i++){
-                            rows.push(<Animatable.View style={styles.marker} animation="fadeOutUp" duration={2000} iterationCount={1} direction="normal" easing = "ease-out" onAnimationEnd = {() => this.killEmoji()} key = {i}>
-                                      {(item.emojiType == 1) && <Image source={require('./src/Images/ic_like.png')} style={{height: 35, width:35, }} />}
-                                      {(item.emojiType == 2) && <Image source={require('./src/Images/love2.png')} style={{height: 35, width:35, }} />}
-                                      {(item.emojiType == 3) && <Image source={require('./src/Images/haha2.png')} style={{height: 35, width:35, }} />}
-                                      {(item.emojiType == 4) && <Image source={require('./src/Images/wow2.png')} style={{height: 35, width:35, }} />}
-                                      {(item.emojiType == 5) && <Image source={require('./src/Images/sad2.png')} style={{height: 35, width:35, }} />}
-                                      {(item.emojiType == 6) && <Image source={require('./src/Images/angry2.png')} style={{height: 35, width:35, }} />}
-                                    </Animatable.View> );
-                          }
-                          return rows;
-                      }()
+      <View style={styles.container}  >
+        <Modal isVisible={this.state.visibleModalStart}>
+          <ModalAppInit
+            changeProfile={this.changeProfile}
+            closeModalInit={this.closeModalInit}
+          />
+        </Modal>
+        <Modal isVisible={this.state.visibleModalUpdate}>
+          <ModalAppUpdate
+            currentUsername={this.state.username}
+            changeProfile={this.changeProfile}
+            closeModalUpdate={this.closeModalUpdate}
+            />
+        </Modal>
+
+
+        <Modal isVisible={this.state.infoModal}>
+          <InfoModal
+          toggleAbout={this.toggleAbout}
+          />
+        </Modal>
+
+        <Animated.View style={[styles.container, { transform: [{translateY: this.state.shift}] }]}>
+
+
+          <MapView
+            style={styles.map}
+            ref={ref => (this.map = ref)}
+            onMoveShouldSetResponder={this.draggedMap}
+            initialRegion={{
+              latitude: 36.81808,
+              longitude: -98.640297,
+              latitudeDelta: 60.0001,
+              longitudeDelta: 60.0001
+            }}
+          >
+            {usersArray.map((item, index) => (
+              //TRY SWITCHING UP TO CALLOUTS
+              <Marker
+                onPress={() => {
+                  this.touchUser(item.uuid);
+                }}
+                style={styles.marker}
+                key={index}
+                coordinate={{
+                  latitude: item.latitude,
+                  longitude: item.longitude
+                }}
+                ref={marker => {
+                  this.marker = marker;
+                }}
+              >
+                <View style={styles.marker}>
+                  {(function() {
+                    let rows = [];
+                    for (let i = 0; i < item.emojiCount; i++) {
+                      let emoji;
+                      switch (item.emojiType) {
+                        case 1: emoji = require("./src/Images/like2.png")
+                          break;
+                        case 2: emoji = require("./src/Images/love2.png")
+                          break;
+                        case 3: emoji = require("./src/Images/haha2.png")
+                          break;
+                        case 4: emoji = require("./src/Images/wow2.png")
+                          break;
+                        case 5: emoji = require("./src/Images/sad2.png")
+                          break;
+                        case 6: emoji = require("./src/Images/angry2.png")
+                          break;
+
+                        default:
+
+                      }
+                      rows.push(
+                        <Animatable.Image
+                          animation="fadeOutUp"
+                          duration={1500}
+                          iterationCount={1}
+                          direction="normal"
+                          easing="ease-out"
+                          key={i}
+                          source={emoji}
+                          style={styles.emoji}
+                        >
+                      </Animatable.Image>
+                      );
                     }
-                       <Image source={require('./assets/images/marker.png')} style={{height: 35, width:35, }} />
-                 </Marker>
-               )) }
-       </MapView>
-       </View>
-       <UserCount {...this.state} />
-       <EmojiBar {...this.state} pubnub={this.pubnub}/>
-       </View>
+                    return rows;
+                  })()}
+                  {this.messageOutPut(item.message)}
+                  <Image
+                    source={item.image}
+                    style={this.selectedStyle(item.uuid)}
+                  />
+                  {this.showUsername(item)}
+                </View>
+              </Marker>
+            ))}
+          </MapView>
+
+            <View style={styles.topBar}>
+              <TouchableOpacity onPress={() => this.setState({ visibleModalUpdate: !this.state.visibleModalUpdate })}>
+                <Image
+                  style={styles.profile}
+                  source={require('./assets/images/profile.png')}
+                />
+              </TouchableOpacity>
+              <UserCount {...this.state} />
+
+
+
+              <View style={styles.rightBar}>
+                <TouchableOpacity onPress={this.toggleAbout}>
+                  <Image
+                    style={styles.info}
+                    source={require('./assets/images/info.png')}
+                  />
+                </TouchableOpacity>
+                <Switch
+                value={this.state.allowGPS}
+                style={styles.locationSwitch}
+                onValueChange={this.toggleGPS}
+              />
+            </View>
+          </View>
+
+
+            <View style={styles.bottom}>
+                <EmojiBar {...this.state} pubnub={this.pubnub} />
+                <View style={styles.bottomRow}>
+                  <MessageInput {...this.state} pubnub={this.pubnub}/>
+                    <TouchableOpacity onPress={this.focusLoc}>
+                      <Image style={styles.focusLoc} source={gpsImage} />
+                    </TouchableOpacity>
+                </View>
+            </View>
+
+      </Animated.View>
+
+
+      </View>
    );
   }
 }
 
 const styles = StyleSheet.create({
-  container: {
-    ...StyleSheet.absoluteFillObject,
+  bottomRow:{
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center"
+  },
+  aboutView: {
+    backgroundColor: "#9FA8DA"
+  },
+  marker: {
+
     justifyContent: "center",
-    alignItems: "flex-start",  },
+    alignItems: "center",
+    marginTop: Platform.OS === "android" ? 100 : 0,
+  },
+  textBackground: {
+    backgroundColor: "#D22028",
+    alignItems: "center",
+    padding: 5,
+    borderRadius: 5
+  },
+  userImage: {
+    borderRadius: 10
+  },
+  text: {
+    fontSize: 12,
+    color: "#E1E4F3",
+    fontWeight: "bold"
+  },
+  topBar: {
+    top: Platform.OS === "android" ? hp('2%') : hp('5%'),
+
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginHorizontal: wp("2%"),
+  },
+  rightBar: {
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    alignItems: "center"
+  },
+  locationSwitch: {
+    right: 0,
+
+  },
+  container: {
+    flex: 1
+  },
+  bottom: {
+    position: "absolute",
+    flexDirection:'column',
+    bottom: 0,
+    borderWidth: 0,
+    borderColor: 'red',
+    //right: 0,
+    justifyContent: "center",
+    alignSelf: "center",
+
+    width: "100%",
+    marginBottom: hp("4%"),
+
+  },
+  focusLoc: {
+    width: hp("4.5%"),
+    height: hp("4.5%"),
+    marginRight: wp("2%")
+
+  },
   map: {
     ...StyleSheet.absoluteFillObject
   },
-  bubble: {
-    flex: 1,
-    backgroundColor: "rgba(255,255,255,0.7)",
-    paddingHorizontal: 18,
-    paddingVertical: 12,
-    borderRadius: 20
-  },
-  latlng: {
-    width: 200,
-    alignItems: "stretch"
-  },
-  button: {
-    width: 80,
-    paddingHorizontal: 12,
-    alignItems: "center",
-    marginHorizontal: 10
-  },
-  buttonContainer: {
-    flexDirection: "row",
-    marginVertical: 20,
-    backgroundColor: "transparent",
+  emoji: {
+    height: hp("5%"),
+    width: hp("5%"),
+    position: "absolute",
 
   },
-  modal: {
-    flex: 1,
-    alignItems: 'center',
-    backgroundColor: 'white',
-    padding: 100,
-    marginTop: 100,
-    marginBottom: 100,
-    marginLeft: 20,
-    marginRight: 20,
+  info: {
+    width: hp("4.5%"),
+    height: hp("4.5%"),
+    marginHorizontal: 10
   },
-  text: {
-      color: '#3f2949',
-      marginTop: 10,
-      alignItems: 'center',
-   },
-   view: {
-      alignItems: 'center',
-      // backgroundColor: '#ede3f2',
-      padding: 100,
-   },
-   image: {
-      alignItems: 'center',
-      // backgroundColor: '#ede3f2',
-      padding: 100,
-   },
-   marker: {
-     position: 'absolute',
-   },
+  profile: {
+    width: hp("4.5%"),
+    height: hp("4.5%"),
+
+  },
+  content: {
+    backgroundColor: "white",
+    padding: 22,
+    justifyContent: "center",
+    alignItems: "center",
+    borderRadius: 4,
+    borderColor: "rgba(0, 0, 0, 0.1)"
+  },
+
 });

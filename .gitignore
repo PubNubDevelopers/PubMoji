@@ -1,7 +1,6 @@
 # OSX
 #
 .DS_Store
-
 # Xcode
 #
 build/
@@ -21,6 +20,7 @@ DerivedData
 *.ipa
 *.xcuserstate
 project.xcworkspace
+PubMoji.keystore
 
 # Android/IntelliJ
 #
@@ -29,6 +29,7 @@ build/
 .gradle
 local.properties
 *.iml
+android/gradle.properties
 
 # node.js
 #
@@ -54,3 +55,7 @@ buck-out/
 
 # Bundle artifact
 *.jsbundle
+
+.vscode/
+
+android/app/PubMoji.keystore
