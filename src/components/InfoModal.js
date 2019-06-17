@@ -7,10 +7,6 @@ export default class InfoModal extends Component{
     constructor(props) {
         super(props);
         this.state = { 
-            // selectedIndexRowOne: -1,
-            // selectedIndexRowTwo: -1,
-            // text: '',
-            // isFocused: false ,
             pressStatus: false
          };
     }
@@ -22,49 +18,48 @@ export default class InfoModal extends Component{
     onShowUnderlay = () => {
         this.setState({ pressStatus: true });
     } 
-    // resizeMode="cover"
-render() {
-    return (
-        <View style={styles.content}>
-            <Image style={{alignSelf: 'center'}} source={img1}/>
-            <View style={styles.titleContent}>
-                <Text style={styles.titleText}>Welcome to PubMoji!</Text>
-            </View>
-            
-           <View style={styles.textContent}> 
-                <Text style={styles.text}>Pubmoji is an interactive phone app designed to demonstrate PubNub's capabilities.</Text>
-                <Text style={styles.text}>Let others know how you're feeling by spamming the different emojis or typing in a message!</Text>  
-                <Text style={styles.text}>Zoom in the map and watch emojis and messages fly out of people's avatars in realtime!</Text>
-            </View>
 
-            <View style={styles.buttonContainer}>
-                <TouchableHighlight
-                    activeOpacity={1}
-                    underlayColor={'white'}
-                    style={
-                    this.state.pressStatus
-                        ? styles.buttonPressed
-                        : styles.buttonNotPressed
-                    }
-                    onHideUnderlay={this.onHideUnderlay}
-                    onShowUnderlay={this.onShowUnderlay}
-                    onPress={this.props.toggleAbout}
-                    >
-                    <Text
+    render() {
+        return (
+            <View style={styles.content}>
+                <Image style={{alignSelf: 'center'}} source={img1}/>
+                <View style={styles.titleContent}>
+                    <Text style={styles.titleText}>Welcome to PubMoji!</Text>
+                </View>
+                
+                <View style={styles.textContent}> 
+                    <Text style={styles.text}>Pubmoji is an interactive phone app designed to demonstrate PubNub's capabilities.</Text>
+                    <Text style={styles.text}>Let others know how you're feeling by spamming the different emojis or typing in a message!</Text>  
+                    <Text style={styles.text}>Zoom in the map and watch emojis and messages fly out of people's avatars in realtime!</Text>
+                </View>
+
+                <View style={styles.buttonContainer}>
+                    <TouchableHighlight
+                        activeOpacity={1}
+                        underlayColor={'white'}
                         style={
                         this.state.pressStatus
-                            ? styles.cancelPressed
-                            : styles.cancelNotPressed
-                            }
+                            ? styles.buttonPressed
+                            : styles.buttonNotPressed
+                        }
+                        onHideUnderlay={this.onHideUnderlay}
+                        onShowUnderlay={this.onShowUnderlay}
+                        onPress={this.props.toggleAbout}
                         >
-                        Close
-                    </Text>
-                </TouchableHighlight>
+                        <Text
+                            style={
+                            this.state.pressStatus
+                                ? styles.cancelPressed
+                                : styles.cancelNotPressed
+                                }
+                            >
+                            Close
+                        </Text>
+                    </TouchableHighlight>
+                </View>
             </View>
-
-        </View>
-    );
-  }
+        );
+    }
 }
 
 const styles = StyleSheet.create({
@@ -114,8 +109,8 @@ const styles = StyleSheet.create({
     textContent: {
         textAlign: 'justify',
         justifyContent: 'center',
-        paddingLeft: 35,
-        paddingRight: 35,
+        paddingLeft: 33,
+        paddingRight: 33,
     },
     text: {
         color: 'black',

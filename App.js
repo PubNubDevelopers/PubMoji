@@ -5,10 +5,13 @@ import {
   Text,
   Button,
   View,
-  Image, Animated,
+  Image,
+  Animated,
   Switch,
   TouchableOpacity,
+  Dimensions, Keyboard,
 } from "react-native";import MapView, {Marker} from 'react-native-maps';
+import {widthPercentageToDP as wp, heightPercentageToDP as hp} from 'react-native-responsive-screen';
 import PubNubReact from 'pubnub-react';
 import * as Animatable from 'react-native-animatable';
 import Modal from "react-native-modal";
@@ -21,6 +24,7 @@ import AsyncStorage from '@react-native-community/async-storage';
 import MessageInput from './src/components/MessageInput/MessageInput';
 import Timeout from "smart-timeout";
 console.disableYellowBox = true;
+
 export default class App extends Component {
   constructor(props) {
     super(props);
@@ -36,12 +40,13 @@ export default class App extends Component {
         latitude: -1,
         longitude: -1
       },
+      splashLoading: true,
       numUsers: 0,
       username: "A Naughty Moose",
       fixedOnUUID: "",
       focusOnMe: false,
       users: new Map(),
-      splashLoading: true,
+      shift: new Animated.Value(0),
       currentPicture: null,
       visibleModalStart: false,
       visibleModalUpdate: false,
@@ -57,6 +62,9 @@ export default class App extends Component {
 
   //Track User GPS Data
   async componentDidMount() {
+    this.keyboardDidShowSub = Keyboard.addListener('keyboardWillShow', this.handleKeyboardDidShow);
+    this.keyboardDidHideSub = Keyboard.addListener('keyboardWillHide', this.handleKeyboardDidHide);
+
     // Store boolean value so modal init only opens on app boot
     const wasShown = await AsyncStorage.getItem('key'); // get key
 
@@ -175,7 +183,7 @@ export default class App extends Component {
         }
       },
       error => console.log("Maps Error: ", error),
-      { enableHighAccuracy: true, timeout: 5000, maximumAge: 1000 }
+      { enableHighAccuracy: true,}
     );
     //Track motional Coordinates
     navigator.geolocation.watchPosition(
@@ -201,8 +209,6 @@ export default class App extends Component {
       error => console.log("Maps Error: ", error),
       {
         enableHighAccuracy: true,
-        timeout: 5000,
-        maximumAge: 1000,
         distanceFilter: 100
       }
     );
@@ -230,6 +236,8 @@ export default class App extends Component {
     });
     this.pubnub.unsubscribeAll();
     navigator.geolocation.clearWatch(this.watchID);
+    this.keyboardDidShowSub.remove();
+    this.keyboardDidHideSub.remove();
   }
 
   componentDidUpdate(prevProps, prevState) {
@@ -364,9 +372,9 @@ export default class App extends Component {
       (this.state.focusOnMe && uuid == this.pubnub.getUUID()) ||
       this.state.fixedOnUUID == uuid
     ) {
-      return { height: 50, width: 50, borderRadius: 25 };
+      return { height: hp("7%"), width: hp("7%"), borderRadius: 25 };
     }
-    return { height: 30, width: 30, borderRadius: 15 };
+    return { height: hp("5%"), width: hp("5%"), borderRadius: 15 };
   };
   messageOutPut = (message) => {
     if (message) {
@@ -440,6 +448,31 @@ export default class App extends Component {
   closeModalUpdate = (e) => {
     this.setState({visibleModalUpdate: e });
   }
+  handleKeyboardDidShow = (event) => {
+    const { height: windowHeight } = Dimensions.get('window');
+    const keyboardHeight = event.endCoordinates.height;
+    const gap = (keyboardHeight * -1 ) + 20
+
+    Animated.timing(
+      this.state.shift,
+      {
+        toValue: gap,
+        duration: 180,
+        useNativeDriver: true,
+      }
+    ).start();
+  }
+
+  handleKeyboardDidHide = () => {
+    Animated.timing(
+      this.state.shift,
+      {
+        toValue: 0,
+        duration: 150,
+        useNativeDriver: true,
+      }
+    ).start();
+  }
 
   render() {
     if(this.state.splashLoading){
@@ -455,12 +488,19 @@ export default class App extends Component {
 
     let usersArray = Array.from(this.state.users.values());
     return (
-      <View style={styles.container}>
+      <View style={styles.container}  >
         <Modal isVisible={this.state.visibleModalStart}>
           <ModalAppInit
             changeProfile={this.changeProfile}
             closeModalInit={this.closeModalInit}
           />
+        </Modal>
+        <Modal isVisible={this.state.visibleModalUpdate}>
+          <ModalAppUpdate
+            currentUsername={this.state.username}
+            changeProfile={this.changeProfile}
+            closeModalUpdate={this.closeModalUpdate}
+            />
         </Modal>
 
 
@@ -470,122 +510,119 @@ export default class App extends Component {
           />
         </Modal>
 
-        <MapView
-          style={styles.map}
-          ref={ref => (this.map = ref)}
-          onMoveShouldSetResponder={this.draggedMap}
-          initialRegion={{
-            latitude: 36.81808,
-            longitude: -98.640297,
-            latitudeDelta: 60.0001,
-            longitudeDelta: 60.0001
-          }}
-        >
-          {usersArray.map((item, index) => (
-            //TRY SWITCHING UP TO CALLOUTS
-            <Marker
-              onPress={() => {
-                this.touchUser(item.uuid);
-              }}
-              style={styles.marker}
-              key={index}
-              coordinate={{
-                latitude: item.latitude,
-                longitude: item.longitude
-              }}
-              ref={marker => {
-                this.marker = marker;
-              }}
-            >
-              <View style={styles.marker}>
-                {(function() {
-                  let rows = [];
-                  for (let i = 0; i < item.emojiCount; i++) {
-                    let emoji;
-                    switch (item.emojiType) {
-                      case 1: emoji = require("./src/Images/like2.png")
-                        break;
-                      case 2: emoji = require("./src/Images/love2.png")
-                        break;
-                      case 3: emoji = require("./src/Images/haha2.png")
-                        break;
-                      case 4: emoji = require("./src/Images/wow2.png")
-                        break;
-                      case 5: emoji = require("./src/Images/sad2.png")
-                        break;
-                      case 6: emoji = require("./src/Images/angry2.png")
-                        break;
+        <Animated.View style={[styles.container, { transform: [{translateY: this.state.shift}] }]}>
+          <MapView
+            style={styles.map}
+            ref={ref => (this.map = ref)}
+            onMoveShouldSetResponder={this.draggedMap}
+            initialRegion={{
+              latitude: 36.81808,
+              longitude: -98.640297,
+              latitudeDelta: 60.0001,
+              longitudeDelta: 60.0001
+            }}
+          >
+            {usersArray.map((item, index) => (
+              //TRY SWITCHING UP TO CALLOUTS
+              <Marker
+                onPress={() => {
+                  this.touchUser(item.uuid);
+                }}
+                style={styles.marker}
+                key={index}
+                coordinate={{
+                  latitude: item.latitude,
+                  longitude: item.longitude
+                }}
+                ref={marker => {
+                  this.marker = marker;
+                }}
+              >
+                <View style={styles.marker}>
+                  {(function() {
+                    let rows = [];
+                    for (let i = 0; i < item.emojiCount; i++) {
+                      let emoji;
+                      switch (item.emojiType) {
+                        case 1: emoji = require("./src/Images/like2.png")
+                          break;
+                        case 2: emoji = require("./src/Images/love2.png")
+                          break;
+                        case 3: emoji = require("./src/Images/haha2.png")
+                          break;
+                        case 4: emoji = require("./src/Images/wow2.png")
+                          break;
+                        case 5: emoji = require("./src/Images/sad2.png")
+                          break;
+                        case 6: emoji = require("./src/Images/angry2.png")
+                          break;
 
-                      default:
+                        default:
 
+                      }
+                      rows.push(
+                        <Animatable.Image
+                          animation="fadeOutUp"
+                          duration={1500}
+                          iterationCount={1}
+                          direction="normal"
+                          easing="ease-out"
+                          key={i}
+                          source={emoji}
+                          style={styles.emoji}
+                        >
+                      </Animatable.Image>
+                      );
                     }
-                    rows.push(
-                      <Animatable.Image
-                        animation="fadeOutUp"
-                        duration={1500}
-                        iterationCount={1}
-                        direction="normal"
-                        easing="ease-out"
-                        key={i}
-                        source={emoji}
-                        style={styles.emoji}
-                      >
-                    </Animatable.Image>
-                    );
-                  }
-                  return rows;
-                })()}
-                {this.messageOutPut(item.message)}
+                    return rows;
+                  })()}
+                  {this.messageOutPut(item.message)}
+                  <Image
+                    source={item.image}
+                    style={this.selectedStyle(item.uuid)}
+                  />
+                  {this.showUsername(item)}
+                </View>
+              </Marker>
+            ))}
+          </MapView>
+
+            <View style={styles.topBar}>
+              <TouchableOpacity onPress={() => this.setState({ visibleModalUpdate: !this.state.visibleModalUpdate })}>
                 <Image
-                  source={item.image}
-                  style={this.selectedStyle(item.uuid)}
-                />
-                {this.showUsername(item)}
-              </View>
-            </Marker>
-          ))}
-        </MapView>
-
-          <View style={styles.topBar}>
-            <TouchableOpacity onPress={() => this.setState({ visibleModalUpdate: !this.state.visibleModalUpdate })}>
-              <Image
-                style={styles.profile}
-                source={require('./assets/images/profile.png')}
-              />
-            </TouchableOpacity>
-
-            <Modal isVisible={this.state.visibleModalUpdate}>
-              <ModalAppUpdate
-                currentUsername={this.state.username}
-                changeProfile={this.changeProfile}
-                closeModalUpdate={this.closeModalUpdate}
-                />
-            </Modal>
-
-            <View style={styles.rightBar}>
-              <TouchableOpacity onPress={this.toggleAbout}>
-                <Image
-                  style={styles.info}
-                  source={require('./assets/images/info.png')}
+                  style={styles.profile}
+                  source={require('./assets/images/profile.png')}
                 />
               </TouchableOpacity>
-              <Switch
-              value={this.state.allowGPS}
-              style={styles.locationSwitch}
-              onValueChange={this.toggleGPS}
-            />
-          </View>
-        </View>
 
-        <View style={styles.bottom}>
-            <EmojiBar {...this.state} pubnub={this.pubnub} />
-            <View style={styles.bottomRow}>
-              <MessageInput {...this.state} pubnub={this.pubnub}/>
-                <TouchableOpacity onPress={this.focusLoc}>
-                  <Image style={styles.focusLoc} source={gpsImage} />
+
+
+              <View style={styles.rightBar}>
+                <TouchableOpacity onPress={this.toggleAbout}>
+                  <Image
+                    style={styles.info}
+                    source={require('./assets/images/info.png')}
+                  />
                 </TouchableOpacity>
+                <Switch
+                value={this.state.allowGPS}
+                style={styles.locationSwitch}
+                onValueChange={this.toggleGPS}
+              />
             </View>
-        </View>
+          </View>
+
+
+            <View style={styles.bottom}>
+                <EmojiBar {...this.state} pubnub={this.pubnub} />
+                <View style={styles.bottomRow}>
+                  <MessageInput {...this.state} pubnub={this.pubnub}/>
+                    <TouchableOpacity onPress={this.focusLoc}>
+                      <Image style={styles.focusLoc} source={gpsImage} />
+                    </TouchableOpacity>
+                </View>
+            </View>
+        </Animated.View>
       </View>
    );
   }
@@ -601,10 +638,9 @@ const styles = StyleSheet.create({
     backgroundColor: "#9FA8DA"
   },
   marker: {
-
     justifyContent: "center",
     alignItems: "center",
-    marginTop: Platform.OS === "android" ? 50 : 0,
+    marginTop: Platform.OS === "android" ? 100 : 0,
   },
   textBackground: {
     backgroundColor: "#D22028",
@@ -621,11 +657,12 @@ const styles = StyleSheet.create({
     fontWeight: "bold"
   },
   topBar: {
-    top: Platform.OS === "android" ? 20 : 50,
-    right: 10,
+    top: Platform.OS === "android" ? hp('2%') : hp('5%'),
+
     flexDirection: "row",
     justifyContent: "space-between",
-    alignItems: "center"
+    alignItems: "center",
+    marginHorizontal: wp("2%"),
   },
   rightBar: {
     flexDirection: "row",
@@ -633,49 +670,50 @@ const styles = StyleSheet.create({
     alignItems: "center"
   },
   locationSwitch: {
-    right: 10
+    right: 0,
+
   },
   container: {
     flex: 1
   },
   bottom: {
     position: "absolute",
-    bottom: 16,
+    flexDirection:'column',
+    bottom: 0,
+    borderWidth: 0,
+    borderColor: 'red',
     //right: 0,
-    justifyContent: "flex-end",
+    justifyContent: "center",
     alignSelf: "center",
-    marginHorizontal: 16,
-    marginBottom: 16,
+
+    width: "100%",
+    marginBottom: hp("4%"),
 
   },
   focusLoc: {
-    width: 30,
-    height: 30,
-    right: 16,
+    width: hp("4.5%"),
+    height: hp("4.5%"),
+    marginRight: wp("2%")
+
   },
   map: {
     ...StyleSheet.absoluteFillObject
   },
   emoji: {
-    height: 25,
-    width: 25,
+    height: hp("5%"),
+    width: hp("5%"),
     position: "absolute",
 
   },
   info: {
-    width: 30,
-    height: 30,
-    marginHorizontal: 15
+    width: hp("4.5%"),
+    height: hp("4.5%"),
+    marginHorizontal: 10
   },
   profile: {
-    width: 30,
-    height: 30,
-    marginHorizontal: 25
-  },
+    width: hp("4.5%"),
+    height: hp("4.5%"),
 
-  textContent: {
-    alignItems: "center",
-    marginBottom: 10
   },
   content: {
     backgroundColor: "white",
@@ -684,8 +722,5 @@ const styles = StyleSheet.create({
     alignItems: "center",
     borderRadius: 4,
     borderColor: "rgba(0, 0, 0, 0.1)"
-  },
-  buttonContainer: {
-    flexDirection: "row"
   },
 });

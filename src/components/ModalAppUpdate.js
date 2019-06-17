@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import {StyleSheet, Dimensions, Text, TouchableHighlight, View, Image, TextInput, Alert, TouchableOpacity, Button} from 'react-native';
+import {StyleSheet, Text, TouchableHighlight, View, Image, TextInput, Animated,Dimensions, Keyboard,Alert, TouchableOpacity} from 'react-native';
 import { ButtonGroup } from 'react-native-elements';
 
 const window = Dimensions.get('window');
@@ -22,11 +22,48 @@ export default class ModalAppUpdate extends Component {
             selectedIndexRowOne: -1,
             selectedIndexRowTwo: -1,
             text: '',
+            shift: new Animated.Value(0),
             isFocused: false,
             pressStatusConfirm: false,
             pressStatusCancel: false
          };
-      }
+    }
+    componentDidMount() {
+      this.keyboardDidShowSub = Keyboard.addListener('keyboardWillShow', this.handleKeyboardDidShow);
+      this.keyboardDidHideSub = Keyboard.addListener('keyboardWillHide', this.handleKeyboardDidHide);
+    }
+    componentWillUnmount(){
+      this.keyboardDidShowSub.remove();
+      this.keyboardDidHideSub.remove();
+    }
+    handleKeyboardDidShow = (event) => {
+      const { height: windowHeight } = Dimensions.get('window');
+      const keyboardHeight = event.endCoordinates.height;
+      this.textInput.measure( (fx, fy, width, height, px, py) => {
+
+      const gap = (windowHeight - keyboardHeight ) - (py + height)
+
+      Animated.timing(
+        this.state.shift,
+        {
+          toValue: gap,
+          duration: 180,
+          useNativeDriver: true,
+        }
+      ).start();
+      })
+    }
+    
+    handleKeyboardDidHide = () => {
+      Animated.timing(
+        this.state.shift,
+        {
+          toValue: 0,
+          duration: 150,
+          useNativeDriver: true,
+        }
+      ).start();
+    }
 
     updateIndexOne = (selectedIndexRowOne) => {
     if(this.state.selectedIndexRowTwo != -1){
@@ -64,9 +101,9 @@ export default class ModalAppUpdate extends Component {
 
       if(selectedIndexRowOne === -1 && selectedIndexRowTwo === -1){
         if(text.length === 0){
-          Alert.alert('Error','No changes were made');
+          Alert.alert('Error','No changes were made.');
         }else if(text.length > 16){
-          Alert.alert('Error', 'Username should be less than 16 characters');
+          Alert.alert('Error', 'Username should be less than 16 characters.');
         }else{
           this.props.changeProfile(-1,this.state.text);
           this.setState({text: ''});
@@ -145,10 +182,10 @@ export default class ModalAppUpdate extends Component {
         const buttonsTwo = [{ element: component4 }, { element: component5 }, { element: component6 }];
 
         return (
-          <View>
-            <View style={styles.content}>
+          <View >
+            <Animated.View style={[styles.content, { transform: [{translateY: this.state.shift}] }]}>
                 <View style={styles.textContent}>
-                    <Text style={styles.text}>Profile Picture</Text>
+                    <Text style={styles.text}>Profile</Text>
                 </View>
                 <ButtonGroup
                   selectedIndex={this.state.selectedIndexRowOne}
@@ -167,6 +204,7 @@ export default class ModalAppUpdate extends Component {
 
                 <View style={styles.username}>
                     <TextInput
+                      ref={view => { this.textInput = view; }}
                       style={{flex: 1}}
                       type="TextInput"
                       name="myTextInput"
@@ -232,9 +270,9 @@ export default class ModalAppUpdate extends Component {
                             </Text>
                       </TouchableHighlight>
                     </View>
-                </View>   
-            </View>
-          </View>
+                  </View> 
+          </Animated.View>
+        </View>
         );
       }
   }
@@ -246,8 +284,8 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     marginBottom: 5,
-    paddingLeft: 7.5,
-    paddingRight: 7.5
+    paddingLeft: 9,
+    paddingRight: 9
   },
 
   buttonContainer: {
@@ -289,12 +327,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     height: 40,
     marginBottom: 10,
-    paddingLeft: 7.5,
-    paddingRight: 7.5
+    paddingLeft: 8,
+    paddingRight: 8
   },
   textContent: {
     alignItems: 'center',
-    marginBottom: 10,
+    marginBottom: 6,
   },
   text: {
     fontFamily: 'ProximaNova-Regular',
