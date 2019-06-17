@@ -545,14 +545,22 @@ export default class App extends Component {
             closeModalInit={this.closeModalInit}
           />
         </Modal>
-        <Modal isVisible={this.state.visibleModalUpdate}>
-          <ModalAppUpdate
-            currentUsername={this.state.username}
-            changeProfile={this.changeProfile}
-            closeModalUpdate={this.closeModalUpdate}
-            />
-        </Modal>
-
+        <View>
+          <Modal isVisible={this.state.visibleModalUpdate}
+            animationIn='slideInUp'
+            animationOut='slideOutDown'
+            animationInTiming={300}
+            animationOutTiming={300}
+            backdropTransitionInTiming={300}
+            backdropTransitionOutTiming={300}
+          >
+            <ModalAppUpdate
+              currentUsername={this.state.username}
+              changeProfile={this.changeProfile}
+              closeModalUpdate={this.closeModalUpdate}
+              />
+          </Modal>
+        </View>
 
         <Modal isVisible={this.state.infoModal}>
           <InfoModal
