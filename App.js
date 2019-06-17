@@ -9,7 +9,9 @@ import {
   Animated,
   Switch,
   TouchableOpacity,
-  Dimensions, Keyboard,
+  Dimensions,
+  Keyboard,
+  AppState,
 } from "react-native";import MapView, {Marker} from 'react-native-maps';
 import {widthPercentageToDP as wp, heightPercentageToDP as hp} from 'react-native-responsive-screen';
 import PubNubReact from 'pubnub-react';
@@ -58,7 +60,8 @@ export default class App extends Component {
       allowGPS: true,
       showAbout: false,
       emojiCount: 0,
-      userCount: 0
+      userCount: 0,
+      appState: AppState.currentState,
     };
 
     this.pubnub.init(this);
@@ -66,9 +69,23 @@ export default class App extends Component {
 
   //Track User GPS Data
   async componentDidMount() {
+    this.setUpApp()
+  }
+
+  clearMessage = uuid => {
+    let users = this.state.users;
+    let user = users.get(uuid)
+    delete user.message;
+    users.set(uuid,user);
+    this.setState(
+    {
+      users,
+    });
+  };
+  async setUpApp(){
     this.keyboardDidShowSub = Keyboard.addListener('keyboardWillShow', this.handleKeyboardDidShow);
     this.keyboardDidHideSub = Keyboard.addListener('keyboardWillHide', this.handleKeyboardDidHide);
-
+    AppState.addEventListener('change', this.handleAppState);
     // Store boolean value so modal init only opens on app boot
     const wasShown = await AsyncStorage.getItem('key'); // get key
 
@@ -90,7 +107,7 @@ export default class App extends Component {
     }
 
     this.pubnub.getMessage("global", msg => {
-      console.log("message: ", msg)
+      console.log("message: ")
       let users = this.state.users;
       if (msg.message.hideUser) {
         users.delete(msg.publisher);
@@ -220,29 +237,31 @@ export default class App extends Component {
     this.setState({ splashLoading: false});
   }
 
-  clearMessage = uuid => {
-    let users = this.state.users;
-    let user = users.get(uuid)
-    delete user.message;
-    users.set(uuid,user);
-    this.setState(
-    {
-      users,
-    });
-  };
-
 
   componentWillUnmount() {
-    this.pubnub.publish({
-      message: {
-        hideUser: true
-      },
-      channel: "global"
-    });
-    this.pubnub.unsubscribeAll();
-    navigator.geolocation.clearWatch(this.watchID);
-    this.keyboardDidShowSub.remove();
-    this.keyboardDidHideSub.remove();
+    console.log("will unmount")
+    AppState.removeEventListener('change', this.handleAppState);
+
+  }
+  handleAppState = (nextAppState) =>{
+    if (nextAppState === 'active') {
+      console.log("started up")
+      this.setUpApp()
+    }else if (nextAppState === 'inactive') {
+      console.log("closing down")
+      this.pubnub.publish({
+        message: {
+          hideUser: true
+        },
+        channel: "global"
+      },function(status,response){
+        console.log(status)
+      });
+      this.pubnub.unsubscribeAll();
+      navigator.geolocation.clearWatch(this.watchID);
+
+    }
+    this.setState({appState: nextAppState});
   }
 
   componentDidUpdate(prevProps, prevState) {
