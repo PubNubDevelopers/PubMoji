@@ -69,6 +69,14 @@ export default class App extends Component {
 
   //Track User GPS Data
   async componentDidMount() {
+    const wasShown = await AsyncStorage.getItem('key'); // get key
+
+    if(wasShown === null) {
+      await AsyncStorage.setItem('key', '"true"');
+      this.setState({visibleModalStart: true, wasShown});
+    }else{
+      this.setState({visibleModalStart: false, wasShown});
+    }
     this.setUpApp()
   }
 
@@ -87,14 +95,8 @@ export default class App extends Component {
     this.keyboardDidHideSub = Keyboard.addListener('keyboardWillHide', this.handleKeyboardDidHide);
     AppState.addEventListener('change', this.handleAppState);
     // Store boolean value so modal init only opens on app boot
-    const wasShown = await AsyncStorage.getItem('key'); // get key
 
-    if(wasShown === null) {
-      await AsyncStorage.setItem('key', '"true"');
-      this.setState({visibleModalStart: true, wasShown});
-    }else{
-      this.setState({visibleModalStart: false, wasShown});
-    }
+
     // get profile pic if available
     const storeProfilePic =  await AsyncStorage.getItem('profile_pic_key');
     if(storeProfilePic !=  null){
@@ -247,7 +249,7 @@ export default class App extends Component {
     if (nextAppState === 'active') {
       console.log("started up")
       this.setUpApp()
-    }else if (nextAppState === 'inactive') {
+    }else if (nextAppState === 'inactive' || nextAppState === 'background') {
       console.log("closing down")
       this.pubnub.publish({
         message: {

@@ -691,12 +691,12 @@ export default class AnimationScreen extends Component {
   controlIconWhenRelease = () => {
     this.zoomIconWhenRelease.setValue(1);
     this.moveUpDownIconWhenRelease.setValue(0);
-    this.moveLeftIconLikeWhenRelease.setValue(20);
-    this.moveLeftIconLoveWhenRelease.setValue(72);
-    this.moveLeftIconHahaWhenRelease.setValue(124);
-    this.moveLeftIconWowWhenRelease.setValue(173);
-    this.moveLeftIconSadWhenRelease.setValue(226);
-    this.moveLeftIconAngryWhenRelease.setValue(278);
+    this.moveLeftIconLikeWhenRelease.setValue(wp("8.3%"));
+    this.moveLeftIconLoveWhenRelease.setValue(wp("24.9%"));
+    this.moveLeftIconHahaWhenRelease.setValue(wp("41.5%"));
+    this.moveLeftIconWowWhenRelease.setValue(wp("58.1%"));
+    this.moveLeftIconSadWhenRelease.setValue(wp("74.7%"));
+    this.moveLeftIconAngryWhenRelease.setValue(wp("91.3%"));
 
     Animated.parallel([
       Animated.timing(this.zoomIconWhenRelease, {
@@ -704,7 +704,7 @@ export default class AnimationScreen extends Component {
         duration: this.durationAnimationIconWhenRelease * this.timeDilation
       }),
       Animated.timing(this.moveUpDownIconWhenRelease, {
-        toValue: 1.1,
+        toValue: 3,
         duration: this.durationAnimationIconWhenRelease * this.timeDilation
       }),
       Animated.timing(this.moveLeftIconLikeWhenRelease, {
@@ -1205,7 +1205,7 @@ export default class AnimationScreen extends Component {
             style={{
               width: 40,
               height: 40,
-              left: this.moveLeftIconLoveWhenRelease,
+              left: this.moveLeftIconLikeWhenRelease,
               bottom: moveUpDownIcon,
               transform: [{ scale: this.zoomIconWhenRelease }],
               position: "absolute"
