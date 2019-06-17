@@ -704,7 +704,7 @@ export default class AnimationScreen extends Component {
         duration: this.durationAnimationIconWhenRelease * this.timeDilation
       }),
       Animated.timing(this.moveUpDownIconWhenRelease, {
-        toValue: 1,
+        toValue: 1.1,
         duration: this.durationAnimationIconWhenRelease * this.timeDilation
       }),
       Animated.timing(this.moveLeftIconLikeWhenRelease, {
