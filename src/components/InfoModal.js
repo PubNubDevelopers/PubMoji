@@ -107,17 +107,16 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
     },
     textContent: {
-        textAlign: 'justify',
         justifyContent: 'center',
         paddingLeft: 33,
         paddingRight: 33,
     },
     text: {
         color: 'black',
-        textAlign: 'justify',
+        textAlign: 'left',
         fontFamily: 'ProximaNova-Regular',
         fontSize: 18,
-        marginTop: 5,
+        marginTop: 10,
     },        
     content: {
         backgroundColor: 'white',
