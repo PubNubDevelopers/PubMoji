@@ -22,6 +22,7 @@ import ModalAppUpdate from './src/components/ModalAppUpdate';
 import InfoModal from './src/components/InfoModal';
 import AsyncStorage from '@react-native-community/async-storage';
 import MessageInput from './src/components/MessageInput/MessageInput';
+import UserCount from './src/components/UserCount/UserCount';
 import Timeout from "smart-timeout";
 console.disableYellowBox = true;
 
@@ -46,6 +47,9 @@ export default class App extends Component {
       fixedOnUUID: "",
       focusOnMe: false,
       users: new Map(),
+      emoji: 0,
+      emojiType: 0,
+      splashLoading: true,
       shift: new Animated.Value(0),
       currentPicture: null,
       visibleModalStart: false,
@@ -54,7 +58,7 @@ export default class App extends Component {
       allowGPS: true,
       showAbout: false,
       emojiCount: 0,
-      emojiType: 1,
+      userCount: 0
     };
 
     this.pubnub.init(this);
@@ -86,6 +90,7 @@ export default class App extends Component {
     }
 
     this.pubnub.getMessage("global", msg => {
+      console.log("message: ", msg)
       let users = this.state.users;
       if (msg.message.hideUser) {
         users.delete(msg.publisher);
@@ -139,7 +144,7 @@ export default class App extends Component {
         }else if(oldUser){
           newUser.message = oldUser.message
         }
-
+        this.updateUserCount();
         users.set(newUser.uuid, newUser);
 
         this.setState({
@@ -312,6 +317,21 @@ export default class App extends Component {
     // are considered equivalent
     return true;
   };
+
+  updateUserCount = () => {
+    var presenceUsers = 0;
+    this.pubnub.hereNow({
+        includeUUIDs: true,
+        includeState: true
+    },
+    function (status, response) {
+        presenceUsers = response.totalOccupancy;
+    });
+    var totalUsers = Math.max(presenceUsers, this.state.users.size)
+    this.setState({userCount: totalUsers})
+
+   };
+
   animateToCurrent = (coords, speed) => {
     region = {
       latitude: coords.latitude,
@@ -485,6 +505,20 @@ export default class App extends Component {
     } else {
       gpsImage = require("./assets/images/notFixedGPS.png");
     }
+  updateUserCount = () => {
+    var presenceUsers = 0;
+    this.pubnub.hereNow({
+        includeUUIDs: true,
+        includeState: true
+    },
+    function (status, response) {
+        // handle status, response
+        presenceUsers = response.totalOccupancy;
+    });
+    var totalUsers = Math.max(presenceUsers, this.state.users.size)
+    this.setState({userCount: totalUsers})
+
+  };
 
     let usersArray = Array.from(this.state.users.values());
     return (
@@ -588,13 +622,17 @@ export default class App extends Component {
           </MapView>
 
             <View style={styles.topBar}>
+              <View style={styles.leftBar}>
               <TouchableOpacity onPress={() => this.setState({ visibleModalUpdate: !this.state.visibleModalUpdate })}>
                 <Image
                   style={styles.profile}
                   source={require('./assets/images/profile.png')}
                 />
               </TouchableOpacity>
-
+                <View style={styles.userCount}>
+                  <UserCount {...this.state} />
+                </View>
+              </View>
 
 
               <View style={styles.rightBar}>
@@ -669,9 +707,13 @@ const styles = StyleSheet.create({
     justifyContent: "flex-end",
     alignItems: "center"
   },
+  leftBar: {
+    flexDirection: "row",
+    justifyContent: "flex-start",
+    alignItems: "center"
+  },
   locationSwitch: {
     right: 0,
-
   },
   container: {
     flex: 1
@@ -680,12 +722,8 @@ const styles = StyleSheet.create({
     position: "absolute",
     flexDirection:'column',
     bottom: 0,
-    borderWidth: 0,
-    borderColor: 'red',
-    //right: 0,
     justifyContent: "center",
     alignSelf: "center",
-
     width: "100%",
     marginBottom: hp("4%"),
 
@@ -694,7 +732,10 @@ const styles = StyleSheet.create({
     width: hp("4.5%"),
     height: hp("4.5%"),
     marginRight: wp("2%")
+  },
 
+  userCount: {
+    marginHorizontal: 10
   },
   map: {
     ...StyleSheet.absoluteFillObject
@@ -712,8 +753,7 @@ const styles = StyleSheet.create({
   },
   profile: {
     width: hp("4.5%"),
-    height: hp("4.5%"),
-
+    height: hp("4.5%")
   },
   content: {
     backgroundColor: "white",

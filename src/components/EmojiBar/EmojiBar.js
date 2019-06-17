@@ -149,6 +149,21 @@ export default class AnimationScreen extends Component {
     return true;
   }
 
+  publishEmojiMessage = async () => {
+    const result = await this.onDragRelease();
+    this.props.pubnub.publish({
+      message: {
+        emojiType: this.whichIconUserChoose,
+        emojiCount: 1,
+        latitude: this.props.currentLoc.latitude,
+        longitude: this.props.currentLoc.longitude,
+        image: this.props.currentPicture,
+        username: this.props.username,
+       },
+      channel: "global"
+    });
+  }
+
   // Handle the drag gesture
   setupPanResponder() {
     this.rootPanResponder = PanResponder.create({
@@ -172,7 +187,7 @@ export default class AnimationScreen extends Component {
         this.currentIconFocus = 0;
         this.setState({});
 
-        this.onDragRelease();
+        this.publishEmojiMessage();
       }
     });
   }
@@ -277,7 +292,8 @@ export default class AnimationScreen extends Component {
     }
   };
 
-  onDragRelease = () => {
+  onDragRelease = async () => {
+
     // To lower the emoticons
     this.doAnimationLongTouchReverse();
 
@@ -722,17 +738,6 @@ export default class AnimationScreen extends Component {
     } else {
       this.soundIconChoose.play();
     }
-    this.props.pubnub.publish({
-      message: {
-        emojiType: this.whichIconUserChoose,
-        emojiCount: 1,
-        latitude: this.props.currentLoc.latitude,
-        longitude: this.props.currentLoc.longitude,
-        image: this.props.currentPicture,
-        username: this.props.username,
-       },
-      channel: "global"
-    });
   };
 
   render() {
@@ -746,17 +751,6 @@ export default class AnimationScreen extends Component {
               styles.viewBox,
               {
                 opacity: this.fadeBoxAnim,
-                // transform: [
-                //   {
-                //     scale: this.isDragging
-                //       ? this.previousIconFocus === 0
-                //         ? this.zoomBoxWhenDragInside
-                //         : 0.95
-                //       : this.isDraggingOutside
-                //       ? this.zoomBoxWhenDragOutside
-                //       : 1.0
-                //   }
-                // ]
               }
             ]}
           />
