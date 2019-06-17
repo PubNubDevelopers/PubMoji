@@ -18,18 +18,17 @@ const styles = StyleSheet.create({
       justifyContent: 'space-around',
       alignItems: 'center',   
       backgroundColor: 'white',
-      marginBottom: -140
     },
     text: {
-      fontFamily: 'roboto',
-    //   marginBottom: 250,
+      fontFamily: 'ProximaNova-Regular',
       color: 'rgb(208,33,41)',  
-      fontSize: 80,
-      fontWeight: 'bold',
+      fontSize: 78,
+      fontWeight: 'bold'
     },
     bottom: {
-      fontFamily: 'roboto',
+      fontFamily: 'ProximaNova-Regular',
       color: 'rgb(208,33,41)',  
-      fontSize: 30,
-      }
+      fontSize: 25,
+      marginBottom: -153
+    }
 });

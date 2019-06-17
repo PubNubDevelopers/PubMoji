@@ -2,12 +2,15 @@ import React, { Component } from 'react';
 import {StyleSheet, Text, TouchableHighlight, View, Image, TextInput, Animated,Dimensions, Keyboard,Alert, TouchableOpacity} from 'react-native';
 import { ButtonGroup } from 'react-native-elements';
 
-const img1 = require('../../assets/images/person-male.png');
-const img2 = require('../../assets/images/person-female.png');
-const img3 = require('../../assets/images/cat.png');
-const img4 = require('../../assets/images/doge.png');
-const img5 = require('../../assets/images/anonymous-mask.png');
-const img6 = require('../../assets/images/corgi.png');
+const window = Dimensions.get('window');
+const {width, height, scale} = window;
+
+const img1 = require('../../assets/images/anon_mask.png');
+const img2 = require('../../assets/images/bear.png');
+const img3 = require('../../assets/images/rabbit.png');
+const img4 = require('../../assets/images/corgi.png');
+const img5 = require('../../assets/images/cat.png');
+const img6 = require('../../assets/images/dolphin.png');
 const imgArrayRowOne = [img1, img2, img3];
 const imgArrayRowTwo = [img4, img5, img6];
 
@@ -38,20 +41,19 @@ export default class ModalAppUpdate extends Component {
       const keyboardHeight = event.endCoordinates.height;
       this.textInput.measure( (fx, fy, width, height, px, py) => {
 
-        console.log('Y offset to page: ' + py)
-        const gap = (windowHeight - keyboardHeight ) - (py + height)
+      const gap = (windowHeight - keyboardHeight ) - (py + height)
 
-        Animated.timing(
-          this.state.shift,
-          {
-            toValue: gap,
-            duration: 180,
-            useNativeDriver: true,
-          }
-        ).start();
+      Animated.timing(
+        this.state.shift,
+        {
+          toValue: gap,
+          duration: 180,
+          useNativeDriver: true,
+        }
+      ).start();
       })
-
     }
+    
     handleKeyboardDidHide = () => {
       Animated.timing(
         this.state.shift,
@@ -99,9 +101,9 @@ export default class ModalAppUpdate extends Component {
 
       if(selectedIndexRowOne === -1 && selectedIndexRowTwo === -1){
         if(text.length === 0){
-          Alert.alert('Error','No changes were made');
+          Alert.alert('Error','No changes were made.');
         }else if(text.length > 16){
-          Alert.alert('Error', 'Username should be less than 16 characters');
+          Alert.alert('Error', 'Username should be less than 16 characters.');
         }else{
           this.props.changeProfile(-1,this.state.text);
           this.setState({text: ''});
@@ -153,46 +155,48 @@ export default class ModalAppUpdate extends Component {
 
         const component2 = () =>
         <Image
-        source={img2}
+          source={img2}
         />
 
         const component3 = () =>
         <Image
-        source={img3}
+          source={img3}
         />
 
         const component4 = () =>
         <Image
-        source={img4}
+          source={img4}
         />
 
         const component5 = () =>
         <Image
-        source={img5}
+          source={img5}
         />
 
         const component6 = () =>
         <Image
-        source={img6}
+          source={img6}
         />
 
-        const buttonsOne = [{ element: component1}, { element: component2, id: 2 }, { element: component3, id: 3 }];
-        const buttonsTwo = [{ element: component4, id: 4 }, { element: component5, id: 5 }, { element: component6, id: 6 }];
+        const buttonsOne = [{ element: component1 }, { element: component2 }, { element: component3 }];
+        const buttonsTwo = [{ element: component4 }, { element: component5 }, { element: component6 }];
 
         return (
           <View >
             <Animated.View style={[styles.content, { transform: [{translateY: this.state.shift}] }]}>
                 <View style={styles.textContent}>
-                    <Text style={styles.text}>Profile Picture</Text>
+                    <Text style={styles.text}>Profile</Text>
                 </View>
                 <ButtonGroup
                   selectedIndex={this.state.selectedIndexRowOne}
+                  selectedButtonStyle={styles.buttonGroupSelectedButton}
                   buttons={buttonsOne}
                   onPress={this.updateIndexOne}
                   containerStyle={{height: 70}}
                 />
                 <ButtonGroup
                   selectedIndex={this.state.selectedIndexRowTwo}
+                  selectedButtonStyle={styles.buttonGroupSelectedButton}
                   buttons={buttonsTwo}
                   onPress={this.updateIndexTwo}
                   containerStyle={{height: 70}}
@@ -215,107 +219,131 @@ export default class ModalAppUpdate extends Component {
                       onChangeText={(text) => this.setState({text})}
                     />
                 </View>
-                <View style={styles.buttonContainer}>
-                    <TouchableHighlight
-                        activeOpacity={1}
-                        underlayColor={'white'}
-                        style={
-                          this.state.pressStatusCancel
-                              ? styles.buttonPressed
-                              : styles.buttonNotPressed
-                        }
-                          onHideUnderlay={this.onHideUnderlayCancelButton}
-                          onShowUnderlay={this.onShowUnderlayCancelButton}
-                          onPress={this.cancelProfile}
-                        >
-                          <Text
-                            style={
+
+                <View style={styles.container}>
+                    <View style={styles.buttonContainer}>
+                        <TouchableHighlight
+                          activeOpacity={1}
+                          underlayColor={'white'}
+                          style={
                             this.state.pressStatusCancel
-                                ? styles.cancelPressed
-                                : styles.cancelNotPressed
-                                }
-                            >
-                            Cancel
-                          </Text>
-                    </TouchableHighlight>
-
-                    <TouchableHighlight
-                        activeOpacity={1}
-                        underlayColor={'white'}
-
-                        style={
-                          this.state.pressStatusConfirm
-                              ? styles.buttonPressed
-                              : styles.buttonNotPressed
-                        }
-                          onHideUnderlay={this.onHideUnderlayConfirmButton}
-                          onShowUnderlay={this.onShowUnderlayConfirmButton}
-                          onPress={this.updateProfile}
-                        >
-                          <Text
-
-                            style={
+                                ? styles.buttonPressed
+                                : styles.buttonNotPressed
+                          }     
+                            onHideUnderlay={this.onHideUnderlayCancelButton}
+                            onShowUnderlay={this.onShowUnderlayCancelButton}               
+                            onPress={this.cancelProfile}
+                          >
+                            <Text 
+                              style={
+                              this.state.pressStatusCancel
+                                  ? styles.cancelPressed
+                                  : styles.cancelNotPressed
+                                  }
+                              > 
+                              Cancel
+                            </Text>
+                      </TouchableHighlight>
+                    </View>
+                    <View style={styles.buttonBorder}/>
+                      <View style={styles.buttonContainer}>
+                          <TouchableHighlight
+                          activeOpacity={1}
+                          underlayColor={'white'}
+                          style={
                             this.state.pressStatusConfirm
-                                ? styles.cancelPressed
-                                : styles.cancelNotPressed
-                                }
-                            >
-                            Confirm
-                          </Text>
-                    </TouchableHighlight>
-                </View>
-              </Animated.View>
-            </View>
+                                ? styles.buttonPressed
+                                : styles.buttonNotPressed
+                          }     
+                            onHideUnderlay={this.onHideUnderlayConfirmButton}
+                            onShowUnderlay={this.onShowUnderlayConfirmButton}               
+                            onPress={this.updateProfile}
+                          >
+                            <Text 
+                              style={
+                              this.state.pressStatusConfirm
+                                  ? styles.cancelPressed
+                                  : styles.cancelNotPressed
+                                  }
+                              > 
+                              Confirm
+                            </Text>
+                      </TouchableHighlight>
+                    </View>
+                  </View> 
+          </Animated.View>
+        </View>
         );
-    }
-}
-
+      }
+  }
 
 const styles = StyleSheet.create({
-  buttonContainer: {
+  buttonGroupSelectedButton:{
+    backgroundColor: 'rgb(208,33,41)'
+  },
+  container: {
     flexDirection: 'row',
+    marginBottom: 5,
+    paddingLeft: 9,
+    paddingRight: 9
+  },
+
+  buttonContainer: {
+    flex: 1,
+    textAlign: 'center',
+  },
+  buttonBorder: {
+    borderLeftWidth: 4,
+    borderLeftColor: 'white'
   },
   buttonPressed:{
     borderColor: 'rgb(208,33,41)',
+    alignSelf: 'stretch',
     borderWidth: 1,
-    padding: 10,
     borderRadius: 5,
   },
   buttonNotPressed: {
     backgroundColor: 'rgb(208,33,41)',
+    alignSelf: 'stretch',
     borderColor: 'rgb(208,33,41)',
     borderWidth: 1,
-    padding: 10,
     borderRadius: 5,
-
   },
   cancelPressed:{
-    color: 'rgb(208,33,41)'
+    textAlign: 'center',
+    color: 'rgb(208,33,41)',
+    paddingTop: 9,
+    paddingBottom: 9,
+    fontSize: 16,
   },
   cancelNotPressed: {
-    color: 'white'
+    textAlign: 'center',
+    color: 'white',
+    paddingTop: 9,
+    paddingBottom: 9,
+    fontSize: 16,
   },
   username:{
     flexDirection: 'row',
     height: 40,
     marginBottom: 10,
-    paddingLeft: 6
+    paddingLeft: 8,
+    paddingRight: 8
   },
   textContent: {
     alignItems: 'center',
-    marginBottom: 10,
+    marginBottom: 6,
   },
   text: {
-    fontFamily: 'roboto',
+    fontFamily: 'ProximaNova-Regular',
     color: 'rgb(208,33,41)',
     fontSize: 34,
     fontWeight: 'bold',
   },
   content: {
     backgroundColor: 'white',
-    padding: 22,
+    padding: 5,
     justifyContent: 'center',
-    alignItems: 'center',
     borderRadius: 5,
     borderColor: 'rgba(0, 0, 0, 0.1)',
   },

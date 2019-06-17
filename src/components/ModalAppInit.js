@@ -2,12 +2,12 @@ import React, { Component } from 'react';
 import {StyleSheet, Text, TouchableHighlight, View, Image, TextInput, Animated,Dimensions, Keyboard,Alert, TouchableOpacity} from 'react-native';
 import { ButtonGroup } from 'react-native-elements';
 
-const img1 = require('../../assets/images/person-male.png');
-const img2 = require('../../assets/images/person-female.png');
-const img3 = require('../../assets/images/cat.png');
-const img4 = require('../../assets/images/doge.png');
-const img5 = require('../../assets/images/anonymous-mask.png');
-const img6 = require('../../assets/images/corgi.png');
+const img1 = require('../../assets/images/anon_mask.png');
+const img2 = require('../../assets/images/bear.png');
+const img3 = require('../../assets/images/rabbit.png');
+const img4 = require('../../assets/images/corgi.png');
+const img5 = require('../../assets/images/cat.png');
+const img6 = require('../../assets/images/dolphin.png');
 const imgArrayRowOne = [img1, img2, img3];
 const imgArrayRowTwo = [img4, img5, img6];
 
@@ -37,20 +37,19 @@ export default class ModalAppInit extends Component {
         const keyboardHeight = event.endCoordinates.height;
         this.textInput.measure( (fx, fy, width, height, px, py) => {
 
-          console.log('Y offset to page: ' + py)
-          const gap = (windowHeight - keyboardHeight ) - (py + height)
+        const gap = (windowHeight - keyboardHeight ) - (py + height)
 
-          Animated.timing(
-            this.state.shift,
-            {
-              toValue: gap,
-              duration: 180,
-              useNativeDriver: true,
-            }
+        Animated.timing(
+          this.state.shift,
+          {
+            toValue: gap,
+            duration: 180,
+            useNativeDriver: true,
+          }
           ).start();
         })
-
       }
+
       handleKeyboardDidHide = () => {
         Animated.timing(
           this.state.shift,
@@ -61,6 +60,7 @@ export default class ModalAppInit extends Component {
           }
         ).start();
       }
+
     updateIndexOne = (selectedIndexRowOne) => {
     if(this.state.selectedIndexRowTwo != -1){
         this.setState({selectedIndexRowTwo: -1});
@@ -84,8 +84,6 @@ export default class ModalAppInit extends Component {
     }
 
     confirmProfile = () => {
-
-
       const { selectedIndexRowOne } = this.state;
       const { selectedIndexRowTwo } = this.state;
       const {text} = this.state;
@@ -97,7 +95,7 @@ export default class ModalAppInit extends Component {
         Alert.alert('Error','Please enter your username.');
       }
       else if(text.length > 16){
-        Alert.alert('Error', 'Username should be less than 16 characters');
+        Alert.alert('Error', 'Username should be less than 16 characters.');
       }
       else{
         // publish username and image to channel
@@ -125,55 +123,53 @@ export default class ModalAppInit extends Component {
 
         const component1 = () =>
         <Image
-          defaultSource={img1}
           source={img1}
         />
 
         const component2 = () =>
         <Image
-          defaultSource={img2}
-        source={img2}
+          source={img2}
         />
 
         const component3 = () =>
         <Image
-          defaultSource={img3}
           source={img3}
         />
 
         const component4 = () =>
         <Image
-          defaultSource={img4}
           source={img4}
         />
 
         const component5 = () =>
         <Image
-        source={img5}
+          source={img5}
         />
 
         const component6 = () =>
         <Image
-        source={img6}
+          source={img6}
         />
 
-        const buttonsOne = [{ element: component1}, { element: component2, id: 2 }, { element: component3, id: 3 }];
-        const buttonsTwo = [{ element: component4, id: 4 }, { element: component5, id: 5 }, { element: component6, id: 6 }];
+        const buttonsOne = [{ element: component1 }, { element: component2 }, { element: component3 }];
+        const buttonsTwo = [{ element: component4 }, { element: component5 }, { element: component6 }];
 
         return (
           <View>
             <Animated.View style={[styles.content, { transform: [{translateY: this.state.shift}] }]}>
                 <View style={styles.textContent}>
-                    <Text style={styles.text}>Profile Picture</Text>
+                    <Text style={styles.text}>Profile</Text>
                 </View>
                 <ButtonGroup
                     selectedIndex={this.state.selectedIndexRowOne}
+                    selectedButtonStyle={styles.buttonGroupSelectedButton}
                     buttons={buttonsOne}
                     onPress={this.updateIndexOne}
                     containerStyle={{height: 70}}
                 />
                 <ButtonGroup
                     selectedIndex={this.state.selectedIndexRowTwo}
+                    selectedButtonStyle={styles.buttonGroupSelectedButton}
                     buttons={buttonsTwo}
                     onPress={this.updateIndexTwo}
                     containerStyle={{height: 70}}
@@ -220,7 +216,6 @@ export default class ModalAppInit extends Component {
                               Confirm
                             </Text>
                       </TouchableHighlight>
-
                 </View>
             </Animated.View>
           </View>
@@ -229,8 +224,15 @@ export default class ModalAppInit extends Component {
 }
 
 const styles = StyleSheet.create({
+  buttonGroupSelectedButton:{
+    backgroundColor: 'rgb(208,33,41)'
+  },
   buttonContainer: {
-    flexDirection: 'row',
+    alignItems: 'stretch',
+    textAlign: 'center',
+    paddingLeft: 9,
+    paddingRight: 9,
+    marginBottom: 5,
   },
   button: {
     flex: 1
@@ -249,16 +251,24 @@ const styles = StyleSheet.create({
     borderRadius: 5
   },
   cancelPressed:{
-    color: 'rgb(208,33,41)'
+    color: 'rgb(208,33,41)',
+    fontSize: 16,
+    textAlign: 'center',
+    alignItems: 'center',
   },
   cancelNotPressed: {
-    color: 'white'
+    color: 'white',
+    fontSize: 16,
+    textAlign: 'center',
+    alignItems: 'center',
   },
   textContent: {
     alignItems: 'center',
-    marginBottom: 10,
+    marginBottom: 6,  
+    marginTop: 3
   },
   text: {
+    fontFamily: 'ProximaNova-Regular',
     color: 'rgb(208,33,41)',
     fontSize: 34,
     fontWeight: 'bold',
@@ -267,13 +277,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     height: 40,
     marginBottom: 10,
-    paddingLeft: 6
+    paddingLeft: 8,
+    paddingRight: 8
   },
   content: {
     backgroundColor: 'white',
-    padding: 22,
+    padding: 5,
     justifyContent: 'center',
-    alignItems: 'center',
     borderRadius: 5,
     borderColor: 'rgba(0, 0, 0, 0.1)',
   },

@@ -25,6 +25,7 @@ import MessageInput from './src/components/MessageInput/MessageInput';
 import UserCount from './src/components/UserCount/UserCount';
 import Timeout from "smart-timeout";
 console.disableYellowBox = true;
+
 export default class App extends Component {
   constructor(props) {
     super(props);
@@ -32,6 +33,7 @@ export default class App extends Component {
       publishKey: "pub-c-d93d7b15-4e46-42f4-ba03-c5d997844b9e",
       subscribeKey: "sub-c-1ef826d4-78df-11e9-945c-2ea711aa6b65"
     });
+
     this.moveAnimation = new Animated.ValueXY({ x: 10, y: 450 })
     //Base State
     this.state = {
@@ -39,6 +41,7 @@ export default class App extends Component {
         latitude: -1,
         longitude: -1
       },
+      splashLoading: true,
       numUsers: 0,
       username: "A Naughty Moose",
       fixedOnUUID: "",
@@ -46,35 +49,26 @@ export default class App extends Component {
       users: new Map(),
       emoji: 0,
       emojiType: 0,
-      isLoading: false,
+      splashLoading: true,
       shift: new Animated.Value(0),
       currentPicture: null,
       visibleModalStart: false,
       visibleModalUpdate: false,
-      isFocused: false ,
+      isFocused: false,
       allowGPS: true,
       showAbout: false,
       emojiCount: 0,
-      emojiType: 1,
       userCount: 0
     };
 
     this.pubnub.init(this);
   }
 
-  performTimeConsumingTask = async() => {
-    return new Promise((resolve) =>
-      setTimeout(
-        () => { resolve('result') },
-        3000
-      )
-    );
-  }
-
   //Track User GPS Data
   async componentDidMount() {
     this.keyboardDidShowSub = Keyboard.addListener('keyboardWillShow', this.handleKeyboardDidShow);
     this.keyboardDidHideSub = Keyboard.addListener('keyboardWillHide', this.handleKeyboardDidHide);
+
     // Store boolean value so modal init only opens on app boot
     const wasShown = await AsyncStorage.getItem('key'); // get key
 
@@ -94,8 +88,6 @@ export default class App extends Component {
     if(username !=  null){
       this.setState({username});
     }
-
-
 
     this.pubnub.getMessage("global", msg => {
       console.log("message: ", msg)
@@ -225,11 +217,7 @@ export default class App extends Component {
         distanceFilter: 100
       }
     );
-    const data = await this.performTimeConsumingTask();
-
-    if (data !== null) {
-      this.setState({ isLoading: false });
-    }
+    this.setState({ splashLoading: false});
   }
 
   clearMessage = uuid => {
@@ -260,7 +248,6 @@ export default class App extends Component {
   componentDidUpdate(prevProps, prevState) {
     if (prevState.allowGPS != this.state.allowGPS) {
       if (this.state.allowGPS) {
-        console.log(this.state.users);
         if (this.state.focusOnMe) {
           this.animateToCurrent(this.state.currentLoc, 1000);
         }
@@ -434,7 +421,6 @@ export default class App extends Component {
     }
   };
 
-
   changeProfile = async (currentPicture,username) => {
     if(currentPicture != -1 && username != ""){
       this.pubnub.publish({
@@ -485,18 +471,18 @@ export default class App extends Component {
   handleKeyboardDidShow = (event) => {
     const { height: windowHeight } = Dimensions.get('window');
     const keyboardHeight = event.endCoordinates.height;
-    console.log(keyboardHeight)
-      const gap = (keyboardHeight * -1 ) + 20
+    const gap = (keyboardHeight * -1 ) + 20
 
-      Animated.timing(
-        this.state.shift,
-        {
-          toValue: gap,
-          duration: 180,
-          useNativeDriver: true,
-        }
-      ).start();
+    Animated.timing(
+      this.state.shift,
+      {
+        toValue: gap,
+        duration: 180,
+        useNativeDriver: true,
+      }
+    ).start();
   }
+
   handleKeyboardDidHide = () => {
     Animated.timing(
       this.state.shift,
@@ -508,10 +494,8 @@ export default class App extends Component {
     ).start();
   }
 
-
-
   render() {
-    if(this.state.isLoading){
+    if(this.state.splashLoading){
       return <SplashScreen />;
     }
 
@@ -561,8 +545,6 @@ export default class App extends Component {
         </Modal>
 
         <Animated.View style={[styles.container, { transform: [{translateY: this.state.shift}] }]}>
-
-
           <MapView
             style={styles.map}
             ref={ref => (this.map = ref)}
@@ -678,10 +660,7 @@ export default class App extends Component {
                     </TouchableOpacity>
                 </View>
             </View>
-
-      </Animated.View>
-
-
+        </Animated.View>
       </View>
    );
   }
@@ -697,7 +676,6 @@ const styles = StyleSheet.create({
     backgroundColor: "#9FA8DA"
   },
   marker: {
-
     justifyContent: "center",
     alignItems: "center",
     marginTop: Platform.OS === "android" ? 100 : 0,
@@ -785,5 +763,4 @@ const styles = StyleSheet.create({
     borderRadius: 4,
     borderColor: "rgba(0, 0, 0, 0.1)"
   },
-
 });
