@@ -37,20 +37,19 @@ export default class ModalAppInit extends Component {
         const keyboardHeight = event.endCoordinates.height;
         this.textInput.measure( (fx, fy, width, height, px, py) => {
 
-          console.log('Y offset to page: ' + py)
-          const gap = (windowHeight - keyboardHeight ) - (py + height)
+        const gap = (windowHeight - keyboardHeight ) - (py + height)
 
-          Animated.timing(
-            this.state.shift,
-            {
-              toValue: gap,
-              duration: 180,
-              useNativeDriver: true,
-            }
+        Animated.timing(
+          this.state.shift,
+          {
+            toValue: gap,
+            duration: 180,
+            useNativeDriver: true,
+          }
           ).start();
         })
-
       }
+
       handleKeyboardDidHide = () => {
         Animated.timing(
           this.state.shift,
@@ -61,6 +60,7 @@ export default class ModalAppInit extends Component {
           }
         ).start();
       }
+
     updateIndexOne = (selectedIndexRowOne) => {
     if(this.state.selectedIndexRowTwo != -1){
         this.setState({selectedIndexRowTwo: -1});
@@ -84,8 +84,6 @@ export default class ModalAppInit extends Component {
     }
 
     confirmProfile = () => {
-
-
       const { selectedIndexRowOne } = this.state;
       const { selectedIndexRowTwo } = this.state;
       const {text} = this.state;
@@ -97,7 +95,7 @@ export default class ModalAppInit extends Component {
         Alert.alert('Error','Please enter your username.');
       }
       else if(text.length > 16){
-        Alert.alert('Error', 'Username should be less than 16 characters');
+        Alert.alert('Error', 'Username should be less than 16 characters.');
       }
       else{
         // publish username and image to channel
@@ -125,36 +123,32 @@ export default class ModalAppInit extends Component {
 
         const component1 = () =>
         <Image
-          defaultSource={img1}
           source={img1}
         />
 
         const component2 = () =>
         <Image
-          defaultSource={img2}
-        source={img2}
+          source={img2}
         />
 
         const component3 = () =>
         <Image
-          defaultSource={img3}
           source={img3}
         />
 
         const component4 = () =>
         <Image
-          defaultSource={img4}
           source={img4}
         />
 
         const component5 = () =>
         <Image
-        source={img5}
+          source={img5}
         />
 
         const component6 = () =>
         <Image
-        source={img6}
+          source={img6}
         />
 
         const buttonsOne = [{ element: component1 }, { element: component2 }, { element: component3 }];
@@ -236,9 +230,9 @@ const styles = StyleSheet.create({
   buttonContainer: {
     alignItems: 'stretch',
     textAlign: 'center',
-    paddingLeft: 7.5,
-    paddingRight: 7.5,
-    marginBottom: 3,
+    paddingLeft: 9,
+    paddingRight: 9,
+    marginBottom: 5,
   },
   button: {
     flex: 1
@@ -270,7 +264,8 @@ const styles = StyleSheet.create({
   },
   textContent: {
     alignItems: 'center',
-    marginBottom: 10,  
+    marginBottom: 6,  
+    marginTop: 3
   },
   text: {
     fontFamily: 'ProximaNova-Regular',
@@ -282,8 +277,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     height: 40,
     marginBottom: 10,
-    paddingLeft: 6,
-    paddingRight: 6
+    paddingLeft: 8,
+    paddingRight: 8
   },
   content: {
     backgroundColor: 'white',

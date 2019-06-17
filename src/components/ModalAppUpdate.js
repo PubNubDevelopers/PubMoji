@@ -41,20 +41,19 @@ export default class ModalAppUpdate extends Component {
       const keyboardHeight = event.endCoordinates.height;
       this.textInput.measure( (fx, fy, width, height, px, py) => {
 
-        console.log('Y offset to page: ' + py)
-        const gap = (windowHeight - keyboardHeight ) - (py + height)
+      const gap = (windowHeight - keyboardHeight ) - (py + height)
 
-        Animated.timing(
-          this.state.shift,
-          {
-            toValue: gap,
-            duration: 180,
-            useNativeDriver: true,
-          }
-        ).start();
+      Animated.timing(
+        this.state.shift,
+        {
+          toValue: gap,
+          duration: 180,
+          useNativeDriver: true,
+        }
+      ).start();
       })
-
     }
+    
     handleKeyboardDidHide = () => {
       Animated.timing(
         this.state.shift,
@@ -102,9 +101,9 @@ export default class ModalAppUpdate extends Component {
 
       if(selectedIndexRowOne === -1 && selectedIndexRowTwo === -1){
         if(text.length === 0){
-          Alert.alert('Error','No changes were made');
+          Alert.alert('Error','No changes were made.');
         }else if(text.length > 16){
-          Alert.alert('Error', 'Username should be less than 16 characters');
+          Alert.alert('Error', 'Username should be less than 16 characters.');
         }else{
           this.props.changeProfile(-1,this.state.text);
           this.setState({text: ''});
@@ -156,27 +155,27 @@ export default class ModalAppUpdate extends Component {
 
         const component2 = () =>
         <Image
-        source={img2}
+          source={img2}
         />
 
         const component3 = () =>
         <Image
-        source={img3}
+          source={img3}
         />
 
         const component4 = () =>
         <Image
-        source={img4}
+          source={img4}
         />
 
         const component5 = () =>
         <Image
-        source={img5}
+          source={img5}
         />
 
         const component6 = () =>
         <Image
-        source={img6}
+          source={img6}
         />
 
         const buttonsOne = [{ element: component1 }, { element: component2 }, { element: component3 }];
@@ -284,9 +283,9 @@ const styles = StyleSheet.create({
   },
   container: {
     flexDirection: 'row',
-    marginBottom: 3,
-    paddingLeft: 7.5,
-    paddingRight: 7.5
+    marginBottom: 5,
+    paddingLeft: 9,
+    paddingRight: 9
   },
 
   buttonContainer: {
@@ -328,12 +327,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     height: 40,
     marginBottom: 10,
-    paddingLeft: 6,
-    paddingRight: 6
+    paddingLeft: 8,
+    paddingRight: 8
   },
   textContent: {
     alignItems: 'center',
-    marginBottom: 10,
+    marginBottom: 6,
   },
   text: {
     fontFamily: 'ProximaNova-Regular',

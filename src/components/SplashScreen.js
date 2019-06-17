@@ -29,6 +29,6 @@ const styles = StyleSheet.create({
       fontFamily: 'ProximaNova-Regular',
       color: 'rgb(208,33,41)',  
       fontSize: 25,
-      marginBottom: -160
+      marginBottom: -153
     }
 });

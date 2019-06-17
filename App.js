@@ -25,6 +25,7 @@ import MessageInput from './src/components/MessageInput/MessageInput';
 import UserCount from './src/components/UserCount/UserCount';
 import Timeout from "smart-timeout";
 console.disableYellowBox = true;
+
 export default class App extends Component {
   constructor(props) {
     super(props);
@@ -40,12 +41,14 @@ export default class App extends Component {
         latitude: -1,
         longitude: -1
       },
+      splashLoading: true,
       numUsers: 0,
       username: "A Naughty Moose",
       fixedOnUUID: "",
       focusOnMe: false,
       users: new Map(),
       emoji: 0,
+      emojiType: 0,
       splashLoading: true,
       shift: new Animated.Value(0),
       currentPicture: null,
@@ -55,7 +58,6 @@ export default class App extends Component {
       allowGPS: true,
       showAbout: false,
       emojiCount: 0,
-      emojiType: 1,
       userCount: 0
     };
 
@@ -66,6 +68,7 @@ export default class App extends Component {
   async componentDidMount() {
     this.keyboardDidShowSub = Keyboard.addListener('keyboardWillShow', this.handleKeyboardDidShow);
     this.keyboardDidHideSub = Keyboard.addListener('keyboardWillHide', this.handleKeyboardDidHide);
+
     // Store boolean value so modal init only opens on app boot
     const wasShown = await AsyncStorage.getItem('key'); // get key
 
@@ -468,18 +471,18 @@ export default class App extends Component {
   handleKeyboardDidShow = (event) => {
     const { height: windowHeight } = Dimensions.get('window');
     const keyboardHeight = event.endCoordinates.height;
-    console.log(keyboardHeight)
-      const gap = (keyboardHeight * -1 ) + 20
+    const gap = (keyboardHeight * -1 ) + 20
 
-      Animated.timing(
-        this.state.shift,
-        {
-          toValue: gap,
-          duration: 180,
-          useNativeDriver: true,
-        }
-      ).start();
+    Animated.timing(
+      this.state.shift,
+      {
+        toValue: gap,
+        duration: 180,
+        useNativeDriver: true,
+      }
+    ).start();
   }
+
   handleKeyboardDidHide = () => {
     Animated.timing(
       this.state.shift,
@@ -490,8 +493,6 @@ export default class App extends Component {
       }
     ).start();
   }
-
-
 
   render() {
     if(this.state.splashLoading){
