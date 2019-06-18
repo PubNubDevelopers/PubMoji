@@ -15,7 +15,7 @@ import {widthPercentageToDP as wp, heightPercentageToDP as hp} from 'react-nativ
 import PubNubReact from 'pubnub-react';
 import * as Animatable from 'react-native-animatable';
 import Modal from "react-native-modal";
-import SplashScreen from './src/components/SplashScreen';
+// import SplashScreen from './src/components/SplashScreen';
 import EmojiBar from './src/components/EmojiBar/EmojiBar';
 import ModalAppInit from './src/components/ModalAppInit';
 import ModalAppUpdate from './src/components/ModalAppUpdate';
@@ -24,6 +24,8 @@ import AsyncStorage from '@react-native-community/async-storage';
 import MessageInput from './src/components/MessageInput/MessageInput';
 import UserCount from './src/components/UserCount/UserCount';
 import Timeout from "smart-timeout";
+
+import SplashScreen from 'react-native-splash-screen';
 console.disableYellowBox = true;
 
 export default class App extends Component {
@@ -217,7 +219,8 @@ export default class App extends Component {
         distanceFilter: 100
       }
     );
-    this.setState({ splashLoading: false});
+    SplashScreen.hide()
+    // this.setState({ splashLoading: false});
   }
 
   clearMessage = uuid => {
@@ -495,9 +498,9 @@ export default class App extends Component {
   }
 
   render() {
-    if(this.state.splashLoading){
-      return <SplashScreen />;
-    }
+    // if(this.state.splashLoading){
+    //   return <SplashScreen />;
+    // }
 
     let gpsImage;
     if (this.state.focusOnMe || this.state.fixedOnUUID) {
