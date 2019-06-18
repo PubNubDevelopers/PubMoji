@@ -90,7 +90,6 @@ export default class App extends Component {
     }
 
     this.pubnub.getMessage("global", msg => {
-      console.log("message: ", msg)
       let users = this.state.users;
       if (msg.message.hideUser) {
         users.delete(msg.publisher);
@@ -523,13 +522,17 @@ export default class App extends Component {
     let usersArray = Array.from(this.state.users.values());
     return (
       <View style={styles.container}  >
-        <Modal isVisible={this.state.visibleModalStart}>
+        <Modal isVisible={this.state.visibleModalStart}
+        backdropOpacity={0.1}
+        >
           <ModalAppInit
             changeProfile={this.changeProfile}
             closeModalInit={this.closeModalInit}
           />
         </Modal>
-        <Modal isVisible={this.state.visibleModalUpdate}>
+        <Modal isVisible={this.state.visibleModalUpdate}
+          backdropOpacity={0.1}
+        >
           <ModalAppUpdate
             currentUsername={this.state.username}
             changeProfile={this.changeProfile}
@@ -538,7 +541,8 @@ export default class App extends Component {
         </Modal>
 
 
-        <Modal isVisible={this.state.infoModal}>
+        <Modal isVisible={this.state.infoModal}
+          backdropOpacity={0.1}>
           <InfoModal
           toggleAbout={this.toggleAbout}
           />

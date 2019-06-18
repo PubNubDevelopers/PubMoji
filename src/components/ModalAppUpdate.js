@@ -111,7 +111,6 @@ export default class ModalAppUpdate extends Component {
         }
       }
       else{
-
         let getRowPic = (selectedIndexRowOne  > -1) ? true: false;
         getRowPic = (getRowPic) ? imgArrayRowOne[selectedIndexRowOne]: imgArrayRowTwo[selectedIndexRowTwo];
 
@@ -121,10 +120,6 @@ export default class ModalAppUpdate extends Component {
         }else{
           this.props.changeProfile(getRowPic,"");
         }
-
-        this.setState({selectedIndexRowOne: -1});
-        this.setState({selectedIndexRowTwo: -1});
-        this.setState({text: ''});
         this.props.closeModalUpdate(false);
       }
     }
