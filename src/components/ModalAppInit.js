@@ -103,8 +103,6 @@ export default class ModalAppInit extends Component {
         getRowPic = (getRowPic) ? imgArrayRowOne[selectedIndexRowOne]:
           imgArrayRowTwo[selectedIndexRowTwo];
         this.props.changeProfile(getRowPic,this.state.text);
-        this.setState({selectedIndexRowOne: -1});
-        this.setState({selectedIndexRowTwo: -1});
         this.setState({text: ''});
         this.props.closeModalInit(false);
       }

@@ -29,7 +29,7 @@ export default class InfoModal extends Component{
                 
                 <View style={styles.textContent}> 
                     <Text style={styles.text}>Pubmoji is an interactive phone app designed to demonstrate PubNub's capabilities.</Text>
-                    <Text style={styles.text}>Let others know how you're feeling by spamming the different emojis or typing in a message!</Text>  
+                    <Text style={styles.text}>Let others know how you are feeling by spamming the different emojis or typing in a message!</Text>  
                     <Text style={styles.text}>Zoom in the map and watch emojis and messages fly out of people's avatars in realtime!</Text>
                 </View>
 
