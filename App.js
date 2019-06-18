@@ -9,7 +9,9 @@ import {
   Animated,
   Switch,
   TouchableOpacity,
-  Dimensions, Keyboard,
+  Dimensions,
+  Keyboard,
+  AppState,
 } from "react-native";import MapView, {Marker} from 'react-native-maps';
 import {widthPercentageToDP as wp, heightPercentageToDP as hp} from 'react-native-responsive-screen';
 import PubNubReact from 'pubnub-react';
@@ -58,7 +60,8 @@ export default class App extends Component {
       allowGPS: true,
       showAbout: false,
       emojiCount: 0,
-      userCount: 0
+      userCount: 0,
+      appState: AppState.currentState,
     };
 
     this.pubnub.init(this);
@@ -66,10 +69,6 @@ export default class App extends Component {
 
   //Track User GPS Data
   async componentDidMount() {
-    this.keyboardDidShowSub = Keyboard.addListener('keyboardWillShow', this.handleKeyboardDidShow);
-    this.keyboardDidHideSub = Keyboard.addListener('keyboardWillHide', this.handleKeyboardDidHide);
-
-    // Store boolean value so modal init only opens on app boot
     const wasShown = await AsyncStorage.getItem('key'); // get key
 
     if(wasShown === null) {
@@ -78,6 +77,26 @@ export default class App extends Component {
     }else{
       this.setState({visibleModalStart: false, wasShown});
     }
+    this.setUpApp()
+  }
+
+  clearMessage = uuid => {
+    let users = this.state.users;
+    let user = users.get(uuid)
+    delete user.message;
+    users.set(uuid,user);
+    this.setState(
+    {
+      users,
+    });
+  };
+  async setUpApp(){
+    this.keyboardDidShowSub = Keyboard.addListener('keyboardWillShow', this.handleKeyboardDidShow);
+    this.keyboardDidHideSub = Keyboard.addListener('keyboardWillHide', this.handleKeyboardDidHide);
+    AppState.addEventListener('change', this.handleAppState);
+    // Store boolean value so modal init only opens on app boot
+
+
     // get profile pic if available
     const storeProfilePic =  await AsyncStorage.getItem('profile_pic_key');
     if(storeProfilePic !=  null){
@@ -143,7 +162,7 @@ export default class App extends Component {
         }else if(oldUser){
           newUser.message = oldUser.message
         }
-        this.updateUserCount();
+        this.updateUserCount
         users.set(newUser.uuid, newUser);
 
         this.setState({
@@ -219,29 +238,31 @@ export default class App extends Component {
     this.setState({ splashLoading: false});
   }
 
-  clearMessage = uuid => {
-    let users = this.state.users;
-    let user = users.get(uuid)
-    delete user.message;
-    users.set(uuid,user);
-    this.setState(
-    {
-      users,
-    });
-  };
-
 
   componentWillUnmount() {
-    this.pubnub.publish({
-      message: {
-        hideUser: true
-      },
-      channel: "global"
-    });
-    this.pubnub.unsubscribeAll();
-    navigator.geolocation.clearWatch(this.watchID);
-    this.keyboardDidShowSub.remove();
-    this.keyboardDidHideSub.remove();
+    console.log("will unmount")
+    AppState.removeEventListener('change', this.handleAppState);
+
+  }
+  handleAppState = (nextAppState) =>{
+    if (nextAppState === 'active') {
+      console.log("started up")
+      this.setUpApp()
+    }else if (nextAppState === 'inactive' || nextAppState === 'background') {
+      console.log("closing down")
+      this.pubnub.publish({
+        message: {
+          hideUser: true
+        },
+        channel: "global"
+      },function(status,response){
+        console.log(status)
+      });
+      this.pubnub.unsubscribeAll();
+      navigator.geolocation.clearWatch(this.watchID);
+
+    }
+    this.setState({appState: nextAppState});
   }
 
   componentDidUpdate(prevProps, prevState) {
@@ -492,18 +513,11 @@ export default class App extends Component {
       }
     ).start();
   }
-
-  render() {
-    if(this.state.splashLoading){
-      return <SplashScreen />;
-    }
-
-    let gpsImage;
-    if (this.state.focusOnMe || this.state.fixedOnUUID) {
-      gpsImage = require("./assets/images/fixedGPS.png");
-    } else {
-      gpsImage = require("./assets/images/notFixedGPS.png");
-    }
+  showProfile = () =>{
+    this.setState({
+      visibleModalUpdate: !this.state.visibleModalUpdate
+    })
+  }
   updateUserCount = () => {
     var presenceUsers = 0;
     this.pubnub.hereNow({
@@ -518,6 +532,19 @@ export default class App extends Component {
     this.setState({userCount: totalUsers})
 
   };
+
+  render() {
+    if(this.state.splashLoading){
+      return <SplashScreen />;
+    }
+
+    let gpsImage;
+    if (this.state.focusOnMe || this.state.fixedOnUUID) {
+      gpsImage = require("./assets/images/fixedGPS.png");
+    } else {
+      gpsImage = require("./assets/images/notFixedGPS.png");
+    }
+
 
     let usersArray = Array.from(this.state.users.values());
     return (
@@ -560,14 +587,14 @@ export default class App extends Component {
               longitudeDelta: 60.0001
             }}
           >
-            {usersArray.map((item, index) => (
+            {usersArray.map((item) => (
               //TRY SWITCHING UP TO CALLOUTS
               <Marker
                 onPress={() => {
                   this.touchUser(item.uuid);
                 }}
                 style={styles.marker}
-                key={index}
+                key={item.uuid}
                 coordinate={{
                   latitude: item.latitude,
                   longitude: item.longitude
@@ -608,6 +635,7 @@ export default class App extends Component {
                           key={i}
                           source={emoji}
                           style={styles.emoji}
+                          useNativeDriver
                         >
                       </Animatable.Image>
                       );
@@ -627,7 +655,7 @@ export default class App extends Component {
 
             <View style={styles.topBar}>
               <View style={styles.leftBar}>
-              <TouchableOpacity onPress={() => this.setState({ visibleModalUpdate: !this.state.visibleModalUpdate })}>
+              <TouchableOpacity onPress={this.showProfile}>
                 <Image
                   style={styles.profile}
                   source={require('./assets/images/profile.png')}
