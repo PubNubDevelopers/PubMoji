@@ -163,7 +163,7 @@ export default class App extends Component {
         }else if(oldUser){
           newUser.message = oldUser.message
         }
-        this.updateUserCount();
+        this.updateUserCount
         users.set(newUser.uuid, newUser);
 
         this.setState({
@@ -514,18 +514,11 @@ export default class App extends Component {
       }
     ).start();
   }
-
-  render() {
-    if(this.state.splashLoading){
-      return <SplashScreen />;
-    }
-
-    let gpsImage;
-    if (this.state.focusOnMe || this.state.fixedOnUUID) {
-      gpsImage = require("./assets/images/fixedGPS.png");
-    } else {
-      gpsImage = require("./assets/images/notFixedGPS.png");
-    }
+  showProfile = () =>{
+    this.setState({
+      visibleModalUpdate: !this.state.visibleModalUpdate
+    })
+  }
   updateUserCount = () => {
     var presenceUsers = 0;
     this.pubnub.hereNow({
@@ -540,6 +533,19 @@ export default class App extends Component {
     this.setState({userCount: totalUsers})
 
   };
+
+  render() {
+    if(this.state.splashLoading){
+      return <SplashScreen />;
+    }
+
+    let gpsImage;
+    if (this.state.focusOnMe || this.state.fixedOnUUID) {
+      gpsImage = require("./assets/images/fixedGPS.png");
+    } else {
+      gpsImage = require("./assets/images/notFixedGPS.png");
+    }
+
 
     let usersArray = Array.from(this.state.users.values());
     return (
@@ -577,14 +583,14 @@ export default class App extends Component {
               longitudeDelta: 60.0001
             }}
           >
-            {usersArray.map((item, index) => (
+            {usersArray.map((item) => (
               //TRY SWITCHING UP TO CALLOUTS
               <Marker
                 onPress={() => {
                   this.touchUser(item.uuid);
                 }}
                 style={styles.marker}
-                key={index}
+                key={item.uuid}
                 coordinate={{
                   latitude: item.latitude,
                   longitude: item.longitude
@@ -625,6 +631,7 @@ export default class App extends Component {
                           key={i}
                           source={emoji}
                           style={styles.emoji}
+                          useNativeDriver
                         >
                       </Animatable.Image>
                       );
@@ -644,7 +651,7 @@ export default class App extends Component {
 
             <View style={styles.topBar}>
               <View style={styles.leftBar}>
-              <TouchableOpacity onPress={() => this.setState({ visibleModalUpdate: !this.state.visibleModalUpdate })}>
+              <TouchableOpacity onPress={this.showProfile}>
                 <Image
                   style={styles.profile}
                   source={require('./assets/images/profile.png')}
