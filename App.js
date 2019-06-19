@@ -11,6 +11,7 @@ import {
   TouchableOpacity,
   Dimensions,
   Keyboard,
+  PermissionsAndroid,
   AppState,
 } from "react-native";import MapView, {Marker} from 'react-native-maps';
 import {widthPercentageToDP as wp, heightPercentageToDP as hp} from 'react-native-responsive-screen';
@@ -177,67 +178,81 @@ export default class App extends Component {
       withPresence: true
     });
 
+    const granted = await PermissionsAndroid.request( PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION ,
+      {
+        title: 'Location Permission',
+        message:
+          'PubMoji needs to access your location',
+        buttonNegative: 'No',
+        buttonPositive: 'Yes',
+      });
+
+    if (granted === PermissionsAndroid.RESULTS.GRANTED) {
     //Get Stationary Coordinate
-    navigator.geolocation.getCurrentPosition(
-      position => {
-        if (this.state.allowGPS) {
-          this.pubnub.publish({
-            message: {
-              latitude: position.coords.latitude,
-              longitude: position.coords.longitude,
-              image: this.state.currentPicture,
-              username: this.state.username,
-            },
-            channel: "global"
-          });
-          let users = this.state.users;
-          let tempUser = {
-            uuid: this.pubnub.getUUID(),
-            latitude: position.coords.latitude,
-            longitude: position.coords.longitude,
-            image: this.state.currentPicture,
-            username: this.state.username
-          };
-          users.set(tempUser.uuid, tempUser);
-          this.setState({
-            users,
-            currentLoc: position.coords
-          });
-        }
-      },
-      error => console.log("Maps Error: ", error),
-      { enableHighAccuracy: true,}
-    );
-    //Track motional Coordinates
-    navigator.geolocation.watchPosition(
-      position => {
-        this.setState({
-          currentLoc: position.coords
-        });
-        if (this.state.allowGPS) {
-          this.pubnub.publish({
-            message: {
+      navigator.geolocation.getCurrentPosition(
+        position => {
+          if (this.state.allowGPS) {
+            this.pubnub.publish({
+              message: {
+                latitude: position.coords.latitude,
+                longitude: position.coords.longitude,
+                image: this.state.currentPicture,
+                username: this.state.username,
+              },
+              channel: "global"
+            });
+            let users = this.state.users;
+            let tempUser = {
+              uuid: this.pubnub.getUUID(),
               latitude: position.coords.latitude,
               longitude: position.coords.longitude,
               image: this.state.currentPicture,
               username: this.state.username
-            },
-            channel: "global"
-          });
-          if (this.state.focusOnMe) {
-            this.animateToCurrent(position.coords, 1000);
+            };
+            users.set(tempUser.uuid, tempUser);
+            this.setState({
+              users,
+              currentLoc: position.coords
+            });
           }
+        },
+        error => console.log("Maps Error: ", error),
+        {enableHighAccuracy: false}
+      );
+      //Track motional Coordinates
+      navigator.geolocation.watchPosition(
+        position => {
+          this.setState({
+            currentLoc: position.coords
+          });
+          if (this.state.allowGPS) {
+            this.pubnub.publish({
+              message: {
+                latitude: position.coords.latitude,
+                longitude: position.coords.longitude,
+                image: this.state.currentPicture,
+                username: this.state.username
+              },
+              channel: "global"
+            });
+            if (this.state.focusOnMe) {
+              this.animateToCurrent(position.coords, 1000);
+            }
+          }
+        },
+        error => console.log("Maps Error: ", error),
+        {
+          enableHighAccuracy: false,
+          distanceFilter: 100
         }
-      },
-      error => console.log("Maps Error: ", error),
-      {
-        enableHighAccuracy: true,
-        distanceFilter: 100
-      }
-    );
+      );
+    } 
+    else {
+      console.log( "ACCESS_FINE_LOCATION permission denied" )
+    }
+
     this.setState({ splashLoading: false});
   }
-
 
   componentWillUnmount() {
     console.log("will unmount")
