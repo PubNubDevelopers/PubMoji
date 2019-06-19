@@ -162,7 +162,7 @@ export default class App extends Component {
         }else if(oldUser){
           newUser.message = oldUser.message
         }
-        this.updateUserCount
+        this.updateUserCount();
         users.set(newUser.uuid, newUser);
 
         this.setState({
@@ -337,20 +337,6 @@ export default class App extends Component {
     // are considered equivalent
     return true;
   };
-
-  updateUserCount = () => {
-    var presenceUsers = 0;
-    this.pubnub.hereNow({
-        includeUUIDs: true,
-        includeState: true
-    },
-    function (status, response) {
-        presenceUsers = response.totalOccupancy;
-    });
-    var totalUsers = Math.max(presenceUsers, this.state.users.size)
-    this.setState({userCount: totalUsers})
-
-   };
 
   animateToCurrent = (coords, speed) => {
     region = {
