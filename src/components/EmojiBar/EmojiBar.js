@@ -21,7 +21,6 @@ import FastImage from "react-native-fast-image";
 export default class AnimationScreen extends Component {
   constructor(props) {
     super(props);
-    this.backPress = this.handleBackPress.bind(this);
 
     this.soundBoxDown = new Sound(
       "box_down.mp3",
@@ -135,18 +134,7 @@ export default class AnimationScreen extends Component {
   }
 
   componentWillMount() {
-    BackHandler.addEventListener("hardwareBackPress", this.backPress);
-
     this.setupPanResponder();
-  }
-
-  componentWillUnmount() {
-    BackHandler.removeEventListener("hardwareBackPress", this.backPress);
-  }
-
-  handleBackPress() {
-    this.props.navigation.goBack(); //CHANGE THIS LATER ON.
-    return true;
   }
 
   publishEmojiMessage = async () => {
