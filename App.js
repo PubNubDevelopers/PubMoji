@@ -178,16 +178,20 @@ export default class App extends Component {
       withPresence: true
     });
 
-    const granted = await PermissionsAndroid.request( PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION ,
-      {
-        title: 'Location Permission',
-        message:
-          'PubMoji needs to access your location',
-        buttonNegative: 'No',
-        buttonPositive: 'Yes',
-      });
+    let granted;
+    
+    if (Platform.OS === "android"){
+      granted = await PermissionsAndroid.request( PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION ,
+        {
+          title: 'Location Permission',
+          message:
+            'PubMoji needs to access your location',
+          buttonNegative: 'No',
+          buttonPositive: 'Yes',
+        });      
+    }
 
-    if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+    if (granted === PermissionsAndroid.RESULTS.GRANTED || Platform.OS === "ios") {
     //Get Stationary Coordinate
       navigator.geolocation.getCurrentPosition(
         position => {
