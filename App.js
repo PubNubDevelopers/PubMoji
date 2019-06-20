@@ -37,7 +37,7 @@ export default class App extends Component {
       subscribeKey: "sub-c-45c90962-8f0b-11e9-882a-5a9c8da9cc13"
     });
 
-    this.moveAnimation = new Animated.ValueXY({ x: 10, y: 450 })
+    //this.moveAnimation = new Animated.ValueXY({ x: 10, y: 450 })
     //Base State
     this.state = {
       currentLoc: {
@@ -53,12 +53,14 @@ export default class App extends Component {
       emoji: 0,
       emojiType: 0,
       splashLoading: true,
-      shift: new Animated.Value(0),
+      shiftKeyboard: new Animated.Value(0),
+      shiftBottomUI: new Animated.Value(0),
       currentPicture: null,
       visibleModalStart: false,
       visibleModalUpdate: false,
       isFocused: false,
       allowGPS: true,
+      hideBottomUI: false,
       showAbout: false,
       emojiCount: 0,
       userCount: 0,
@@ -179,17 +181,17 @@ export default class App extends Component {
     });
 
     let granted;
-    if( Platform.OS === "android"){
-      granted = await PermissionsAndroid.request( PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION ,
-      {
-        title: 'Location Permission',
-        message:
-          'PubMoji needs to access your location',
-        buttonNegative: 'No',
-        buttonPositive: 'Yes',
-      });
-    }
 
+    if (Platform.OS === "android"){
+      granted = await PermissionsAndroid.request( PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION ,
+        {
+          title: 'Location Permission',
+          message:
+            'PubMoji needs to access your location',
+          buttonNegative: 'No',
+          buttonPositive: 'Yes',
+        });
+    }
 
     if (granted === PermissionsAndroid.RESULTS.GRANTED || Platform.OS === "ios") {
     //Get Stationary Coordinate
@@ -301,7 +303,8 @@ export default class App extends Component {
         users.set(tempUser.uuid, tempUser);
         this.setState(
           {
-            users
+            users,
+            hideBottomUI: false,
           },
           () => {
             this.pubnub.publish({
@@ -313,7 +316,7 @@ export default class App extends Component {
       } else {
         let users = this.state.users;
         let uuid = this.pubnub.getUUID();
-
+        this.hideBottomUI()
         users.delete(uuid);
         this.setState({
           users,
@@ -411,7 +414,6 @@ export default class App extends Component {
       });
     }
   };
-
   selectedStyle = uuid => {
     if (
       (this.state.focusOnMe && uuid == this.pubnub.getUUID()) ||
@@ -448,40 +450,48 @@ export default class App extends Component {
 
   changeProfile = async (currentPicture,username) => {
     if(currentPicture != -1 && username != ""){
-      this.pubnub.publish({
-        message: {
-          latitude: this.state.currentLoc.latitude,
-          longitude: this.state.currentLoc.longitude,
-          image: currentPicture,
-          username: username,
-        },
-        channel: "global"
-      });
+      if(this.state.allowGPS){
+        this.pubnub.publish({
+          message: {
+            latitude: this.state.currentLoc.latitude,
+            longitude: this.state.currentLoc.longitude,
+            image: currentPicture,
+            username: username,
+          },
+          channel: "global"
+        });
+      }
       await AsyncStorage.setItem('profile_pic_key', JSON.stringify(currentPicture));
       await AsyncStorage.setItem('username_key', username);
       this.setState({currentPicture,username})
     }else if(username == ""){
-      this.pubnub.publish({
-        message: {
-          latitude: this.state.currentLoc.latitude,
-          longitude: this.state.currentLoc.longitude,
-          image: currentPicture,
-          username: this.state.username
-        },
-        channel: "global"
-      });
+      if(this.state.allowGPS){
+        this.pubnub.publish({
+          message: {
+            latitude: this.state.currentLoc.latitude,
+            longitude: this.state.currentLoc.longitude,
+            image: currentPicture,
+            username: this.state.username
+          },
+          channel: "global"
+        });
+      }
+
       await AsyncStorage.setItem('profile_pic_key', JSON.stringify(currentPicture));
       this.setState({currentPicture})
     }else{
-      this.pubnub.publish({
-        message: {
-          latitude: this.state.currentLoc.latitude,
-          longitude: this.state.currentLoc.longitude,
-          image: this.state.currentPicture,
-          username: username
-        },
-        channel: "global"
-      });
+      if(this.state.allowGPS){
+        this.pubnub.publish({
+          message: {
+            latitude: this.state.currentLoc.latitude,
+            longitude: this.state.currentLoc.longitude,
+            image: this.state.currentPicture,
+            username: username
+          },
+          channel: "global"
+        });
+      }
+
       await AsyncStorage.setItem('username_key', username);
       this.setState({username})
     }
@@ -499,7 +509,7 @@ export default class App extends Component {
     const gap = (keyboardHeight * -1 ) + 20
 
     Animated.timing(
-      this.state.shift,
+      this.state.shiftKeyboard,
       {
         toValue: gap,
         duration: 180,
@@ -507,10 +517,26 @@ export default class App extends Component {
       }
     ).start();
   }
+  hideBottomUI = () =>{
+
+    Animated.timing(
+      this.state.shiftBottomUI,
+      {
+        toValue: 300,
+        duration: 300,
+        useNativeDriver: true,
+      }
+    ).start(() => {
+      this.setState({
+        hideBottomUI: true
+      })
+    });
+  }
+
 
   handleKeyboardDidHide = () => {
     Animated.timing(
-      this.state.shift,
+      this.state.shiftKeyboard,
       {
         toValue: 0,
         duration: 150,
@@ -538,17 +564,35 @@ export default class App extends Component {
 
   };
 
+  returnBottomUI = () =>{
+    if(!this.state.hideBottomUI){
+      let gpsImage;
+      if (this.state.focusOnMe || this.state.fixedOnUUID) {
+        gpsImage = require("./assets/images/fixedGPS.png");
+      } else {
+        gpsImage = require("./assets/images/notFixedGPS.png");
+      }
+      return (
+        <Animated.View style={[styles.bottom, { transform: [{translateY: this.state.shiftBottomUI}] }]}>
+            <EmojiBar {...this.state} pubnub={this.pubnub} />
+            <View style={styles.bottomRow}>
+              <MessageInput {...this.state} pubnub={this.pubnub}/>
+                <TouchableOpacity onPress={this.focusLoc}>
+                  <Image style={styles.focusLoc} source={gpsImage} />
+                </TouchableOpacity>
+            </View>
+        </Animated.View>
+      )
+    }
+
+  }
+
   render() {
     if(this.state.splashLoading){
       return <SplashScreen />;
     }
 
-    let gpsImage;
-    if (this.state.focusOnMe || this.state.fixedOnUUID) {
-      gpsImage = require("./assets/images/fixedGPS.png");
-    } else {
-      gpsImage = require("./assets/images/notFixedGPS.png");
-    }
+
 
 
     let usersArray = Array.from(this.state.users.values());
@@ -580,7 +624,7 @@ export default class App extends Component {
           />
         </Modal>
 
-        <Animated.View style={[styles.container, { transform: [{translateY: this.state.shift}] }]}>
+        <Animated.View style={[styles.container, { transform: [{translateY: this.state.shiftKeyboard}] }]}>
           <MapView
             style={styles.map}
             ref={ref => (this.map = ref)}
@@ -687,16 +731,8 @@ export default class App extends Component {
             </View>
           </View>
 
+          {this.returnBottomUI()}
 
-            <View style={styles.bottom}>
-                <EmojiBar {...this.state} pubnub={this.pubnub} />
-                <View style={styles.bottomRow}>
-                  <MessageInput {...this.state} pubnub={this.pubnub}/>
-                    <TouchableOpacity onPress={this.focusLoc}>
-                      <Image style={styles.focusLoc} source={gpsImage} />
-                    </TouchableOpacity>
-                </View>
-            </View>
         </Animated.View>
       </View>
    );
@@ -763,7 +799,6 @@ const styles = StyleSheet.create({
     alignSelf: "center",
     width: "100%",
     marginBottom: hp("4%"),
-
   },
   focusLoc: {
     width: hp("4.5%"),
