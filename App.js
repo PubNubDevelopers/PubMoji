@@ -33,8 +33,8 @@ export default class App extends Component {
   constructor(props) {
     super(props);
     this.pubnub = new PubNubReact({
-      publishKey: "pub-c-d93d7b15-4e46-42f4-ba03-c5d997844b9e",
-      subscribeKey: "sub-c-1ef826d4-78df-11e9-945c-2ea711aa6b65"
+      publishKey: "pub-c-58fc74dc-ee81-4d36-b829-820346af213b",
+      subscribeKey: "sub-c-45c90962-8f0b-11e9-882a-5a9c8da9cc13"
     });
 
     this.moveAnimation = new Animated.ValueXY({ x: 10, y: 450 })
@@ -178,7 +178,9 @@ export default class App extends Component {
       withPresence: true
     });
 
-    const granted = await PermissionsAndroid.request( PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION ,
+    let granted;
+    if( Platform.OS === "android"){
+      granted = await PermissionsAndroid.request( PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION ,
       {
         title: 'Location Permission',
         message:
@@ -186,8 +188,10 @@ export default class App extends Component {
         buttonNegative: 'No',
         buttonPositive: 'Yes',
       });
+    }
 
-    if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+
+    if (granted === PermissionsAndroid.RESULTS.GRANTED || Platform.OS === "ios") {
     //Get Stationary Coordinate
       navigator.geolocation.getCurrentPosition(
         position => {
@@ -246,7 +250,7 @@ export default class App extends Component {
           distanceFilter: 100
         }
       );
-    } 
+    }
     else {
       console.log( "ACCESS_FINE_LOCATION permission denied" )
     }
