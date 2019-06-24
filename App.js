@@ -268,16 +268,13 @@ export default class App extends Component {
   }
 
   componentWillUnmount() {
-    console.log("will unmount")
     AppState.removeEventListener('change', this.handleAppState);
 
   }
   handleAppState = (nextAppState) =>{
     if (nextAppState === 'active') {
-      console.log("started up")
       this.setUpApp()
     }else if (nextAppState === 'inactive' || nextAppState === 'background') {
-      console.log("closing down")
       this.pubnub.publish({
         message: {
           hideUser: true
@@ -577,7 +574,6 @@ export default class App extends Component {
 
   }
   hideKeyboard = () =>{
-    console.log("whatevvver")
     Keyboard.dismiss()
   }
 
@@ -585,9 +581,6 @@ export default class App extends Component {
     if(this.state.splashLoading){
       return <SplashScreen />;
     }
-
-    //console.log(this.state.keyboardShown)
-
 
     let usersArray = Array.from(this.state.users.values());
     return (
