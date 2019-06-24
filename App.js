@@ -9,6 +9,7 @@ import {
   Animated,
   Switch,
   TouchableOpacity,
+  TouchableWithoutFeedback,
   Dimensions,
   Keyboard,
   PermissionsAndroid,
@@ -360,6 +361,7 @@ export default class App extends Component {
     return true;
   };
 
+
   animateToCurrent = (coords, speed) => {
     region = {
       latitude: coords.latitude,
@@ -576,7 +578,7 @@ export default class App extends Component {
         <Animated.View style={[styles.bottom, { transform: [{translateY: this.state.shiftBottomUI}] }]}>
             <EmojiBar {...this.state} pubnub={this.pubnub} />
             <View style={styles.bottomRow}>
-              <MessageInput {...this.state} pubnub={this.pubnub}/>
+              <MessageInput {...this.state} pubnub={this.pubnub} />
                 <TouchableOpacity onPress={this.focusLoc}>
                   <Image style={styles.focusLoc} source={gpsImage} />
                 </TouchableOpacity>
@@ -597,144 +599,147 @@ export default class App extends Component {
 
     let usersArray = Array.from(this.state.users.values());
     return (
-      <View style={styles.container}  >
-        <Modal isVisible={this.state.visibleModalStart}
-        backdropOpacity={0.1}
-        >
-          <ModalAppInit
-            changeProfile={this.changeProfile}
-            closeModalInit={this.closeModalInit}
-          />
-        </Modal>
-        <Modal isVisible={this.state.visibleModalUpdate}
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+        <View style={styles.container}  >
+          <Modal isVisible={this.state.visibleModalStart}
           backdropOpacity={0.1}
-        >
-          <ModalAppUpdate
-            currentUsername={this.state.username}
-            changeProfile={this.changeProfile}
-            closeModalUpdate={this.closeModalUpdate}
-            />
-        </Modal>
-
-
-        <Modal isVisible={this.state.infoModal}
-          backdropOpacity={0.1}>
-          <InfoModal
-          toggleAbout={this.toggleAbout}
-          />
-        </Modal>
-
-        <Animated.View style={[styles.container, { transform: [{translateY: this.state.shiftKeyboard}] }]}>
-          <MapView
-            style={styles.map}
-            ref={ref => (this.map = ref)}
-            onMoveShouldSetResponder={this.draggedMap}
-            initialRegion={{
-              latitude: 36.81808,
-              longitude: -98.640297,
-              latitudeDelta: 60.0001,
-              longitudeDelta: 60.0001
-            }}
           >
-            {usersArray.map((item) => (
-              //TRY SWITCHING UP TO CALLOUTS
-              <Marker
-                onPress={() => {
-                  this.touchUser(item.uuid);
-                }}
-                style={styles.marker}
-                key={item.uuid}
-                coordinate={{
-                  latitude: item.latitude,
-                  longitude: item.longitude
-                }}
-                ref={marker => {
-                  this.marker = marker;
-                }}
-              >
-                <View style={styles.marker}>
-                  {(function() {
-                    let rows = [];
-                    for (let i = 0; i < item.emojiCount; i++) {
-                      let emoji;
-                      switch (item.emojiType) {
-                        case 1: emoji = require("./src/Images/like2.png")
-                          break;
-                        case 2: emoji = require("./src/Images/love2.png")
-                          break;
-                        case 3: emoji = require("./src/Images/haha2.png")
-                          break;
-                        case 4: emoji = require("./src/Images/wow2.png")
-                          break;
-                        case 5: emoji = require("./src/Images/sad2.png")
-                          break;
-                        case 6: emoji = require("./src/Images/angry2.png")
-                          break;
+            <ModalAppInit
+              changeProfile={this.changeProfile}
+              closeModalInit={this.closeModalInit}
+            />
+          </Modal>
+          <Modal isVisible={this.state.visibleModalUpdate}
+            backdropOpacity={0.1}
+          >
+            <ModalAppUpdate
+              currentUsername={this.state.username}
+              changeProfile={this.changeProfile}
+              closeModalUpdate={this.closeModalUpdate}
+              />
+          </Modal>
 
-                        default:
 
+          <Modal isVisible={this.state.infoModal}
+            backdropOpacity={0.1}>
+            <InfoModal
+            toggleAbout={this.toggleAbout}
+            />
+          </Modal>
+
+          <Animated.View style={[styles.container, { transform: [{translateY: this.state.shiftKeyboard}] }]}>
+            <MapView
+              style={styles.map}
+              ref={ref => (this.map = ref)}
+              onMoveShouldSetResponder={this.draggedMap}
+              initialRegion={{
+                latitude: 36.81808,
+                longitude: -98.640297,
+                latitudeDelta: 60.0001,
+                longitudeDelta: 60.0001
+              }}
+            >
+              {usersArray.map((item) => (
+                //TRY SWITCHING UP TO CALLOUTS
+                <Marker
+                  onPress={() => {
+                    this.touchUser(item.uuid);
+                  }}
+                  style={styles.marker}
+                  key={item.uuid}
+                  coordinate={{
+                    latitude: item.latitude,
+                    longitude: item.longitude
+                  }}
+                  ref={marker => {
+                    this.marker = marker;
+                  }}
+                >
+                  <View style={styles.marker}>
+                    {(function() {
+                      let rows = [];
+                      for (let i = 0; i < item.emojiCount; i++) {
+                        let emoji;
+                        switch (item.emojiType) {
+                          case 1: emoji = require("./src/Images/like2.png")
+                            break;
+                          case 2: emoji = require("./src/Images/love2.png")
+                            break;
+                          case 3: emoji = require("./src/Images/haha2.png")
+                            break;
+                          case 4: emoji = require("./src/Images/wow2.png")
+                            break;
+                          case 5: emoji = require("./src/Images/sad2.png")
+                            break;
+                          case 6: emoji = require("./src/Images/angry2.png")
+                            break;
+
+                          default:
+
+                        }
+                        rows.push(
+                          <Animatable.Image
+                            animation="fadeOutUp"
+                            duration={1500}
+                            iterationCount={1}
+                            direction="normal"
+                            easing="ease-out"
+                            key={i}
+                            source={emoji}
+                            style={styles.emoji}
+                            useNativeDriver
+                          >
+                        </Animatable.Image>
+                        );
                       }
-                      rows.push(
-                        <Animatable.Image
-                          animation="fadeOutUp"
-                          duration={1500}
-                          iterationCount={1}
-                          direction="normal"
-                          easing="ease-out"
-                          key={i}
-                          source={emoji}
-                          style={styles.emoji}
-                          useNativeDriver
-                        >
-                      </Animatable.Image>
-                      );
-                    }
-                    return rows;
-                  })()}
-                  {this.messageOutPut(item.message)}
+                      return rows;
+                    })()}
+                    {this.messageOutPut(item.message)}
+                    <Image
+                      source={item.image}
+                      style={this.selectedStyle(item.uuid)}
+                    />
+                    {this.showUsername(item)}
+                  </View>
+                </Marker>
+              ))}
+            </MapView>
+
+              <View style={styles.topBar}>
+                <View style={styles.leftBar}>
+                <TouchableOpacity onPress={this.showProfile}>
                   <Image
-                    source={item.image}
-                    style={this.selectedStyle(item.uuid)}
-                  />
-                  {this.showUsername(item)}
-                </View>
-              </Marker>
-            ))}
-          </MapView>
-
-            <View style={styles.topBar}>
-              <View style={styles.leftBar}>
-              <TouchableOpacity onPress={this.showProfile}>
-                <Image
-                  style={styles.profile}
-                  source={require('./assets/images/profile.png')}
-                />
-              </TouchableOpacity>
-                <View style={styles.userCount}>
-                  <UserCount {...this.state} />
-                </View>
-              </View>
-
-
-              <View style={styles.rightBar}>
-                <TouchableOpacity onPress={this.toggleAbout}>
-                  <Image
-                    style={styles.info}
-                    source={require('./assets/images/info.png')}
+                    style={styles.profile}
+                    source={require('./assets/images/profile.png')}
                   />
                 </TouchableOpacity>
-                <Switch
-                value={this.state.allowGPS}
-                style={styles.locationSwitch}
-                onValueChange={this.toggleGPS}
-              />
+                  <View style={styles.userCount}>
+                    <UserCount {...this.state} />
+                  </View>
+                </View>
+
+
+                <View style={styles.rightBar}>
+                  <TouchableOpacity onPress={this.toggleAbout}>
+                    <Image
+                      style={styles.info}
+                      source={require('./assets/images/info.png')}
+                    />
+                  </TouchableOpacity>
+                  <Switch
+                  value={this.state.allowGPS}
+                  style={styles.locationSwitch}
+                  onValueChange={this.toggleGPS}
+                />
+              </View>
             </View>
-          </View>
 
-          {this.returnBottomUI()}
+            {this.returnBottomUI()}
 
-        </Animated.View>
-      </View>
+          </Animated.View>
+        </View>
+      </TouchableWithoutFeedback>
+
    );
   }
 }

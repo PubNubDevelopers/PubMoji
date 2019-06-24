@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { StyleSheet, View } from 'react-native'
+import { StyleSheet,TouchableOpacity, Keyboard,View } from 'react-native'
 import { Container, Header, Item, Input, Icon, Button, Text } from 'native-base';
 import {widthPercentageToDP as wp, heightPercentageToDP as hp} from 'react-native-responsive-screen';
 
@@ -10,20 +10,24 @@ export default class MessageInput extends Component {
       message: ""
     };
   }
-  publishMessage = (event) => {
-    this.props.pubnub.publish({
-      message: {
-        message: event.nativeEvent.text,
-        latitude: this.props.currentLoc.latitude,
-        longitude: this.props.currentLoc.longitude,
-        image: this.props.currentPicture,
-        username: this.props.username,
-      },
-      channel: 'global'
-    });
-    this.setState({
-      message: ""
-    })
+  publishMessage = () => {
+    if(this.state.message){
+      this.props.pubnub.publish({
+        message: {
+          message: this.state.message,
+          latitude: this.props.currentLoc.latitude,
+          longitude: this.props.currentLoc.longitude,
+          image: this.props.currentPicture,
+          username: this.props.username,
+        },
+        channel: 'global'
+      });
+      this.setState({
+        message: ""
+      })
+
+    }
+
   }
   render() {
     return (
@@ -32,11 +36,13 @@ export default class MessageInput extends Component {
             <Icon name="chatbubbles" />
             <Input
               placeholder="Type a message..."
-              onSubmitEditing={(event) => this.publishMessage(event)}
-              ref={input => { this.textInput = input }}
+              onSubmitEditing={this.publishMessage}
               value={this.state.message}
               onChangeText={(text) => this.setState({ message: text })}/>
-            <Icon name="return-right" />
+            <TouchableOpacity onPress={this.publishMessage}>
+              <Icon name="return-right" />
+            </TouchableOpacity>
+
           </Item>
         </View>
     );
