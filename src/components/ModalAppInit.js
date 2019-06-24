@@ -175,7 +175,7 @@ export default class ModalAppInit extends Component {
 
                 <View style={styles.username}>
                     <TextInput
-                        ref={view => { this.textInput = view; }}
+
                         style={{flex: 1}}
                         type="TextInput"
                         name="myTextInput"
@@ -191,7 +191,8 @@ export default class ModalAppInit extends Component {
                     />
                 </View>
 
-                <View style={styles.buttonContainer}>
+                <View style={styles.buttonContainer}
+                    ref={view => { this.buttonGroup = view; }}>
                   <TouchableHighlight
                           activeOpacity={1}
                           underlayColor={'white'}
@@ -262,7 +263,7 @@ const styles = StyleSheet.create({
   },
   textContent: {
     alignItems: 'center',
-    marginBottom: 6,  
+    marginBottom: 6,
     marginTop: 3
   },
   text: {

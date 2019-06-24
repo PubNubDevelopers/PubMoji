@@ -507,7 +507,7 @@ export default class App extends Component {
     const { height: windowHeight } = Dimensions.get('window');
     const keyboardHeight = event.endCoordinates.height;
     const gap = (keyboardHeight * -1 ) + 20
-
+    console.log(gap)
     Animated.timing(
       this.state.shiftKeyboard,
       {
@@ -591,10 +591,6 @@ export default class App extends Component {
     if(this.state.splashLoading){
       return <SplashScreen />;
     }
-
-
-
-
     let usersArray = Array.from(this.state.users.values());
     return (
       <View style={styles.container}  >

@@ -39,21 +39,21 @@ export default class ModalAppUpdate extends Component {
     handleKeyboardDidShow = (event) => {
       const { height: windowHeight } = Dimensions.get('window');
       const keyboardHeight = event.endCoordinates.height;
-      this.textInput.measure( (fx, fy, width, height, px, py) => {
+      this.buttonGroup.measure( (fx, fy, width, height, px, py) => {
 
-      const gap = (windowHeight - keyboardHeight ) - (py + height)
+        const gap = (windowHeight - keyboardHeight ) - (py + height) - 10
 
-      Animated.timing(
-        this.state.shift,
-        {
-          toValue: gap,
-          duration: 180,
-          useNativeDriver: true,
-        }
-      ).start();
+        Animated.timing(
+          this.state.shift,
+          {
+            toValue: gap,
+            duration: 180,
+            useNativeDriver: true,
+          }
+        ).start();
       })
     }
-    
+
     handleKeyboardDidHide = () => {
       Animated.timing(
         this.state.shift,
@@ -199,7 +199,6 @@ export default class ModalAppUpdate extends Component {
 
                 <View style={styles.username}>
                     <TextInput
-                      ref={view => { this.textInput = view; }}
                       style={{flex: 1}}
                       type="TextInput"
                       name="myTextInput"
@@ -216,7 +215,8 @@ export default class ModalAppUpdate extends Component {
                 </View>
 
                 <View style={styles.container}>
-                    <View style={styles.buttonContainer}>
+                    <View style={styles.buttonContainer}
+                      ref={view => { this.buttonGroup = view; }}>
                         <TouchableHighlight
                           activeOpacity={1}
                           underlayColor={'white'}
@@ -224,18 +224,18 @@ export default class ModalAppUpdate extends Component {
                             this.state.pressStatusCancel
                                 ? styles.buttonPressed
                                 : styles.buttonNotPressed
-                          }     
+                          }
                             onHideUnderlay={this.onHideUnderlayCancelButton}
-                            onShowUnderlay={this.onShowUnderlayCancelButton}               
+                            onShowUnderlay={this.onShowUnderlayCancelButton}
                             onPress={this.cancelProfile}
                           >
-                            <Text 
+                            <Text
                               style={
                               this.state.pressStatusCancel
                                   ? styles.cancelPressed
                                   : styles.cancelNotPressed
                                   }
-                              > 
+                              >
                               Cancel
                             </Text>
                       </TouchableHighlight>
@@ -249,23 +249,23 @@ export default class ModalAppUpdate extends Component {
                             this.state.pressStatusConfirm
                                 ? styles.buttonPressed
                                 : styles.buttonNotPressed
-                          }     
+                          }
                             onHideUnderlay={this.onHideUnderlayConfirmButton}
-                            onShowUnderlay={this.onShowUnderlayConfirmButton}               
+                            onShowUnderlay={this.onShowUnderlayConfirmButton}
                             onPress={this.updateProfile}
                           >
-                            <Text 
+                            <Text
                               style={
                               this.state.pressStatusConfirm
                                   ? styles.cancelPressed
                                   : styles.cancelNotPressed
                                   }
-                              > 
+                              >
                               Confirm
                             </Text>
                       </TouchableHighlight>
                     </View>
-                  </View> 
+                  </View>
           </Animated.View>
         </View>
         );
