@@ -289,7 +289,7 @@ const styles = StyleSheet.create({
     paddingRight: 9
   },
   profileImages: {
-    width: 55, 
+    width: 55,
     height: 55
   },
   buttonContainer: {

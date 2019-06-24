@@ -9,6 +9,7 @@ import {
   Animated,
   Switch,
   TouchableOpacity,
+  TouchableWithoutFeedback,
   Dimensions,
   Keyboard,
   PermissionsAndroid,
@@ -53,12 +54,12 @@ export default class App extends Component {
       emoji: 0,
       emojiType: 0,
       splashLoading: true,
+      keyboardShown: false,
       shiftKeyboard: new Animated.Value(0),
       shiftBottomUI: new Animated.Value(0),
       currentPicture: null,
       visibleModalStart: false,
       visibleModalUpdate: false,
-      isFocused: false,
       allowGPS: true,
       hideBottomUI: false,
       showAbout: false,
@@ -94,8 +95,14 @@ export default class App extends Component {
     });
   };
   async setUpApp(){
-    this.keyboardDidShowSub = Keyboard.addListener('keyboardWillShow', this.handleKeyboardDidShow);
-    this.keyboardDidHideSub = Keyboard.addListener('keyboardWillHide', this.handleKeyboardDidHide);
+    let keyEvent1 = 'keyboardWillShow'
+    let keyEvent2 = 'keyboardWillHide'
+    if(Platform.OS === "android"){
+      keyEvent1 = 'keyboardDidShow'
+      keyEvent2 = 'keyboardDidHide'
+    }
+    this.keyboardDidShowSub = Keyboard.addListener(keyEvent1, this.handleKeyboardDidShow);
+    this.keyboardDidHideSub = Keyboard.addListener(keyEvent2, this.handleKeyboardDidHide);
     AppState.addEventListener('change', this.handleAppState);
     // Store boolean value so modal init only opens on app boot
 
@@ -261,16 +268,13 @@ export default class App extends Component {
   }
 
   componentWillUnmount() {
-    console.log("will unmount")
     AppState.removeEventListener('change', this.handleAppState);
 
   }
   handleAppState = (nextAppState) =>{
     if (nextAppState === 'active') {
-      console.log("started up")
       this.setUpApp()
     }else if (nextAppState === 'inactive' || nextAppState === 'background') {
-      console.log("closing down")
       this.pubnub.publish({
         message: {
           hideUser: true
@@ -330,35 +334,6 @@ export default class App extends Component {
       }
     }
   }
-  isEquivalent = (a, b) => {
-    if (!a || !b) {
-      if (a === b) return true;
-      return false;
-    }
-    // Create arrays of property names
-    var aProps = Object.getOwnPropertyNames(a);
-    var bProps = Object.getOwnPropertyNames(b);
-
-    // If number of properties is different,
-    // objects are not equivalent
-    if (aProps.length != bProps.length) {
-      return false;
-    }
-
-    for (var i = 0; i < aProps.length; i++) {
-      var propName = aProps[i];
-
-      // If values of same property are not equal,
-      // objects are not equivalent
-      if (a[propName] !== b[propName]) {
-        return false;
-      }
-    }
-
-    // If we made it this far, objects
-    // are considered equivalent
-    return true;
-  };
 
   animateToCurrent = (coords, speed) => {
     region = {
@@ -504,18 +479,25 @@ export default class App extends Component {
     this.setState({visibleModalUpdate: e });
   }
   handleKeyboardDidShow = (event) => {
-    const { height: windowHeight } = Dimensions.get('window');
-    const keyboardHeight = event.endCoordinates.height;
-    const gap = (keyboardHeight * -1 ) + 20
-    console.log(gap)
-    Animated.timing(
-      this.state.shiftKeyboard,
-      {
-        toValue: gap,
-        duration: 180,
-        useNativeDriver: true,
-      }
-    ).start();
+    this.setState({
+      keyboardShown: true
+    })
+    if(Platform.OS === "ios"){
+      const { height: windowHeight } = Dimensions.get('window');
+      const keyboardHeight = event.endCoordinates.height;
+      const gap = (keyboardHeight * -1 ) + 20
+      Animated.timing(
+        this.state.shiftKeyboard,
+        {
+          toValue: gap,
+          duration: 180,
+          useNativeDriver: true,
+        }
+      ).start();
+      console.log(this.state.keyboardShown)
+    }
+
+
   }
   hideBottomUI = () =>{
 
@@ -535,14 +517,19 @@ export default class App extends Component {
 
 
   handleKeyboardDidHide = () => {
-    Animated.timing(
-      this.state.shiftKeyboard,
-      {
-        toValue: 0,
-        duration: 150,
-        useNativeDriver: true,
-      }
-    ).start();
+    this.setState({
+      keyboardShown: false
+    })
+    if(Platform.OS === "ios"){
+      Animated.timing(
+        this.state.shiftKeyboard,
+        {
+          toValue: 0,
+          duration: 150,
+          useNativeDriver: true,
+        }
+      ).start();
+    }
   }
   showProfile = () =>{
     this.setState({
@@ -576,7 +563,7 @@ export default class App extends Component {
         <Animated.View style={[styles.bottom, { transform: [{translateY: this.state.shiftBottomUI}] }]}>
             <EmojiBar {...this.state} pubnub={this.pubnub} />
             <View style={styles.bottomRow}>
-              <MessageInput {...this.state} pubnub={this.pubnub}/>
+              <MessageInput {...this.state} pubnub={this.pubnub} />
                 <TouchableOpacity onPress={this.focusLoc}>
                   <Image style={styles.focusLoc} source={gpsImage} />
                 </TouchableOpacity>
@@ -586,151 +573,158 @@ export default class App extends Component {
     }
 
   }
+  hideKeyboard = () =>{
+    Keyboard.dismiss()
+  }
 
   render() {
     if(this.state.splashLoading){
       return <SplashScreen />;
     }
+
     let usersArray = Array.from(this.state.users.values());
     return (
-      <View style={styles.container}  >
-        <Modal isVisible={this.state.visibleModalStart}
-        backdropOpacity={0.1}
-        >
-          <ModalAppInit
-            changeProfile={this.changeProfile}
-            closeModalInit={this.closeModalInit}
-          />
-        </Modal>
-        <Modal isVisible={this.state.visibleModalUpdate}
+      <TouchableWithoutFeedback onPress={this.hideKeyboard} disabled={!this.state.keyboardShown}>
+        <View style={styles.container}  >
+          <Modal isVisible={this.state.visibleModalStart}
           backdropOpacity={0.1}
-        >
-          <ModalAppUpdate
-            currentUsername={this.state.username}
-            changeProfile={this.changeProfile}
-            closeModalUpdate={this.closeModalUpdate}
-            />
-        </Modal>
-
-
-        <Modal isVisible={this.state.infoModal}
-          backdropOpacity={0.1}>
-          <InfoModal
-          toggleAbout={this.toggleAbout}
-          />
-        </Modal>
-
-        <Animated.View style={[styles.container, { transform: [{translateY: this.state.shiftKeyboard}] }]}>
-          <MapView
-            style={styles.map}
-            ref={ref => (this.map = ref)}
-            onMoveShouldSetResponder={this.draggedMap}
-            initialRegion={{
-              latitude: 36.81808,
-              longitude: -98.640297,
-              latitudeDelta: 60.0001,
-              longitudeDelta: 60.0001
-            }}
           >
-            {usersArray.map((item) => (
-              //TRY SWITCHING UP TO CALLOUTS
-              <Marker
-                onPress={() => {
-                  this.touchUser(item.uuid);
-                }}
-                style={styles.marker}
-                key={item.uuid}
-                coordinate={{
-                  latitude: item.latitude,
-                  longitude: item.longitude
-                }}
-                ref={marker => {
-                  this.marker = marker;
-                }}
-              >
-                <View style={styles.marker}>
-                  {(function() {
-                    let rows = [];
-                    for (let i = 0; i < item.emojiCount; i++) {
-                      let emoji;
-                      switch (item.emojiType) {
-                        case 1: emoji = require("./src/Images/like2.png")
-                          break;
-                        case 2: emoji = require("./src/Images/love2.png")
-                          break;
-                        case 3: emoji = require("./src/Images/haha2.png")
-                          break;
-                        case 4: emoji = require("./src/Images/wow2.png")
-                          break;
-                        case 5: emoji = require("./src/Images/sad2.png")
-                          break;
-                        case 6: emoji = require("./src/Images/angry2.png")
-                          break;
+            <ModalAppInit
+              changeProfile={this.changeProfile}
+              closeModalInit={this.closeModalInit}
+            />
+          </Modal>
+          <Modal isVisible={this.state.visibleModalUpdate}
+            backdropOpacity={0.1}
+          >
+            <ModalAppUpdate
+              currentUsername={this.state.username}
+              changeProfile={this.changeProfile}
+              closeModalUpdate={this.closeModalUpdate}
+              />
+          </Modal>
 
-                        default:
 
+          <Modal isVisible={this.state.infoModal}
+            backdropOpacity={0.1}>
+            <InfoModal
+            toggleAbout={this.toggleAbout}
+            />
+          </Modal>
+
+          <Animated.View style={[styles.container, { transform: [{translateY: this.state.shiftKeyboard}] }]}>
+            <MapView
+              style={styles.map}
+              ref={ref => (this.map = ref)}
+              onMoveShouldSetResponder={this.draggedMap}
+              initialRegion={{
+                latitude: 36.81808,
+                longitude: -98.640297,
+                latitudeDelta: 60.0001,
+                longitudeDelta: 60.0001
+              }}
+            >
+              {usersArray.map((item) => (
+                //TRY SWITCHING UP TO CALLOUTS
+                <Marker
+                  onPress={() => {
+                    this.touchUser(item.uuid);
+                  }}
+                  style={styles.marker}
+                  key={item.uuid}
+                  coordinate={{
+                    latitude: item.latitude,
+                    longitude: item.longitude
+                  }}
+                  ref={marker => {
+                    this.marker = marker;
+                  }}
+                >
+                  <View style={styles.marker}>
+                    {(function() {
+                      let rows = [];
+                      for (let i = 0; i < item.emojiCount; i++) {
+                        let emoji;
+                        switch (item.emojiType) {
+                          case 1: emoji = require("./src/Images/like2.png")
+                            break;
+                          case 2: emoji = require("./src/Images/love2.png")
+                            break;
+                          case 3: emoji = require("./src/Images/haha2.png")
+                            break;
+                          case 4: emoji = require("./src/Images/wow2.png")
+                            break;
+                          case 5: emoji = require("./src/Images/sad2.png")
+                            break;
+                          case 6: emoji = require("./src/Images/angry2.png")
+                            break;
+
+                          default:
+
+                        }
+                        rows.push(
+                          <Animatable.Image
+                            animation="fadeOutUp"
+                            duration={1500}
+                            iterationCount={1}
+                            direction="normal"
+                            easing="ease-out"
+                            key={i}
+                            source={emoji}
+                            style={styles.emoji}
+                            useNativeDriver
+                          >
+                        </Animatable.Image>
+                        );
                       }
-                      rows.push(
-                        <Animatable.Image
-                          animation="fadeOutUp"
-                          duration={1500}
-                          iterationCount={1}
-                          direction="normal"
-                          easing="ease-out"
-                          key={i}
-                          source={emoji}
-                          style={styles.emoji}
-                          useNativeDriver
-                        >
-                      </Animatable.Image>
-                      );
-                    }
-                    return rows;
-                  })()}
-                  {this.messageOutPut(item.message)}
+                      return rows;
+                    })()}
+                    {this.messageOutPut(item.message)}
+                    <Image
+                      source={item.image}
+                      style={this.selectedStyle(item.uuid)}
+                    />
+                    {this.showUsername(item)}
+                  </View>
+                </Marker>
+              ))}
+            </MapView>
+
+              <View style={styles.topBar}>
+                <View style={styles.leftBar}>
+                <TouchableOpacity onPress={this.showProfile}>
                   <Image
-                    source={item.image}
-                    style={this.selectedStyle(item.uuid)}
-                  />
-                  {this.showUsername(item)}
-                </View>
-              </Marker>
-            ))}
-          </MapView>
-
-            <View style={styles.topBar}>
-              <View style={styles.leftBar}>
-              <TouchableOpacity onPress={this.showProfile}>
-                <Image
-                  style={styles.profile}
-                  source={require('./assets/images/profile.png')}
-                />
-              </TouchableOpacity>
-                <View style={styles.userCount}>
-                  <UserCount {...this.state} />
-                </View>
-              </View>
-
-
-              <View style={styles.rightBar}>
-                <TouchableOpacity onPress={this.toggleAbout}>
-                  <Image
-                    style={styles.info}
-                    source={require('./assets/images/info.png')}
+                    style={styles.profile}
+                    source={require('./assets/images/profile.png')}
                   />
                 </TouchableOpacity>
-                <Switch
-                value={this.state.allowGPS}
-                style={styles.locationSwitch}
-                onValueChange={this.toggleGPS}
-              />
+                  <View style={styles.userCount}>
+                    <UserCount {...this.state} />
+                  </View>
+                </View>
+
+
+                <View style={styles.rightBar}>
+                  <TouchableOpacity onPress={this.toggleAbout}>
+                    <Image
+                      style={styles.info}
+                      source={require('./assets/images/info.png')}
+                    />
+                  </TouchableOpacity>
+                  <Switch
+                  value={this.state.allowGPS}
+                  style={styles.locationSwitch}
+                  onValueChange={this.toggleGPS}
+                />
+              </View>
             </View>
-          </View>
 
-          {this.returnBottomUI()}
+            {this.returnBottomUI()}
 
-        </Animated.View>
-      </View>
+          </Animated.View>
+        </View>
+      </TouchableWithoutFeedback>
+
    );
   }
 }

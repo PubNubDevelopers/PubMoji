@@ -105,8 +105,8 @@ android {
         applicationId "com.pubmoji"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 2
-        versionName "1.1"
+        versionCode 4
+        versionName "1.2"
     }
     splits {
         abi {
