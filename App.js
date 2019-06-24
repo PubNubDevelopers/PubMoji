@@ -593,7 +593,10 @@ export default class App extends Component {
     }
 
   }
-
+  hideKeyboard = () =>{
+    console.log("whatevvver")
+    Keyboard.dismiss()
+  }
 
   render() {
     if(this.state.splashLoading){
@@ -605,7 +608,7 @@ export default class App extends Component {
 
     let usersArray = Array.from(this.state.users.values());
     return (
-      <TouchableWithoutFeedback onPress={Keyboard.dismiss()} disabled={!this.state.keyboardShown}>
+      <TouchableWithoutFeedback onPress={this.hideKeyboard} disabled={!this.state.keyboardShown}>
         <View style={styles.container}  >
           <Modal isVisible={this.state.visibleModalStart}
           backdropOpacity={0.1}
