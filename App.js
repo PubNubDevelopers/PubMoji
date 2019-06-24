@@ -95,8 +95,14 @@ export default class App extends Component {
     });
   };
   async setUpApp(){
-    this.keyboardDidShowSub = Keyboard.addListener('keyboardWillShow', this.handleKeyboardDidShow);
-    this.keyboardDidHideSub = Keyboard.addListener('keyboardWillHide', this.handleKeyboardDidHide);
+    let keyEvent1 = 'keyboardWillShow'
+    let keyEvent2 = 'keyboardWillHide'
+    if(Platform.OS === "android"){
+      keyEvent1 = 'keyboardDidShow'
+      keyEvent2 = 'keyboardDidHide'
+    }
+    this.keyboardDidShowSub = Keyboard.addListener(keyEvent1, this.handleKeyboardDidShow);
+    this.keyboardDidHideSub = Keyboard.addListener(keyEvent2, this.handleKeyboardDidHide);
     AppState.addEventListener('change', this.handleAppState);
     // Store boolean value so modal init only opens on app boot
 
@@ -331,36 +337,6 @@ export default class App extends Component {
       }
     }
   }
-  isEquivalent = (a, b) => {
-    if (!a || !b) {
-      if (a === b) return true;
-      return false;
-    }
-    // Create arrays of property names
-    var aProps = Object.getOwnPropertyNames(a);
-    var bProps = Object.getOwnPropertyNames(b);
-
-    // If number of properties is different,
-    // objects are not equivalent
-    if (aProps.length != bProps.length) {
-      return false;
-    }
-
-    for (var i = 0; i < aProps.length; i++) {
-      var propName = aProps[i];
-
-      // If values of same property are not equal,
-      // objects are not equivalent
-      if (a[propName] !== b[propName]) {
-        return false;
-      }
-    }
-
-    // If we made it this far, objects
-    // are considered equivalent
-    return true;
-  };
-
 
   animateToCurrent = (coords, speed) => {
     region = {
@@ -506,20 +482,25 @@ export default class App extends Component {
     this.setState({visibleModalUpdate: e });
   }
   handleKeyboardDidShow = (event) => {
-    const { height: windowHeight } = Dimensions.get('window');
-    const keyboardHeight = event.endCoordinates.height;
-    const gap = (keyboardHeight * -1 ) + 20
     this.setState({
       keyboardShown: true
     })
-    Animated.timing(
-      this.state.shiftKeyboard,
-      {
-        toValue: gap,
-        duration: 180,
-        useNativeDriver: true,
-      }
-    ).start();
+    if(Platform.OS === "ios"){
+      const { height: windowHeight } = Dimensions.get('window');
+      const keyboardHeight = event.endCoordinates.height;
+      const gap = (keyboardHeight * -1 ) + 20
+      Animated.timing(
+        this.state.shiftKeyboard,
+        {
+          toValue: gap,
+          duration: 180,
+          useNativeDriver: true,
+        }
+      ).start();
+      console.log(this.state.keyboardShown)
+    }
+
+
   }
   hideBottomUI = () =>{
 
@@ -542,14 +523,16 @@ export default class App extends Component {
     this.setState({
       keyboardShown: false
     })
-    Animated.timing(
-      this.state.shiftKeyboard,
-      {
-        toValue: 0,
-        duration: 150,
-        useNativeDriver: true,
-      }
-    ).start();
+    if(Platform.OS === "ios"){
+      Animated.timing(
+        this.state.shiftKeyboard,
+        {
+          toValue: 0,
+          duration: 150,
+          useNativeDriver: true,
+        }
+      ).start();
+    }
   }
   showProfile = () =>{
     this.setState({
@@ -603,7 +586,7 @@ export default class App extends Component {
       return <SplashScreen />;
     }
 
-
+    //console.log(this.state.keyboardShown)
 
 
     let usersArray = Array.from(this.state.users.values());
