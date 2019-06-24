@@ -5,12 +5,12 @@ import { ButtonGroup } from 'react-native-elements';
 const window = Dimensions.get('window');
 const {width, height, scale} = window;
 
-const img1 = require('../../assets/images/anon_mask.png');
-const img2 = require('../../assets/images/bear.png');
-const img3 = require('../../assets/images/rabbit.png');
-const img4 = require('../../assets/images/corgi.png');
-const img5 = require('../../assets/images/cat.png');
-const img6 = require('../../assets/images/dolphin.png');
+const img1 = require('../../assets/images/lion.png');
+const img2 = require('../../assets/images/fox.png');
+const img3 = require('../../assets/images/dog.png');
+const img4 = require('../../assets/images/panda.png');
+const img5 = require('../../assets/images/monkey.png');
+const img6 = require('../../assets/images/cat.png');
 const imgArrayRowOne = [img1, img2, img3];
 const imgArrayRowTwo = [img4, img5, img6];
 
@@ -145,31 +145,37 @@ export default class ModalAppUpdate extends Component {
 
         const component1 = () =>
         <Image
+          style={styles.profileImages}
           source={img1}
         />
 
         const component2 = () =>
         <Image
+          style={styles.profileImages}
           source={img2}
         />
 
         const component3 = () =>
         <Image
+          style={styles.profileImages}
           source={img3}
         />
 
         const component4 = () =>
         <Image
+          style={styles.profileImages}
           source={img4}
         />
 
         const component5 = () =>
         <Image
+          style={styles.profileImages}
           source={img5}
         />
 
         const component6 = () =>
         <Image
+          style={styles.profileImages}
           source={img6}
         />
 
@@ -282,7 +288,10 @@ const styles = StyleSheet.create({
     paddingLeft: 9,
     paddingRight: 9
   },
-
+  profileImages: {
+    width: 55, 
+    height: 55
+  },
   buttonContainer: {
     flex: 1,
     textAlign: 'center',
