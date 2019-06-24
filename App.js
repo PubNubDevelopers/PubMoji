@@ -54,12 +54,12 @@ export default class App extends Component {
       emoji: 0,
       emojiType: 0,
       splashLoading: true,
+      keyboardShown: false,
       shiftKeyboard: new Animated.Value(0),
       shiftBottomUI: new Animated.Value(0),
       currentPicture: null,
       visibleModalStart: false,
       visibleModalUpdate: false,
-      isFocused: false,
       allowGPS: true,
       hideBottomUI: false,
       showAbout: false,
@@ -509,7 +509,9 @@ export default class App extends Component {
     const { height: windowHeight } = Dimensions.get('window');
     const keyboardHeight = event.endCoordinates.height;
     const gap = (keyboardHeight * -1 ) + 20
-    console.log(gap)
+    this.setState({
+      keyboardShown: true
+    })
     Animated.timing(
       this.state.shiftKeyboard,
       {
@@ -537,6 +539,9 @@ export default class App extends Component {
 
 
   handleKeyboardDidHide = () => {
+    this.setState({
+      keyboardShown: false
+    })
     Animated.timing(
       this.state.shiftKeyboard,
       {
@@ -589,13 +594,18 @@ export default class App extends Component {
 
   }
 
+
   render() {
     if(this.state.splashLoading){
       return <SplashScreen />;
     }
+
+
+
+
     let usersArray = Array.from(this.state.users.values());
     return (
-      <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss()} disabled={!this.state.keyboardShown}>
         <View style={styles.container}  >
           <Modal isVisible={this.state.visibleModalStart}
           backdropOpacity={0.1}
