@@ -156,6 +156,7 @@ export default class AnimationScreen extends Component {
   setupPanResponder() {
     this.rootPanResponder = PanResponder.create({
       // prevent if user's dragging without long touch the button
+      onStartShouldSetPanResponder: (evt, gestureState) => true,
       onMoveShouldSetPanResponder: (evt, gestureState) =>
         !this.isTouchBtn && this.isLongTouch,
 
@@ -747,7 +748,7 @@ export default class AnimationScreen extends Component {
           {this.renderGroupIcon()}
 
           {/*Group emoticon for jump*/}
-          {this.renderGroupJumpIcon()}
+          {/*this.renderGroupJumpIcon()*/}
 
           {/* Button */}
           {/*{this.renderButton()}*/}
