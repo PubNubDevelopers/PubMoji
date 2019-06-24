@@ -35,7 +35,7 @@ export default class ModalAppInit extends Component {
       handleKeyboardDidShow = (event) => {
         const { height: windowHeight } = Dimensions.get('window');
         const keyboardHeight = event.endCoordinates.height;
-        this.textInput.measure( (fx, fy, width, height, px, py) => {
+        this.buttonGroup.measure( (fx, fy, width, height, px, py) => {
 
         const gap = (windowHeight - keyboardHeight ) - (py + height)
 
