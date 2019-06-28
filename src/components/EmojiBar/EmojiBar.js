@@ -256,11 +256,11 @@ export default class AnimationScreen extends Component {
 
   onDragRelease =  () => {
 
-    // To lower the emoticons
-    this.doAnimationLongTouchReverse();
-
-    // To jump particular emoticon be chosen
-    this.controlIconWhenRelease();
+    // // To lower the emoticons
+    // this.doAnimationLongTouchReverse();
+    //
+    // // To jump particular emoticon be chosen
+    // this.controlIconWhenRelease();
   };
 
 
@@ -469,9 +469,9 @@ export default class AnimationScreen extends Component {
   };
 
   controlIconWhenDrag = () => {
-    this.zoomIconChosen.setValue(0.8);
-    this.zoomIconNotChosen.setValue(1.8);
-    this.zoomBoxWhenDragInside.setValue(1.0);
+    // this.zoomIconChosen.setValue(0.8);
+    // this.zoomIconNotChosen.setValue(1.8);
+    // this.zoomBoxWhenDragInside.setValue(1.0);
 
     this.pushTextDescriptionUp.setValue(60);
     this.zoomTextDescription.setValue(1.0);
@@ -480,43 +480,43 @@ export default class AnimationScreen extends Component {
     this.setState({});
 
     // Need timeout so logic check at render function can update
-    setTimeout(
-      () =>
-        Animated.parallel([
-          Animated.timing(this.zoomIconChosen, {
-            toValue: 1.8,
-            duration: this.durationAnimationIconWhenDrag * this.timeDilation
-          }),
-          Animated.timing(this.zoomIconNotChosen, {
-            toValue: 0.8,
-            duration: this.durationAnimationIconWhenDrag * this.timeDilation
-          }),
-          Animated.timing(this.zoomBoxWhenDragInside, {
-            toValue: 0.95,
-            duration: this.durationAnimationIconWhenDrag * this.timeDilation
-          }),
-
-          Animated.timing(this.pushTextDescriptionUp, {
-            toValue: 90,
-            duration: this.durationAnimationIconWhenDrag * this.timeDilation
-          }),
-          Animated.timing(this.zoomTextDescription, {
-            toValue: 1.7,
-            duration: this.durationAnimationIconWhenDrag * this.timeDilation
-          })
-        ]).start(),
-      50
-    );
+    // setTimeout(
+    //   () =>
+    //     Animated.parallel([
+    //       Animated.timing(this.zoomIconChosen, {
+    //         toValue: 1.8,
+    //         duration: this.durationAnimationIconWhenDrag * this.timeDilation
+    //       }),
+    //       Animated.timing(this.zoomIconNotChosen, {
+    //         toValue: 0.8,
+    //         duration: this.durationAnimationIconWhenDrag * this.timeDilation
+    //       }),
+    //       Animated.timing(this.zoomBoxWhenDragInside, {
+    //         toValue: 0.95,
+    //         duration: this.durationAnimationIconWhenDrag * this.timeDilation
+    //       }),
+    //
+    //       Animated.timing(this.pushTextDescriptionUp, {
+    //         toValue: 90,
+    //         duration: this.durationAnimationIconWhenDrag * this.timeDilation
+    //       }),
+    //       Animated.timing(this.zoomTextDescription, {
+    //         toValue: 1.7,
+    //         duration: this.durationAnimationIconWhenDrag * this.timeDilation
+    //       })
+    //     ]).start(),
+    //   50
+    // );
   };
 
   controlIconWhenDragInside = () => {
     this.setState({});
 
-    this.zoomIconWhenDragInside.setValue(1.0);
-    Animated.timing(this.zoomIconWhenDragInside, {
-      toValue: 0.8,
-      duration: this.durationAnimationIconWhenDrag * this.timeDilation
-    }).start(this.onAnimationIconWhenDragInsideComplete);
+    // this.zoomIconWhenDragInside.setValue(1.0);
+    // Animated.timing(this.zoomIconWhenDragInside, {
+    //   toValue: 0.8,
+    //   duration: this.durationAnimationIconWhenDrag * this.timeDilation
+    // }).start(this.onAnimationIconWhenDragInsideComplete);
   };
 
   onAnimationIconWhenDragInsideComplete = () => {
@@ -525,21 +525,21 @@ export default class AnimationScreen extends Component {
   };
 
   controlIconWhenDragOutside = () => {
-    this.zoomIconWhenDragOutside.setValue(0.8);
-
-    Animated.timing(this.zoomIconWhenDragOutside, {
-      toValue: 1.0,
-      duration: this.durationAnimationIconWhenDrag * this.timeDilation
-    }).start();
+    // this.zoomIconWhenDragOutside.setValue(0.8);
+    //
+    // Animated.timing(this.zoomIconWhenDragOutside, {
+    //   toValue: 1.0,
+    //   duration: this.durationAnimationIconWhenDrag * this.timeDilation
+    // }).start();
   };
 
   controlBoxWhenDragOutside = () => {
-    this.zoomBoxWhenDragOutside.setValue(0.95);
-
-    Animated.timing(this.zoomBoxWhenDragOutside, {
-      toValue: 1.0,
-      duration: this.durationAnimationIconWhenDrag * this.timeDilation
-    }).start();
+    // this.zoomBoxWhenDragOutside.setValue(0.95);
+    //
+    // Animated.timing(this.zoomBoxWhenDragOutside, {
+    //   toValue: 1.0,
+    //   duration: this.durationAnimationIconWhenDrag * this.timeDilation
+    // }).start();
   };
 
   // ------------------------------------------------------------------------------
