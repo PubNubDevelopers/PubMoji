@@ -34,8 +34,8 @@ export default class App extends Component {
   constructor(props) {
     super(props);
     this.pubnub = new PubNubReact({
-      publishKey: "pub-c-58fc74dc-ee81-4d36-b829-820346af213b",
-      subscribeKey: "sub-c-45c90962-8f0b-11e9-882a-5a9c8da9cc13"
+      publishKey: "INSERT-PUB-KEY-HERE",
+      subscribeKey: "INSERT-SUB-KEY-HERE"
     });
 
     //this.moveAnimation = new Animated.ValueXY({ x: 10, y: 450 })
