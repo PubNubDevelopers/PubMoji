@@ -38,6 +38,11 @@
   "jest": {
     "preset": "react-native"
   },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/PubNubDevelopers/PubMoji.git"
+  },
   "rnpm": {
     "assets": [
       "./assets/fonts"
