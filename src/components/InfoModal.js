@@ -33,7 +33,7 @@ export default class InfoModal extends Component{
                     <Text style={styles.text}>Let others know how you are feeling by spamming the different emojis or typing in a message!</Text>  
                     <Text style={styles.text}>Zoom in the map and watch emojis and messages fly out of people's avatars in realtime!</Text>
                     <Text onPress={() => 
-                        Linking.openURL('http://shorturl.at/pDLN4')} 
+                        Linking.openURL('https://github.com/PubNubDevelopers/PubMoji/blob/master/PubNub%20Mobile%20Applications%20-%20Terms%20of%20Use%20(FINAL%20-%207.26.2019).pdf')} 
                             style={styles.termOfUseText}>
                             Terms of Use
                     </Text>
