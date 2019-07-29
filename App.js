@@ -34,11 +34,10 @@ export default class App extends Component {
   constructor(props) {
     super(props);
     this.pubnub = new PubNubReact({
-      publishKey: "pub-c-58fc74dc-ee81-4d36-b829-820346af213b",
-      subscribeKey: "sub-c-45c90962-8f0b-11e9-882a-5a9c8da9cc13"
+      publishKey: "INSERT-PUB-KEY-HERE",
+      subscribeKey: "INSERT-SUB-KEY-HERE"
     });
 
-    //this.moveAnimation = new Animated.ValueXY({ x: 10, y: 450 })
     //Base State
     this.state = {
       currentLoc: {
@@ -71,17 +70,16 @@ export default class App extends Component {
     this.pubnub.init(this);
   }
 
-  //Track User GPS Data
   async componentDidMount() {
     const wasShown = await AsyncStorage.getItem('key'); // get key
 
     if(wasShown === null) {
-      await AsyncStorage.setItem('key', '"true"');
       this.setState({visibleModalStart: true, wasShown});
     }else{
       this.setState({visibleModalStart: false, wasShown});
+      this.setUpApp();
     }
-    this.setUpApp()
+    this.setState({ splashLoading: false});    
   }
 
   clearMessage = uuid => {
@@ -149,9 +147,6 @@ export default class App extends Component {
           }
           emojiType = msg.message.emojiType;
         } else {
-          // if(oldUser){
-          //   emojiCount =
-          // }
           emojiCount = 0; //reset EmojiCount to 0
           emojiType = 0;
         }
@@ -189,6 +184,7 @@ export default class App extends Component {
 
     let granted;
 
+    // Get user's permission to access their location
     if (Platform.OS === "android"){
       granted = await PermissionsAndroid.request( PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION ,
         {
@@ -263,8 +259,6 @@ export default class App extends Component {
     else {
       console.log( "ACCESS_FINE_LOCATION permission denied" )
     }
-
-    this.setState({ splashLoading: false});
   }
 
   componentWillUnmount() {
@@ -472,8 +466,10 @@ export default class App extends Component {
     }
   }
 
-  closeModalInit = (e) => {
+  closeModalInit = async (e) => {
     this.setState({visibleModalStart: e });
+    await AsyncStorage.setItem('key', '"true"');
+    this.setUpApp();
   }
   closeModalUpdate = (e) => {
     this.setState({visibleModalUpdate: e });

@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
-import {StyleSheet, Text, TouchableHighlight, View, Image, TextInput, Animated,Dimensions, Keyboard,Alert, TouchableOpacity} from 'react-native';
-import { ButtonGroup } from 'react-native-elements';
+import {StyleSheet, Text, TouchableHighlight, View, Image, TextInput, Animated,Dimensions, Keyboard,Alert, Linking, TouchableOpacity} from 'react-native';
+import { ButtonGroup, CheckBox} from 'react-native-elements';
 
 const img1 = require('../../assets/images/lion.png');
 const img2 = require('../../assets/images/fox.png');
@@ -21,7 +21,8 @@ export default class ModalAppInit extends Component {
             text: '',
             shift: new Animated.Value(0),
             isFocused: false ,
-            pressStatus: false
+            checked: false,
+            pressStatus: false,
          };
       }
       componentDidMount() {
@@ -88,13 +89,7 @@ export default class ModalAppInit extends Component {
       const { selectedIndexRowTwo } = this.state;
       const {text} = this.state;
 
-      if(selectedIndexRowOne === -1 && selectedIndexRowTwo === -1){
-          Alert.alert('Error','Please select a profile picture.');
-      }
-      else if(text.length === 0){
-        Alert.alert('Error','Please enter your username.');
-      }
-      else if(text.length > 16){
+      if(text.length > 16){
         Alert.alert('Error', 'Username should be less than 16 characters.');
       }
       else{
@@ -114,6 +109,14 @@ export default class ModalAppInit extends Component {
 
     onShowUnderlay = () => {
       this.setState({ pressStatus: true });
+    }
+
+    allChecked = () => {
+      if (this.state.checked === false || this.state.text === '' ||
+      this.state.selectedIndexRowOne === -1 || this.state.selectedIndexRowTwo === -1) {
+        return false;
+      }
+      return true;
     }
 
     render() {
@@ -195,6 +198,26 @@ export default class ModalAppInit extends Component {
                         value={this.state.text}
                         onChangeText={(text) => this.setState({text})}
                     />
+                    
+                </View>
+
+                <View>
+                  <CheckBox
+                      title=
+                      {
+                        <Text style={{color: 'black'}}> I agree to the <Text onPress={() => 
+                          Linking.openURL('http://google.com')} 
+                            style={styles.checkBoxTextStyle}>
+                            Terms of Use</Text>
+                        </Text>           
+                      }
+                      containerStyle={styles.checkBoxContainer}
+                      checkedIcon='dot-circle-o'
+                      uncheckedIcon='circle-o'
+                      checkedColor='rgb(208,33,41)'
+                      checked={this.state.checked}
+                      onPress={() => this.setState({checked: !this.state.checked})}
+                    />
                 </View>
 
                 <View style={styles.buttonContainer}
@@ -203,12 +226,19 @@ export default class ModalAppInit extends Component {
                           activeOpacity={1}
                           underlayColor={'white'}
                           style={
-                            this.state.pressStatus
+                            ((this.state.selectedIndexRowOne === -1 || this.state.selectedIndexRowTwo === -1)  && this.state.text != '' 
+                            && this.state.checked === true) 
+                            ? (this.state.pressStatus
                                 ? styles.buttonPressed
-                                : styles.buttonNotPressed
+                                : styles.buttonNotPressed)
+                            : styles.buttonDisabled
                           }
                             onHideUnderlay={this.onHideUnderlay}
                             onShowUnderlay={this.onShowUnderlay}
+                            disabled={
+                              ((this.state.selectedIndexRowOne === -1 || this.state.selectedIndexRowTwo === -1)  && 
+                              this.state.text != '' && this.state.checked === true) ? false : true
+                            }
                             onPress={this.confirmProfile}
                           >
                             <Text
@@ -229,6 +259,18 @@ export default class ModalAppInit extends Component {
 }
 
 const styles = StyleSheet.create({
+  checkBoxContainer:{
+    backgroundColor: 'white',
+    borderColor: 'white',
+    alignItems:'flex-start',
+    marginLeft: 4,
+    marginTop: -5
+  },
+  checkBoxTextStyle:{
+    color: 'blue',
+    marginLeft: 5,
+    fontSize: 16,
+  },
   buttonGroupSelectedButton:{
     backgroundColor: 'rgb(208,33,41)'
   },
@@ -241,6 +283,13 @@ const styles = StyleSheet.create({
   },
   button: {
     flex: 1
+  },
+  buttonDisabled: {
+    backgroundColor: 'gray',
+    borderColor: 'gray',
+    borderWidth: 1,
+    padding: 10,
+    borderRadius: 5
   },
   buttonPressed:{
     borderColor: 'rgb(208,33,41)',
