@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import {StyleSheet, Text, TouchableHighlight, View, Image, TextInput, Animated,Dimensions, Keyboard,Alert, Linking, TouchableOpacity} from 'react-native';
+import {StyleSheet, Text, TouchableHighlight, View, Image, TextInput, Animated,Dimensions, Keyboard,Alert, Linking} from 'react-native';
 import { ButtonGroup, CheckBox} from 'react-native-elements';
 
 const img1 = require('../../assets/images/lion.png');
@@ -184,7 +184,6 @@ export default class ModalAppInit extends Component {
 
                 <View style={styles.username}>
                     <TextInput
-
                         style={{flex: 1}}
                         type="TextInput"
                         name="myTextInput"
@@ -206,7 +205,7 @@ export default class ModalAppInit extends Component {
                       title=
                       {
                         <Text style={{color: 'black'}}> I agree to the <Text onPress={() => 
-                          Linking.openURL('http://google.com')} 
+                          Linking.openURL('http://shorturl.at/pDLN4')} 
                             style={styles.checkBoxTextStyle}>
                             Terms of Use</Text>
                         </Text>           

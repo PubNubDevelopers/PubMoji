@@ -1,5 +1,6 @@
 import React, {Component} from 'react';
-import {StyleSheet, Text, View, Image, TouchableHighlight} from 'react-native';
+import {StyleSheet, Text, View, Image, TouchableHighlight, Linking} from 'react-native';
+
 
 const img1 = require("../../assets/images/PubMojiPic.png");
 
@@ -8,7 +9,7 @@ export default class InfoModal extends Component{
         super(props);
         this.state = { 
             pressStatus: false
-         };
+        };
     }
 
     onHideUnderlay = () => {
@@ -31,6 +32,11 @@ export default class InfoModal extends Component{
                     <Text style={styles.text}>Pubmoji is an interactive phone app designed to demonstrate PubNub's capabilities.</Text>
                     <Text style={styles.text}>Let others know how you are feeling by spamming the different emojis or typing in a message!</Text>  
                     <Text style={styles.text}>Zoom in the map and watch emojis and messages fly out of people's avatars in realtime!</Text>
+                    <Text onPress={() => 
+                        Linking.openURL('http://shorturl.at/pDLN4')} 
+                            style={styles.termOfUseText}>
+                            Terms of Use
+                    </Text>
                 </View>
 
                 <View style={styles.buttonContainer}>
@@ -116,8 +122,15 @@ const styles = StyleSheet.create({
         textAlign: 'left',
         fontFamily: 'ProximaNova-Regular',
         fontSize: 18,
-        marginTop: 10,
-    },        
+        marginTop: 6
+    },     
+    termOfUseText: {
+        color: 'blue',
+        textAlign: 'center',
+        fontFamily: 'ProximaNova-Regular',
+        fontSize: 15,
+        marginTop: 12,
+    },  
     content: {
         backgroundColor: 'white',
         padding: 5,
