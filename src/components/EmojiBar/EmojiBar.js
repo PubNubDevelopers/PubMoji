@@ -47,14 +47,12 @@ export default class AnimationScreen extends Component {
     // Slow down speed animation here (1 = default)
     this.timeDilation = 1;
 
-    // If duration touch longer than it, mean long touch
-    this.durationLongPress = 250;
+
 
     // Variables to check
     // 0 = nothing, 1 = like, 2 = love, 3 = haha, 4 = wow, 5 = sad, 6 = angry
-    this.isTouchBtn = false;
 
-    this.isLongTouch = true;
+    this.isLongTouch = false;
     this.isLiked = true;
 
     this.whichIconUserChoose = 0;
@@ -137,12 +135,13 @@ export default class AnimationScreen extends Component {
     this.setupPanResponder();
   }
 
-  publishEmojiMessage = async () => {
-    const result = await this.onDragRelease();
+  publishEmojiMessage =  () => {
+    // const result = await this.onDragRelease();
     this.props.pubnub.publish({
       message: {
         emojiType: this.whichIconUserChoose,
         emojiCount: 1,
+        uuid: this.props.pubnub.getUUID(),
         latitude: this.props.currentLoc.latitude,
         longitude: this.props.currentLoc.longitude,
         image: this.props.currentPicture,
@@ -157,8 +156,7 @@ export default class AnimationScreen extends Component {
     this.rootPanResponder = PanResponder.create({
       // prevent if user's dragging without long touch the button
       onStartShouldSetPanResponder: (evt, gestureState) => true,
-      onMoveShouldSetPanResponder: (evt, gestureState) =>
-        !this.isTouchBtn && this.isLongTouch,
+      onMoveShouldSetPanResponder: (evt, gestureState) => true,
 
       onPanResponderGrant: (evt, gestureState) => {
         this.handleEmoticonWhenDragging(evt, gestureState);
@@ -189,6 +187,7 @@ export default class AnimationScreen extends Component {
 
       this.isDragging = true;
       this.isDraggingOutside = false;
+
 
       if (this.isJustDragInside) {
         this.controlIconWhenDragInside();
@@ -254,91 +253,16 @@ export default class AnimationScreen extends Component {
     }
   };
 
-  // Handle the touch of button
-  onTouchStart = () => {
-    this.isTouchBtn = true;
-    this.setState({});
 
-    this.timerMeasureLongTouch = setTimeout(
-      this.doAnimationLongTouch,
-      this.durationLongPress
-    );
+  onDragRelease =  () => {
+
+    // // To lower the emoticons
+    // this.doAnimationLongTouchReverse();
+    //
+    // // To jump particular emoticon be chosen
+    // this.controlIconWhenRelease();
   };
 
-  onTouchEnd = () => {
-    this.isTouchBtn = true;
-    this.setState({});
-
-    if (!this.isLongTouch) {
-      if (this.whichIconUserChoose !== 0) {
-        this.whichIconUserChoose = 0;
-
-        // assuming that another emoticon is the same like, so we can animate the reverse then
-        this.isLiked = true;
-      }
-      clearTimeout(this.timerMeasureLongTouch);
-      this.doAnimationQuickTouch();
-    }
-  };
-
-  onDragRelease = async () => {
-
-    // To lower the emoticons
-    this.doAnimationLongTouchReverse();
-
-    // To jump particular emoticon be chosen
-    this.controlIconWhenRelease();
-  };
-
-  // ------------------------------------------------------------------------------
-  // Animation button when quick touch button
-  doAnimationQuickTouch = () => {
-    if (!this.isLiked) {
-      this.soundShortTouchLike.play();
-
-      this.isLiked = true;
-      this.setState({});
-
-      this.tiltIconAnim.setValue(0);
-      this.zoomIconAnim.setValue(0);
-      this.zoomTextAnim.setValue(0);
-      Animated.parallel([
-        Animated.timing(this.tiltIconAnim, {
-          toValue: 1,
-          duration: this.durationAnimationQuickTouch * this.timeDilation
-        }),
-        Animated.timing(this.zoomIconAnim, {
-          toValue: 1,
-          duration: this.durationAnimationQuickTouch * this.timeDilation
-        }),
-        Animated.timing(this.zoomTextAnim, {
-          toValue: 1,
-          duration: this.durationAnimationQuickTouch * this.timeDilation
-        })
-      ]).start();
-    } else {
-      this.isLiked = true;
-      this.setState({});
-
-      this.tiltIconAnim.setValue(1);
-      this.zoomIconAnim.setValue(1);
-      this.zoomTextAnim.setValue(1);
-      Animated.parallel([
-        Animated.timing(this.tiltIconAnim, {
-          toValue: 0,
-          duration: this.durationAnimationQuickTouch * this.timeDilation
-        }),
-        Animated.timing(this.zoomIconAnim, {
-          toValue: 0,
-          duration: this.durationAnimationQuickTouch * this.timeDilation
-        }),
-        Animated.timing(this.zoomTextAnim, {
-          toValue: 0,
-          duration: this.durationAnimationQuickTouch * this.timeDilation
-        })
-      ]).start();
-    }
-  };
 
   // ------------------------------------------------------------------------------
   // Animation when long touch button
@@ -402,64 +326,40 @@ export default class AnimationScreen extends Component {
         duration: this.durationAnimationBox * this.timeDilation
       }),
 
-      // Animated.timing(this.pushIconLikeUp, {
-      //   toValue: 25,
-      //   duration: 250 * this.timeDilation
-      // }),
+
       Animated.timing(this.zoomIconLike, {
         toValue: 1,
         duration: 250 * this.timeDilation
       }),
 
-      // Animated.timing(this.pushIconLoveUp, {
-      //   toValue: 25,
-      //   duration: 250 * this.timeDilation,
-      //   delay: 50
-      // }),
+
       Animated.timing(this.zoomIconLove, {
         toValue: 1,
         duration: 250 * this.timeDilation,
         delay: 50
       }),
 
-      // Animated.timing(this.pushIconHahaUp, {
-      //   toValue: 25,
-      //   duration: 250 * this.timeDilation,
-      //   delay: 100
-      // }),
+
       Animated.timing(this.zoomIconHaha, {
         toValue: 1,
         duration: 250 * this.timeDilation,
         delay: 100
       }),
 
-      // Animated.timing(this.pushIconWowUp, {
-      //   toValue: 25,
-      //   duration: 250 * this.timeDilation,
-      //   delay: 150
-      // }),
+
       Animated.timing(this.zoomIconWow, {
         toValue: 1,
         duration: 250 * this.timeDilation,
         delay: 150
       }),
 
-      // Animated.timing(this.pushIconSadUp, {
-      //   toValue: 25,
-      //   duration: 250 * this.timeDilation,
-      //   delay: 200
-      // }),
       Animated.timing(this.zoomIconSad, {
         toValue: 1,
         duration: 250 * this.timeDilation,
         delay: 200
       }),
 
-      // Animated.timing(this.pushIconAngryUp, {
-      //   toValue: 25,
-      //   duration: 250 * this.timeDilation,
-      //   delay: 250
-      // }),
+
       Animated.timing(this.zoomIconAngry, {
         toValue: 1,
         duration: 250 * this.timeDilation,
@@ -516,67 +416,34 @@ export default class AnimationScreen extends Component {
         duration: this.durationAnimationLongTouch * this.timeDilation
       }),
 
-      // Group emoticon
-      // Animated.timing(this.moveRightGroupIcon, {
-      //   toValue: 10,
-      //   duration: this.durationAnimationBox * this.timeDilation
-      // }),
 
-      // Animated.timing(this.pushIconLikeUp, {
-      //   toValue: 0,
-      //   duration: 250 * this.timeDilation,
-      //   delay: 0
-      // }),
       Animated.timing(this.zoomIconLike, {
         toValue: 0.1,
         duration: 250 * this.timeDilation
       }),
 
-      // Animated.timing(this.pushIconLoveUp, {
-      //   toValue: 0,
-      //   duration: 250 * this.timeDilation,
-      //   delay: 0
-      // }),
+
       Animated.timing(this.zoomIconLove, {
         toValue: 0.01,
         duration: 250 * this.timeDilation
       }),
 
-      // Animated.timing(this.pushIconHahaUp, {
-      //   toValue: 0,
-      //   duration: 250 * this.timeDilation,
-      //   delay: 250
-      // }),
       Animated.timing(this.zoomIconHaha, {
         toValue: 0.01,
         duration: 250 * this.timeDilation
       }),
 
-      // Animated.timing(this.pushIconWowUp, {
-      //   toValue: 0,
-      //   duration: 250 * this.timeDilation,
-      //   delay: 250
-      // }),
       Animated.timing(this.zoomIconWow, {
         toValue: 0.01,
         duration: 250 * this.timeDilation
       }),
 
-      // Animated.timing(this.pushIconSadUp, {
-      //   toValue: 0,
-      //   duration: 250 * this.timeDilation,
-      //   delay: 250
-      // }),
       Animated.timing(this.zoomIconSad, {
         toValue: 0.01,
         duration: 250 * this.timeDilation
       }),
 
-      // Animated.timing(this.pushIconAngryUp, {
-      //   toValue: 0,
-      //   duration: 250 * this.timeDilation,
-      //   delay: 250
-      // }),
+
       Animated.timing(this.zoomIconAngry, {
         toValue: 0.01,
         duration: 250 * this.timeDilation
@@ -602,9 +469,9 @@ export default class AnimationScreen extends Component {
   };
 
   controlIconWhenDrag = () => {
-    this.zoomIconChosen.setValue(0.8);
-    this.zoomIconNotChosen.setValue(1.8);
-    this.zoomBoxWhenDragInside.setValue(1.0);
+    // this.zoomIconChosen.setValue(0.8);
+    // this.zoomIconNotChosen.setValue(1.8);
+    // this.zoomBoxWhenDragInside.setValue(1.0);
 
     this.pushTextDescriptionUp.setValue(60);
     this.zoomTextDescription.setValue(1.0);
@@ -613,43 +480,43 @@ export default class AnimationScreen extends Component {
     this.setState({});
 
     // Need timeout so logic check at render function can update
-    setTimeout(
-      () =>
-        Animated.parallel([
-          Animated.timing(this.zoomIconChosen, {
-            toValue: 1.8,
-            duration: this.durationAnimationIconWhenDrag * this.timeDilation
-          }),
-          Animated.timing(this.zoomIconNotChosen, {
-            toValue: 0.8,
-            duration: this.durationAnimationIconWhenDrag * this.timeDilation
-          }),
-          Animated.timing(this.zoomBoxWhenDragInside, {
-            toValue: 0.95,
-            duration: this.durationAnimationIconWhenDrag * this.timeDilation
-          }),
-
-          Animated.timing(this.pushTextDescriptionUp, {
-            toValue: 90,
-            duration: this.durationAnimationIconWhenDrag * this.timeDilation
-          }),
-          Animated.timing(this.zoomTextDescription, {
-            toValue: 1.7,
-            duration: this.durationAnimationIconWhenDrag * this.timeDilation
-          })
-        ]).start(),
-      50
-    );
+    // setTimeout(
+    //   () =>
+    //     Animated.parallel([
+    //       Animated.timing(this.zoomIconChosen, {
+    //         toValue: 1.8,
+    //         duration: this.durationAnimationIconWhenDrag * this.timeDilation
+    //       }),
+    //       Animated.timing(this.zoomIconNotChosen, {
+    //         toValue: 0.8,
+    //         duration: this.durationAnimationIconWhenDrag * this.timeDilation
+    //       }),
+    //       Animated.timing(this.zoomBoxWhenDragInside, {
+    //         toValue: 0.95,
+    //         duration: this.durationAnimationIconWhenDrag * this.timeDilation
+    //       }),
+    //
+    //       Animated.timing(this.pushTextDescriptionUp, {
+    //         toValue: 90,
+    //         duration: this.durationAnimationIconWhenDrag * this.timeDilation
+    //       }),
+    //       Animated.timing(this.zoomTextDescription, {
+    //         toValue: 1.7,
+    //         duration: this.durationAnimationIconWhenDrag * this.timeDilation
+    //       })
+    //     ]).start(),
+    //   50
+    // );
   };
 
   controlIconWhenDragInside = () => {
     this.setState({});
 
-    this.zoomIconWhenDragInside.setValue(1.0);
-    Animated.timing(this.zoomIconWhenDragInside, {
-      toValue: 0.8,
-      duration: this.durationAnimationIconWhenDrag * this.timeDilation
-    }).start(this.onAnimationIconWhenDragInsideComplete);
+    // this.zoomIconWhenDragInside.setValue(1.0);
+    // Animated.timing(this.zoomIconWhenDragInside, {
+    //   toValue: 0.8,
+    //   duration: this.durationAnimationIconWhenDrag * this.timeDilation
+    // }).start(this.onAnimationIconWhenDragInsideComplete);
   };
 
   onAnimationIconWhenDragInsideComplete = () => {
@@ -658,21 +525,21 @@ export default class AnimationScreen extends Component {
   };
 
   controlIconWhenDragOutside = () => {
-    this.zoomIconWhenDragOutside.setValue(0.8);
-
-    Animated.timing(this.zoomIconWhenDragOutside, {
-      toValue: 1.0,
-      duration: this.durationAnimationIconWhenDrag * this.timeDilation
-    }).start();
+    // this.zoomIconWhenDragOutside.setValue(0.8);
+    //
+    // Animated.timing(this.zoomIconWhenDragOutside, {
+    //   toValue: 1.0,
+    //   duration: this.durationAnimationIconWhenDrag * this.timeDilation
+    // }).start();
   };
 
   controlBoxWhenDragOutside = () => {
-    this.zoomBoxWhenDragOutside.setValue(0.95);
-
-    Animated.timing(this.zoomBoxWhenDragOutside, {
-      toValue: 1.0,
-      duration: this.durationAnimationIconWhenDrag * this.timeDilation
-    }).start();
+    // this.zoomBoxWhenDragOutside.setValue(0.95);
+    //
+    // Animated.timing(this.zoomBoxWhenDragOutside, {
+    //   toValue: 1.0,
+    //   duration: this.durationAnimationIconWhenDrag * this.timeDilation
+    // }).start();
   };
 
   // ------------------------------------------------------------------------------
@@ -747,11 +614,7 @@ export default class AnimationScreen extends Component {
           {/* Group emoticon */}
           {this.renderGroupIcon()}
 
-          {/*Group emoticon for jump*/}
-          {/*this.renderGroupJumpIcon()*/}
 
-          {/* Button */}
-          {/*{this.renderButton()}*/}
         </View>
       </View>
     );
@@ -779,8 +642,6 @@ export default class AnimationScreen extends Component {
     return (
       <View
         style={[styles.viewBtn, { borderColor: this.getBorderColorBtn() }]}
-        onTouchStart={this.onTouchStart}
-        onTouchEnd={this.onTouchEnd}
       >
         <Animated.Image
           source={this.getIconBtn()}
@@ -1180,143 +1041,4 @@ export default class AnimationScreen extends Component {
   }
 
 
-  renderGroupJumpIcon() {
-    let moveUpDownIcon = this.moveUpDownIconWhenRelease.interpolate({
-      inputRange: [0, 0.4, 1],
-      outputRange: [40, 100, 0]
-    });
-
-    return (
-      <View style={styles.viewWrapGroupJumpIcon}>
-        {/*Icon like*/}
-        {this.whichIconUserChoose === 1 && !this.isDragging ? (
-          <Animated.View
-            style={{
-              width: 40,
-              height: 40,
-              left: this.moveLeftIconLikeWhenRelease,
-              bottom: moveUpDownIcon,
-              transform: [{ scale: this.zoomIconWhenRelease }],
-              position: "absolute"
-            }}>
-            <FastImage
-              style={styles.imgIcon}
-              source={{
-                uri:
-                  "https://raw.githubusercontent.com/PubNubDevelopers/PubMoji/EmojiImplementation/src/Images/like.gif"
-              }}/>
-          </Animated.View>
-        ) : null}
-        {/*Icon love*/}
-        {this.whichIconUserChoose === 2 && !this.isDragging ? (
-          <Animated.View
-            style={{
-              width: 40,
-              height: 40,
-              left: this.moveLeftIconLoveWhenRelease,
-              bottom: moveUpDownIcon,
-              transform: [{ scale: this.zoomIconWhenRelease }],
-              position: "absolute"
-            }}
-          >
-            <FastImage
-              style={styles.imgIcon}
-              source={{
-                uri:
-                  "https://raw.githubusercontent.com/PubNubDevelopers/PubMoji/EmojiImplementation/src/Images/love.gif"
-              }}
-            />
-          </Animated.View>
-        ) : null}
-
-        {/*Icon haha*/}
-        {this.whichIconUserChoose === 3 && !this.isDragging ? (
-          <Animated.View
-            style={{
-              width: 40,
-              height: 40,
-              left: this.moveLeftIconHahaWhenRelease,
-              bottom: moveUpDownIcon,
-              transform: [{ scale: this.zoomIconWhenRelease }],
-              position: "absolute"
-            }}
-          >
-            <FastImage
-              style={styles.imgIcon}
-              source={{
-                uri:
-                  "https://raw.githubusercontent.com/duytq94/facebook-reaction-animation2/master/App/Images/haha.gif"
-              }}
-            />
-          </Animated.View>
-        ) : null}
-
-        {/*Icon wow*/}
-        {this.whichIconUserChoose === 4 && !this.isDragging ? (
-          <Animated.View
-            style={{
-              width: 40,
-              height: 40,
-              left: this.moveLeftIconWowWhenRelease,
-              bottom: moveUpDownIcon,
-              transform: [{ scale: this.zoomIconWhenRelease }],
-              position: "absolute"
-            }}
-          >
-            <FastImage
-              style={styles.imgIcon}
-              source={{
-                uri:
-                  "https://raw.githubusercontent.com/PubNubDevelopers/PubMoji/EmojiImplementation/src/Images/wow.gif"
-              }}
-            />
-          </Animated.View>
-        ) : null}
-
-        {/*Icon sad*/}
-        {this.whichIconUserChoose === 5 && !this.isDragging ? (
-          <Animated.View
-            style={{
-              width: 40,
-              height: 40,
-              left: this.moveLeftIconSadWhenRelease,
-              bottom: moveUpDownIcon,
-              transform: [{ scale: this.zoomIconWhenRelease }],
-              position: "absolute"
-            }}
-          >
-            <FastImage
-              style={styles.imgIcon}
-              source={{
-                uri:
-                  "https://raw.githubusercontent.com/PubNubDevelopers/PubMoji/EmojiImplementation/src/Images/sad.gif"
-              }}
-            />
-          </Animated.View>
-        ) : null}
-
-        {/*Icon angry*/}
-        {this.whichIconUserChoose === 6 && !this.isDragging ? (
-          <Animated.View
-            style={{
-              width: 40,
-              height: 40,
-              left: this.moveLeftIconAngryWhenRelease,
-              bottom: moveUpDownIcon,
-              transform: [{ scale: this.zoomIconWhenRelease }],
-              position: "absolute"
-            }}
-          >
-            <FastImage
-              style={styles.imgIcon}
-              source={{
-                uri:
-                  "https://raw.githubusercontent.com/PubNubDevelopers/PubMoji/EmojiImplementation/src/Images/angry.gif"
-              }}
-            />
-          </Animated.View>
-        ) : null}
-      </View>
-    );
-  }
 }

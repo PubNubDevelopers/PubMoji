@@ -197,38 +197,6 @@ export default class App extends Component {
     }
 
     if (granted === PermissionsAndroid.RESULTS.GRANTED || Platform.OS === "ios") {
-    //Get Stationary Coordinate
-      navigator.geolocation.getCurrentPosition(
-        position => {
-          if (this.state.allowGPS) {
-            this.pubnub.publish({
-              message: {
-                latitude: position.coords.latitude,
-                longitude: position.coords.longitude,
-                image: this.state.currentPicture,
-                username: this.state.username,
-              },
-              channel: "global"
-            });
-            let users = this.state.users;
-            let tempUser = {
-              uuid: this.pubnub.getUUID(),
-              latitude: position.coords.latitude,
-              longitude: position.coords.longitude,
-              image: this.state.currentPicture,
-              username: this.state.username
-            };
-            users.set(tempUser.uuid, tempUser);
-            this.setState({
-              users,
-              currentLoc: position.coords
-            });
-          }
-        },
-        error => console.log("Maps Error: ", error),
-        {enableHighAccuracy: false}
-      );
-      //Track motional Coordinates
       navigator.geolocation.watchPosition(
         position => {
           this.setState({
@@ -237,6 +205,7 @@ export default class App extends Component {
           if (this.state.allowGPS) {
             this.pubnub.publish({
               message: {
+                uuid: this.pubnub.getUUID(),
                 latitude: position.coords.latitude,
                 longitude: position.coords.longitude,
                 image: this.state.currentPicture,
@@ -271,6 +240,7 @@ export default class App extends Component {
     }else if (nextAppState === 'inactive' || nextAppState === 'background') {
       this.pubnub.publish({
         message: {
+          uuid: this.pubnub.getUUID(),
           hideUser: true
         },
         channel: "global"
@@ -321,6 +291,7 @@ export default class App extends Component {
         });
         this.pubnub.publish({
           message: {
+            uuid: this.pubnub.getUUID(),
             hideUser: true
           },
           channel: "global"
@@ -422,6 +393,7 @@ export default class App extends Component {
       if(this.state.allowGPS){
         this.pubnub.publish({
           message: {
+            uuid: this.pubnub.getUUID(),
             latitude: this.state.currentLoc.latitude,
             longitude: this.state.currentLoc.longitude,
             image: currentPicture,
@@ -437,6 +409,7 @@ export default class App extends Component {
       if(this.state.allowGPS){
         this.pubnub.publish({
           message: {
+            uuid: this.pubnub.getUUID(),
             latitude: this.state.currentLoc.latitude,
             longitude: this.state.currentLoc.longitude,
             image: currentPicture,
@@ -452,6 +425,7 @@ export default class App extends Component {
       if(this.state.allowGPS){
         this.pubnub.publish({
           message: {
+            uuid: this.pubnub.getUUID(),
             latitude: this.state.currentLoc.latitude,
             longitude: this.state.currentLoc.longitude,
             image: this.state.currentPicture,

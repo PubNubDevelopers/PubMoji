@@ -14,6 +14,7 @@ export default class MessageInput extends Component {
     if(this.state.message){
       this.props.pubnub.publish({
         message: {
+          uuid: this.props.pubnub.getUUID(),
           message: this.state.message,
           latitude: this.props.currentLoc.latitude,
           longitude: this.props.currentLoc.longitude,
