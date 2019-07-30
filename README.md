@@ -1,23 +1,28 @@
 # Welcome to PubMoji!
 
-Pubmoji is an interactive app designed to demonstrate PubNub's realtime capabilities. You will see just how easy it is to integrate Pub/Sub, Prescence, and other keystone multi-user features into a phone application.
+Pubmoji is an interactive app designed to demonstrate PubNub's realtime capabilities. You will see how easy it is to integrate Pub/Sub, Prescence, and other keystone multi-user features into a phone application.
 
-Using the PubNub React SDK, PubMoji is built using React Native, and is an app that allows users to 
+Using PubNub's React SDK, PubMoji is built using React Native and includes the following features:
 
 * Multiple users are rendered on a map as a pre-selected avatar.
 * When users move a set distance, a message is published to others connected wither their updated location.
-* Both messages and emojis appeear over each users' heads.
+* Both messages and emojis appear over each users' heads.
 * Emojis can be spammed to your hearts content!
 * Toggle a switch to stop sharing your location in Incognito Mode.
 * See how many users are connected using PubNub's Presence Badge!
 
 ![pubmoji gif](https://pubnubdevelopers.github.io/PubMoji-Product-Page/img/demo.gif)
 
-All user data is handled [securley](https://www.pubnub.com/developers/tech/security/) and [reliably](https://www.pubnub.com/blog/build-a-reliable-product-that-never-fails/) through PubNub. Each user publishes their data across a PubNub channel, and other users who are subscribed to that channel receive those messages in realtime. 
+All user data is handled [securely](https://www.pubnub.com/developers/tech/security/) and [reliably](https://www.pubnub.com/blog/build-a-reliable-product-that-never-fails/) through PubNub. Each user publishes their data across a PubNub channel, and other users who are subscribed to that channel receive those messages in realtime. 
 
 # How to run
 
-- [ ] Clone this repository to your computer
+- [ ] Make sure that you have React Native set up on your machine. If you don't, then follow the [React Native CLI Quickstart](https://facebook.github.io/react-native/docs/getting-started.html) instructions in the official documentation.
+
+- [ ] Clone this repository to your computer:
+ ```bash
+    git clone https://github.com/PubNubDevelopers/PubMoji.git
+  ```
 
 - [ ] Replace the placeholder keys on line 37 and 38 of your App.js with your own PubNub keys through the link below!
 
@@ -35,7 +40,7 @@ All user data is handled [securley](https://www.pubnub.com/developers/tech/secur
 
 - [ ] Link packages to your project with ```react-native link```
  
-- [ ] Either run ```react-native run-ios``` or ```react-native run-android```. Your android emulator needs to be running for ADB to see it. 
+- [ ] Either run ```react-native run-ios``` or ```react-native run-android```. Your Android emulator needs to be running for ADB to see it. 
 
       
 # What is PubNub?
