@@ -2,7 +2,7 @@
 
 Pubmoji is an interactive app designed to demonstrate PubNub's realtime capabilities. You will see how easy it is to integrate Pub/Sub, Prescence, and other keystone multi-user features into a phone application.
 
-Using PubNub's React SDK, PubMoji is built using React Native and includes the following features:
+Using [PubNub's React SDK](https://www.pubnub.com/docs/react-native-javascript/pubnub-javascript-sdk), PubMoji is built using React Native and includes the following features:
 
 * Multiple users are rendered on a map as a pre-selected avatar.
 * When users move a set distance, a message is published to others connected wither their updated location.
@@ -17,7 +17,7 @@ All user data is handled [securely](https://www.pubnub.com/developers/tech/secur
 
 # How to run
 
-- [ ] Make sure that you have React Native set up on your machine. If you don't, then follow the [React Native CLI Quickstart](https://facebook.github.io/react-native/docs/getting-started.html) instructions in the official documentation.
+- [ ] Make sure that you have React Native set up in your machine. If you don't, then follow the [React Native CLI Quickstart](https://facebook.github.io/react-native/docs/getting-started.html) instructions in the official documentation.
 
 - [ ] Clone this repository to your computer:
  ```bash
@@ -41,7 +41,7 @@ All user data is handled [securely](https://www.pubnub.com/developers/tech/secur
 - [ ] Link packages to your project with ```react-native link```
  
 - [ ] Either run ```react-native run-ios``` or ```react-native run-android```. Your Android emulator needs to be running for ADB to see it. 
-
+ 
       
 # What is PubNub?
 [PubNub](https://www.pubnub.com/?devrel_gh=PubMoji) is a global Data Stream Network (DSN) and realtime network-as-a-service. PubNub's primary product is a realtime publish/subscribe messaging API built on a global data stream network which is made up of a replicated network with multiple points of presence around the world.
