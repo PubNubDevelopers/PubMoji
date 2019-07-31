@@ -1,6 +1,6 @@
 # Welcome to PubMoji!
 
-Pubmoji is an interactive app designed to demonstrate PubNub's realtime capabilities. You will see how easy it is to integrate Pub/Sub, Prescence, and other keystone multi-user features into a phone application.
+Pubmoji is an interactive app designed to demonstrate PubNub's realtime capabilities. You will see how easy it is to integrate [Pub/Sub](https://www.pubnub.com/features/pub-sub-messaging/), [Presence](https://www.pubnub.com/features/presence/), and other keystone multi-user features into a phone application.
 
 Using [PubNub's React SDK](https://www.pubnub.com/docs/react-native-javascript/pubnub-javascript-sdk), PubMoji is built using React Native and includes the following features:
 
@@ -24,7 +24,13 @@ All user data is handled [securely](https://www.pubnub.com/developers/tech/secur
     git clone https://github.com/PubNubDevelopers/PubMoji.git
   ```
 
-- [ ] Replace the placeholder keys on line 37 and 38 of your App.js with your own PubNub keys through the link below!
+- [ ] Replace the placeholder keys in App.js with your own PubNub keys through the link below!
+```javascript
+   this.pubnub = new PubNubReact({
+      publishKey: "INSERT-PUB-KEY-HERE",
+      subscribeKey: "INSERT-SUB-KEY-HERE"
+    });
+```
 
 <a href="https://dashboard.pubnub.com/signup?devrel_gh=PubMoji">
     <img alt="PubNub Signup" src="https://i.imgur.com/og5DDjf.png" width=260 height=97/>
@@ -39,6 +45,7 @@ All user data is handled [securely](https://www.pubnub.com/developers/tech/secur
 - [ ] Next install all the required packages using ```npm i```
 
 - [ ] Link packages to your project with ```react-native link```
+    - [ ] Some packages may need to be manually linked if the above command does not do so.
  
 - [ ] Either run ```react-native run-ios``` or ```react-native run-android```. Your Android emulator needs to be running for ADB to see it. 
  
@@ -50,7 +57,7 @@ PubNub is a low cost, easy to use, infrastructure API that can be integrated quc
 
 ![pubnub gif](https://www.pubnub.com/wp-content/uploads/2016/08/pubsub-1.gif)
 
-## Related Tutorials
+## Related React Native Tutorials
 Here are a few tutorials that can help you create a realtime app similar to PubMoji.
 * [Realtime Basics in React Native: Pub/Sub, Presence, Functions, and History](https://www.pubnub.com/blog/pubnub-react-native-basics-pub-sub-history-gelocation-presence/?devrel_gh=PubMoji)
 * [Publish and Receive geolocation data in a React Native app](https://www.pubnub.com/blog/pubnub-react-native-basics-pub-sub-history-gelocation-presence/?devrel_gh=PubMoji)
