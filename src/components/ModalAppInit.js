@@ -205,7 +205,7 @@ export default class ModalAppInit extends Component {
                       title=
                       {
                         <Text style={{color: 'black'}}> I agree to the <Text onPress={() => 
-                          Linking.openURL('https://github.com/PubNubDevelopers/PubMoji/blob/master/PubNub%20Mobile%20Applications%20-%20Terms%20of%20Use%20(FINAL%20-%207.26.2019).pdf')} 
+                          Linking.openURL('https://www.pubnub.com/developers/demos/pubmoji/terms-of-use/')} 
                             style={styles.checkBoxTextStyle}>
                             Terms of Use</Text>
                         </Text>           
