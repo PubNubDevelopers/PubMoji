@@ -1,8 +1,8 @@
 # Welcome to PubMoji!
 
-Pubmoji is an interactive app designed to demonstrate PubNub's realtime capabilities. You will see how easy it is to integrate [Pub/Sub](https://www.pubnub.com/features/pub-sub-messaging/), [Presence](https://www.pubnub.com/features/presence/), and other keystone multi-user features into a phone application.
+Pubmoji is an interactive app designed to demonstrate PubNub's realtime capabilities. You will see how easy it is to integrate [Pub/Sub](https://www.pubnub.com/features/pub-sub-messaging/?devrel_gh=PubMoji), [Presence](https://www.pubnub.com/features/presence/?devrel_gh=PubMoji), and other keystone multi-user features into a phone application.
 
-Using [PubNub's React SDK](https://www.pubnub.com/docs/react-native-javascript/pubnub-javascript-sdk), PubMoji is built using React Native and includes the following features:
+Using [PubNub's React SDK](https://www.pubnub.com/docs/react-native-javascript/pubnub-javascript-sdk?devrel_gh=PubMoji), PubMoji is built using React Native and includes the following features:
 
 * Multiple users are rendered on a map as a pre-selected avatar.
 * When users move a set distance, a message is published to others connected wither their updated location.
@@ -13,7 +13,7 @@ Using [PubNub's React SDK](https://www.pubnub.com/docs/react-native-javascript/p
 
 ![pubmoji gif](https://pubnubdevelopers.github.io/PubMoji-Product-Page/img/demo.gif)
 
-All user data is handled [securely](https://www.pubnub.com/developers/tech/security/) and [reliably](https://www.pubnub.com/blog/build-a-reliable-product-that-never-fails/) through PubNub. Each user publishes their data across a PubNub channel, and other users who are subscribed to that channel receive those messages in realtime. 
+All user data is handled [securely](https://www.pubnub.com/developers/tech/security/?devrel_gh=PubMoji) and [reliably](https://www.pubnub.com/blog/build-a-reliable-product-that-never-fails/?devrel_gh=PubMoji) through PubNub. Each user publishes their data across a PubNub channel, and other users who are subscribed to that channel receive those messages in realtime. 
 
 # How to run
 
