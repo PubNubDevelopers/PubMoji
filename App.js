@@ -34,8 +34,9 @@ export default class App extends Component {
   constructor(props) {
     super(props);
     this.pubnub = new PubNubReact({
-      publishKey: "INSERT-PUB-KEY-HERE",
-      subscribeKey: "INSERT-SUB-KEY-HERE"
+      publishKey: "INSERT_PUB_KEY_HERE",
+      subscribeKey: "INSERT_SUB_KEY_HERE",
+      presenceTimeout: 120
     });
 
     //Base State
@@ -84,13 +85,15 @@ export default class App extends Component {
 
   clearMessage = uuid => {
     let users = this.state.users;
-    let user = users.get(uuid)
-    delete user.message;
-    users.set(uuid,user);
-    this.setState(
-    {
-      users,
-    });
+    let user = users.get(uuid);
+    if(user != null){
+      delete user.message;
+      users.set(uuid,user);
+      this.setState(
+      {
+        users,
+      });
+    }
   };
   async setUpApp(){
     let keyEvent1 = 'keyboardWillShow'
@@ -173,9 +176,7 @@ export default class App extends Component {
         this.setState({
           users
         });
-
       }
-
     });
     this.pubnub.subscribe({
       channels: ["global"],
@@ -228,6 +229,7 @@ export default class App extends Component {
     else {
       console.log( "ACCESS_FINE_LOCATION permission denied" )
     }
+    this.getOnlineInfo();
   }
 
   componentWillUnmount() {
@@ -237,6 +239,18 @@ export default class App extends Component {
   handleAppState = (nextAppState) =>{
     if (nextAppState === 'active') {
       this.setUpApp()
+      if (this.state.allowGPS) {
+        this.pubnub.publish({
+          message: {
+            uuid: this.pubnub.getUUID(),
+            latitude: this.state.currentLoc.latitude,
+            longitude: this.state.currentLoc.longitude,
+            image: this.state.currentPicture,
+            username: this.state.username
+          },
+          channel: "global"
+        });
+      }
     }else if (nextAppState === 'inactive' || nextAppState === 'background') {
       this.pubnub.publish({
         message: {
@@ -299,6 +313,62 @@ export default class App extends Component {
       }
     }
   }
+
+  getOnlineInfo = () => {
+    //let this = this;
+    this.pubnub.hereNow({
+      includeUUIDs: true,
+    },
+     (status, response) => {
+      let uuids = [];
+      let online = response.channels.global.occupants;
+      for( i in online){
+        uuids.push(online[i].uuid)
+      }
+      let users = this.state.users;
+      let loopCount = null;
+      while(uuids.length != 0 && loopCount < 10){
+        let timetoken = "0";
+        this.pubnub.history({
+          channel: 'global',
+          start: null,
+          stringifiedTimeToken: true // false is the default
+          
+        }, (status, response) => {
+          timetoken = response.startTimeToken;
+          
+          for(i in response.messages){
+            let index = uuids.indexOf(response.messages[i].entry.uuid);
+            if( index != -1 ){
+              if(users.has(uuids[index])){
+                delete uuids[index];
+              }else{
+                let newUser = {
+                  uuid: uuids[index],
+                  latitude: response.messages[i].entry.latitude,
+                  longitude: response.messages[i].entry.longitude,
+                  image: response.messages[i].entry.image,
+                  username: response.messages[i].entry.username,
+                };
+                delete uuids[index];
+                users.set(newUser.uuid, newUser);
+              }
+            }
+          }
+          if(response.messages.length < 100)
+          {
+            loopCount = 1000
+          } 
+        })
+        loopCount = loopCount + 1;
+      }
+      this.setState({
+        users
+      });
+      
+    });
+  }
+  
 
   animateToCurrent = (coords, speed) => {
     region = {
