@@ -321,6 +321,7 @@ export default class App extends Component {
     },
      (status, response) => {
       let uuids = [];
+      console.log(response)
       let online = response.channels.global.occupants;
       for( i in online){
         uuids.push(online[i].uuid)
@@ -864,5 +865,5 @@ const styles = StyleSheet.create({
     alignItems: "center",
     borderRadius: 4,
     borderColor: "rgba(0, 0, 0, 0.1)"
-  },
+  }
 });
