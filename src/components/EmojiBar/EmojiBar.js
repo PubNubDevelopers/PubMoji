@@ -821,7 +821,7 @@ export default class AnimationScreen extends Component {
               style={styles.imgIcon}
               source={{
                 uri:
-                  "https://raw.githubusercontent.com/PubNubDevelopers/PubMoji/EmojiImplementation/src/Images/like.gif"
+                  "https://raw.githubusercontent.com/PubNubDevelopers/PubMoji/master/src/Images/like.gif"
               }}
             />
           </Animated.View>
@@ -863,7 +863,7 @@ export default class AnimationScreen extends Component {
               style={styles.imgIcon}
               source={{
                 uri:
-                  "https://raw.githubusercontent.com/PubNubDevelopers/PubMoji/EmojiImplementation/src/Images/love.gif"
+                  "https://raw.githubusercontent.com/PubNubDevelopers/PubMoji/master/src/Images/love.gif"
               }}
             />
           </Animated.View>
@@ -905,7 +905,7 @@ export default class AnimationScreen extends Component {
               style={styles.imgIcon}
               source={{
                 uri:
-                  "https://raw.githubusercontent.com/PubNubDevelopers/PubMoji/EmojiImplementation/src/Images/haha.gif"
+                  "https://raw.githubusercontent.com/PubNubDevelopers/PubMoji/master/src/Images/haha.gif"
               }}
             />
           </Animated.View>
@@ -947,7 +947,7 @@ export default class AnimationScreen extends Component {
               style={styles.imgIcon}
               source={{
                 uri:
-                  "https://raw.githubusercontent.com/PubNubDevelopers/PubMoji/EmojiImplementation/src/Images/wow.gif"
+                  "https://raw.githubusercontent.com/PubNubDevelopers/PubMoji/master/src/Images/wow.gif"
               }}
             />
           </Animated.View>
@@ -989,7 +989,7 @@ export default class AnimationScreen extends Component {
               style={styles.imgIcon}
               source={{
                 uri:
-                  "https://raw.githubusercontent.com/PubNubDevelopers/PubMoji/EmojiImplementation/src/Images/sad.gif"
+                  "https://raw.githubusercontent.com/PubNubDevelopers/PubMoji/master/src/Images/sad.gif"
               }}
             />
           </Animated.View>
@@ -1031,7 +1031,7 @@ export default class AnimationScreen extends Component {
               style={styles.imgIcon}
               source={{
                 uri:
-                  "https://raw.githubusercontent.com/PubNubDevelopers/PubMoji/EmojiImplementation/src/Images/angry.gif"
+                  "https://raw.githubusercontent.com/PubNubDevelopers/PubMoji/master/src/Images/angry.gif"
               }}
             />
           </Animated.View>
