@@ -118,8 +118,10 @@ export default class App extends Component {
     if(username !=  null){
       this.setState({username});
     }
+    this.asyncfunc();
 
     this.pubnub.getMessage("global", msg => {
+      console.log("got message ON UUID: ", this.pubnub.getUUID())
       let users = this.state.users;
       if (msg.message.hideUser) {
         users.delete(msg.publisher);
@@ -153,29 +155,31 @@ export default class App extends Component {
           emojiCount = 0; //reset EmojiCount to 0
           emojiType = 0;
         }
-        let newUser = {
-          uuid: msg.publisher,
-          latitude: msg.message.latitude,
-          longitude: msg.message.longitude,
-          image: msg.message.image,
-          username: msg.message.username,
-          emojiCount: emojiCount,
-          emojiType: emojiType,
+        if(msg.message.latitude != undefined && msg.message.longitude != undefined && msg.message.image != undefined && msg.message.username != undefined){
 
-        };
-
-        if(msg.message.message){
-          Timeout.set(msg.publisher, this.clearMessage, 5000, msg.publisher);
-          newUser.message = msg.message.message;
-        }else if(oldUser){
-          newUser.message = oldUser.message
+          let newUser = {
+            uuid: msg.publisher,
+            latitude: msg.message.latitude,
+            longitude: msg.message.longitude,
+            image: msg.message.image,
+            username: msg.message.username,
+            emojiCount: emojiCount,
+            emojiType: emojiType,
+  
+          };
+          if(msg.message.message){
+            Timeout.set(msg.publisher, this.clearMessage, 5000, msg.publisher);
+            newUser.message = msg.message.message;
+          }else if(oldUser){
+            newUser.message = oldUser.message
+          }
+          this.updateUserCount();
+          users.set(newUser.uuid, newUser);
+  
+          this.setState({
+            users
+          });
         }
-        this.updateUserCount();
-        users.set(newUser.uuid, newUser);
-
-        this.setState({
-          users
-        });
       }
     });
     this.pubnub.subscribe({
@@ -218,6 +222,7 @@ export default class App extends Component {
               this.animateToCurrent(position.coords, 1000);
             }
           }
+          
         },
         error => console.log("Maps Error: ", error),
         {
@@ -229,16 +234,18 @@ export default class App extends Component {
     else {
       console.log( "ACCESS_FINE_LOCATION permission denied" )
     }
-    this.getOnlineInfo();
+    
   }
 
   componentWillUnmount() {
+    console.log("unmounting")
+    this.pubnub.unsubscribeAll();
     AppState.removeEventListener('change', this.handleAppState);
 
   }
   handleAppState = (nextAppState) =>{
     if (nextAppState === 'active') {
-      this.setUpApp()
+      //this.setUpApp()
       if (this.state.allowGPS) {
         this.pubnub.publish({
           message: {
@@ -261,7 +268,7 @@ export default class App extends Component {
       },function(status,response){
         console.log(status)
       });
-      this.pubnub.unsubscribeAll();
+      //this.pubnub.unsubscribeAll();
       navigator.geolocation.clearWatch(this.watchID);
 
     }
@@ -314,60 +321,92 @@ export default class App extends Component {
     }
   }
 
-  getOnlineInfo = () => {
-    //let this = this;
-    this.pubnub.hereNow({
-      includeUUIDs: true,
-    },
-     (status, response) => {
-      let uuids = [];
-      console.log(response)
-      let online = response.channels.global.occupants;
-      for( i in online){
-        uuids.push(online[i].uuid)
-      }
-      let users = this.state.users;
-      let loopCount = null;
-      while(uuids.length != 0 && loopCount < 10){
-        let timetoken = "0";
-        this.pubnub.history({
-          channel: 'global',
-          start: null,
-          stringifiedTimeToken: true // false is the default
-          
-        }, (status, response) => {
-          timetoken = response.startTimeToken;
-          
-          for(i in response.messages){
-            let index = uuids.indexOf(response.messages[i].entry.uuid);
-            if( index != -1 ){
-              if(users.has(uuids[index])){
-                delete uuids[index];
-              }else{
-                let newUser = {
-                  uuid: uuids[index],
-                  latitude: response.messages[i].entry.latitude,
-                  longitude: response.messages[i].entry.longitude,
-                  image: response.messages[i].entry.image,
-                  username: response.messages[i].entry.username,
-                };
-                delete uuids[index];
-                users.set(newUser.uuid, newUser);
-              }
-            }
+  asyncfunc = async () => {
+    let newUsers = await this.getOnlineInfo().then(
+      result => {
+        //console.log("poop",result)
+        let oldUsers = this.state.users;
+        for(i in oldUsers.keys()){
+          result.set(i, oldUser.get(i))
+        }
+        // let newMap = new Map([...oldUsers, ...result]);
+        console.log("poop",result)
+        this.setState({
+            users: result
+          });
+      },
+      error => alert(error) // doesn't run
+    );
+  }
+
+   getOnlineInfo = () => {
+
+    return new Promise( (resolve, reject) => {
+      //let this = this;
+      let newUsers = new Map();
+      this.pubnub.hereNow({
+        includeUUIDs: true,
+      },
+      (status, response) => {
+        let uuids = [];
+        
+        for(i in response.channels){
+          let online = response.channels[i].occupants;
+          for( i in online){
+            uuids.push(online[i].uuid)
           }
-          if(response.messages.length < 100)
-          {
-            loopCount = 1000
-          } 
-        })
-        loopCount = loopCount + 1;
-      }
-      this.setState({
-        users
+          let users = this.state.users;
+          // console.log(users)
+          let loopCount = 0;
+          while(uuids.length != 0 && loopCount < 10){
+            let timetoken = "0";
+            this.pubnub.history({
+              channel: 'global',
+              start: null,
+              stringifiedTimeToken: true // false is the default
+              
+            }, (status, response) => {
+              timetoken = response.startTimeToken;
+              for(i in response.messages){
+                let u = response.messages[i].entry;
+                let index = uuids.indexOf(u.uuid);
+                if( index != -1 ){
+                  if(users.has(uuids[index])){
+                    delete uuids[index];
+                  }else{
+                    if( u.hideUser == true){
+                      delete uuids[index];
+                    }else if(u.latitude != undefined && u.longitude != undefined && u.image != undefined && u.username != undefined){
+                      let newUser = {
+                        uuid: uuids[index],
+                        latitude: u.latitude,
+                        longitude: u.longitude,
+                        image: u.image,
+                        username: u.username,
+                      };
+                      delete uuids[index];
+                      console.log("new usew", newUser)
+                      newUsers.set(newUser.uuid, newUser);
+                    }
+                  }
+                }
+              }
+              if(response.messages.length < 100)
+              {
+                loopCount = 1000
+              } 
+            })
+            loopCount = loopCount + 1;
+          }
+          // this.setState({
+          //   users
+          // });
+        }
       });
-      
-    });
+      console.log("pee",newUsers)
+      resolve(newUsers);
+    })
+    // return promise;
   }
   
 
@@ -581,12 +620,12 @@ export default class App extends Component {
     var presenceUsers = 0;
     this.pubnub.hereNow({
         includeUUIDs: true,
-        includeState: true
     },
     function (status, response) {
         // handle status, response
         presenceUsers = response.totalOccupancy;
     });
+    console.log(presenceUsers, this.state.users.size)
     var totalUsers = Math.max(presenceUsers, this.state.users.size)
     this.setState({userCount: totalUsers})
 
@@ -666,7 +705,6 @@ export default class App extends Component {
               }}
             >
               {usersArray.map((item) => (
-                //TRY SWITCHING UP TO CALLOUTS
                 <Marker
                   onPress={() => {
                     this.touchUser(item.uuid);
