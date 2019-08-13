@@ -108,6 +108,14 @@ export default class App extends Component {
     // Store boolean value so modal init only opens on app boot
 
 
+    // get uuid if available
+    const storedUUID =  await AsyncStorage.getItem('uuid');
+    if(storedUUID !=  null){
+      this.pubnub.setUUID(storedUUID);
+    }else{
+      await AsyncStorage.setItem('uuid', this.pubnub.getUUID());
+    }
+
     // get profile pic if available
     const storeProfilePic =  await AsyncStorage.getItem('profile_pic_key');
     if(storeProfilePic !=  null){
@@ -333,6 +341,8 @@ export default class App extends Component {
         console.log("poop",result)
         this.setState({
             users: result
+          },()=>{
+            this.updateUserCount();
           });
       },
       error => alert(error) // doesn't run
