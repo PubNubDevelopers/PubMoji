@@ -34,8 +34,8 @@ export default class App extends Component {
   constructor(props) {
     super(props);
     this.pubnub = new PubNubReact({
-      publishKey: "INSERT_PUB_KEY_HERE",
-      subscribeKey: "INSERT_SUB_KEY_HERE",
+      publishKey: "INSERT-PUB-KEY-HERE",
+      subscribeKey: "INSERT-SUB-KEY-HERE",
       presenceTimeout: 120
     });
 
@@ -129,7 +129,6 @@ export default class App extends Component {
     this.asyncfunc();
 
     this.pubnub.getMessage("global", msg => {
-      console.log("got message ON UUID: ", this.pubnub.getUUID())
       let users = this.state.users;
       if (msg.message.hideUser) {
         users.delete(msg.publisher);
@@ -332,13 +331,11 @@ export default class App extends Component {
   asyncfunc = async () => {
     let newUsers = await this.getOnlineInfo().then(
       result => {
-        //console.log("poop",result)
         let oldUsers = this.state.users;
         for(i in oldUsers.keys()){
           result.set(i, oldUser.get(i))
         }
         // let newMap = new Map([...oldUsers, ...result]);
-        console.log("poop",result)
         this.setState({
             users: result
           },()=>{
@@ -366,7 +363,6 @@ export default class App extends Component {
             uuids.push(online[i].uuid)
           }
           let users = this.state.users;
-          // console.log(users)
           let loopCount = 0;
           while(uuids.length != 0 && loopCount < 10){
             let timetoken = "0";
@@ -395,7 +391,6 @@ export default class App extends Component {
                         username: u.username,
                       };
                       delete uuids[index];
-                      console.log("new usew", newUser)
                       newUsers.set(newUser.uuid, newUser);
                     }
                   }
@@ -413,7 +408,6 @@ export default class App extends Component {
           // });
         }
       });
-      console.log("pee",newUsers)
       resolve(newUsers);
     })
     // return promise;
