@@ -188,6 +188,7 @@ export default class App extends Component {
             users
           },()=>{
             this.updateUserCount();
+            
           });
         }
       }
@@ -357,15 +358,15 @@ export default class App extends Component {
               
             }, (status, response) => {
               timetoken = response.startTimeToken;
-              for(i in response.messages){
+              for(let i = response.messages.length - 1; i >= 0; i--){
                 let u = response.messages[i].entry;
                 let index = uuids.indexOf(u.uuid);
                 if( index != -1 ){
                   if(users.has(uuids[index])){
-                    delete uuids[index];
+                    uuids.splice(index,1);
                   }else{
                     if( u.hideUser == true){
-                      delete uuids[index];
+                      uuids.splice(index,1);
                     }else if(u.latitude != undefined && u.longitude != undefined && u.image != undefined && u.username != undefined){
                       let newUser = {
                         uuid: uuids[index],
@@ -374,7 +375,7 @@ export default class App extends Component {
                         image: u.image,
                         username: u.username,
                       };
-                      delete uuids[index];
+                      uuids.splice(index,1);
                       users.set(newUser.uuid, newUser);
                     }
                   }
@@ -561,7 +562,6 @@ export default class App extends Component {
           useNativeDriver: true,
         }
       ).start();
-      console.log(this.state.keyboardShown)
     }
 
 
@@ -604,17 +604,17 @@ export default class App extends Component {
     })
   }
   updateUserCount = () => {
-    var presenceUsers = 0;
+    let presenceUsers = 0;
     this.pubnub.hereNow({
         includeUUIDs: true,
+        includeState: true
     },
-     (status, response) => {
-      // handle status, response
-      presenceUsers = response.totalOccupancy;
-      console.log(presenceUsers, this.state.users.size)
-      var totalUsers = Math.min(presenceUsers, this.state.users.size)
-      this.setState({userCount: totalUsers})
+    function (status, response) {
+        // handle status, response
+        presenceUsers = response.totalOccupancy;
     });
+    var totalUsers = Math.max(presenceUsers, this.state.users.size)
+    this.setState({userCount: totalUsers})
     
 
   };
