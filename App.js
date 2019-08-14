@@ -34,8 +34,9 @@ export default class App extends Component {
   constructor(props) {
     super(props);
     this.pubnub = new PubNubReact({
-      publishKey: "INSERT-PUB-KEY-HERE",
-      subscribeKey: "INSERT-SUB-KEY-HERE"
+      publishKey: "INSERT_PUB_KEY_HERE",
+      subscribeKey: "INSERT_SUB_KEY_HERE",
+      presenceTimeout: 120
     });
 
     //Base State
@@ -84,13 +85,15 @@ export default class App extends Component {
 
   clearMessage = uuid => {
     let users = this.state.users;
-    let user = users.get(uuid)
-    delete user.message;
-    users.set(uuid,user);
-    this.setState(
-    {
-      users,
-    });
+    let user = users.get(uuid);
+    if(user != null){
+      delete user.message;
+      users.set(uuid,user);
+      this.setState(
+      {
+        users,
+      });
+    }
   };
   async setUpApp(){
     let keyEvent1 = 'keyboardWillShow'
@@ -105,6 +108,14 @@ export default class App extends Component {
     // Store boolean value so modal init only opens on app boot
 
 
+    // get uuid if available
+    const storedUUID =  await AsyncStorage.getItem('uuid');
+    if(storedUUID !=  null){
+      this.pubnub.setUUID(storedUUID);
+    }else{
+      await AsyncStorage.setItem('uuid', this.pubnub.getUUID());
+    }
+
     // get profile pic if available
     const storeProfilePic =  await AsyncStorage.getItem('profile_pic_key');
     if(storeProfilePic !=  null){
@@ -115,6 +126,8 @@ export default class App extends Component {
     if(username !=  null){
       this.setState({username});
     }
+    this.getOnlineInfo();
+    
 
     this.pubnub.getMessage("global", msg => {
       let users = this.state.users;
@@ -122,6 +135,8 @@ export default class App extends Component {
         users.delete(msg.publisher);
         this.setState({
           users
+        },()=>{
+          this.updateUserCount();
         });
       }else{
         coord = [msg.message.latitude, msg.message.longitude]; //Format GPS Coordinates for Payload
@@ -150,32 +165,33 @@ export default class App extends Component {
           emojiCount = 0; //reset EmojiCount to 0
           emojiType = 0;
         }
-        let newUser = {
-          uuid: msg.publisher,
-          latitude: msg.message.latitude,
-          longitude: msg.message.longitude,
-          image: msg.message.image,
-          username: msg.message.username,
-          emojiCount: emojiCount,
-          emojiType: emojiType,
+        if(msg.message.latitude != undefined && msg.message.longitude != undefined && msg.message.image != undefined && msg.message.username != undefined){
 
-        };
-
-        if(msg.message.message){
-          Timeout.set(msg.publisher, this.clearMessage, 5000, msg.publisher);
-          newUser.message = msg.message.message;
-        }else if(oldUser){
-          newUser.message = oldUser.message
+          let newUser = {
+            uuid: msg.publisher,
+            latitude: msg.message.latitude,
+            longitude: msg.message.longitude,
+            image: msg.message.image,
+            username: msg.message.username,
+            emojiCount: emojiCount,
+            emojiType: emojiType,
+  
+          };
+          if(msg.message.message){
+            Timeout.set(msg.publisher, this.clearMessage, 5000, msg.publisher);
+            newUser.message = msg.message.message;
+          }else if(oldUser){
+            newUser.message = oldUser.message
+          }
+          users.set(newUser.uuid, newUser);
+          this.setState({
+            users
+          },()=>{
+            this.updateUserCount();
+            
+          });
         }
-        this.updateUserCount();
-        users.set(newUser.uuid, newUser);
-
-        this.setState({
-          users
-        });
-
       }
-
     });
     this.pubnub.subscribe({
       channels: ["global"],
@@ -217,6 +233,7 @@ export default class App extends Component {
               this.animateToCurrent(position.coords, 1000);
             }
           }
+          
         },
         error => console.log("Maps Error: ", error),
         {
@@ -231,12 +248,26 @@ export default class App extends Component {
   }
 
   componentWillUnmount() {
+    console.log("unmounting")
+    this.pubnub.unsubscribeAll();
     AppState.removeEventListener('change', this.handleAppState);
 
   }
   handleAppState = (nextAppState) =>{
     if (nextAppState === 'active') {
-      this.setUpApp()
+      //this.setUpApp()
+      if (this.state.allowGPS) {
+        this.pubnub.publish({
+          message: {
+            uuid: this.pubnub.getUUID(),
+            latitude: this.state.currentLoc.latitude,
+            longitude: this.state.currentLoc.longitude,
+            image: this.state.currentPicture,
+            username: this.state.username
+          },
+          channel: "global"
+        });
+      }
     }else if (nextAppState === 'inactive' || nextAppState === 'background') {
       this.pubnub.publish({
         message: {
@@ -247,7 +278,7 @@ export default class App extends Component {
       },function(status,response){
         console.log(status)
       });
-      this.pubnub.unsubscribeAll();
+      //this.pubnub.unsubscribeAll();
       navigator.geolocation.clearWatch(this.watchID);
 
     }
@@ -281,6 +312,8 @@ export default class App extends Component {
             });
           }
         );
+        
+
       } else {
         let users = this.state.users;
         let uuid = this.pubnub.getUUID();
@@ -297,8 +330,73 @@ export default class App extends Component {
           channel: "global"
         });
       }
+      this.updateUserCount();
     }
   }
+
+
+   getOnlineInfo = () => {
+
+      this.pubnub.hereNow({
+        includeUUIDs: true,
+      },
+      (status, response) => {
+        let uuids = [];
+        for(i in response.channels){
+          let online = response.channels[i].occupants;
+          for( i in online){
+            uuids.push(online[i].uuid)
+          }
+          let users = this.state.users;
+          let loopCount = 0;
+          while(uuids.length != 0 && loopCount < 10){
+            let timetoken = "0";
+            this.pubnub.history({
+              channel: 'global',
+              start: null,
+              stringifiedTimeToken: true // false is the default
+              
+            }, (status, response) => {
+              timetoken = response.startTimeToken;
+              for(let i = response.messages.length - 1; i >= 0; i--){
+                let u = response.messages[i].entry;
+                let index = uuids.indexOf(u.uuid);
+                if( index != -1 ){
+                  if(users.has(uuids[index])){
+                    uuids.splice(index,1);
+                  }else{
+                    if( u.hideUser == true){
+                      uuids.splice(index,1);
+                    }else if(u.latitude != undefined && u.longitude != undefined && u.image != undefined && u.username != undefined){
+                      let newUser = {
+                        uuid: uuids[index],
+                        latitude: u.latitude,
+                        longitude: u.longitude,
+                        image: u.image,
+                        username: u.username,
+                      };
+                      uuids.splice(index,1);
+                      users.set(newUser.uuid, newUser);
+                    }
+                  }
+                }
+              }
+              if(response.messages.length < 100)
+              {
+                loopCount = 1000
+              } 
+            })
+            loopCount = loopCount + 1;
+          }
+          this.setState({
+            users
+          }, () =>{
+            this.updateUserCount();
+          });
+        }
+      });
+  }
+  
 
   animateToCurrent = (coords, speed) => {
     region = {
@@ -464,7 +562,6 @@ export default class App extends Component {
           useNativeDriver: true,
         }
       ).start();
-      console.log(this.state.keyboardShown)
     }
 
 
@@ -507,7 +604,7 @@ export default class App extends Component {
     })
   }
   updateUserCount = () => {
-    var presenceUsers = 0;
+    let presenceUsers = 0;
     this.pubnub.hereNow({
         includeUUIDs: true,
         includeState: true
@@ -518,6 +615,7 @@ export default class App extends Component {
     });
     var totalUsers = Math.max(presenceUsers, this.state.users.size)
     this.setState({userCount: totalUsers})
+    
 
   };
 
@@ -595,7 +693,6 @@ export default class App extends Component {
               }}
             >
               {usersArray.map((item) => (
-                //TRY SWITCHING UP TO CALLOUTS
                 <Marker
                   onPress={() => {
                     this.touchUser(item.uuid);
@@ -794,5 +891,5 @@ const styles = StyleSheet.create({
     alignItems: "center",
     borderRadius: 4,
     borderColor: "rgba(0, 0, 0, 0.1)"
-  },
+  }
 });
