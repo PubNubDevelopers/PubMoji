@@ -34,8 +34,8 @@ export default class App extends Component {
   constructor(props) {
     super(props);
     this.pubnub = new PubNubReact({
-      publishKey: "INSERT-PUB-KEY-HERE",
-      subscribeKey: "INSERT-SUB-KEY-HERE",
+      publishKey: "INSERT_PUB_KEY_HERE",
+      subscribeKey: "INSERT_SUB_KEY_HERE",
       presenceTimeout: 120
     });
 
@@ -126,7 +126,8 @@ export default class App extends Component {
     if(username !=  null){
       this.setState({username});
     }
-    this.asyncfunc();
+    this.getOnlineInfo();
+    
 
     this.pubnub.getMessage("global", msg => {
       let users = this.state.users;
@@ -134,6 +135,8 @@ export default class App extends Component {
         users.delete(msg.publisher);
         this.setState({
           users
+        },()=>{
+          this.updateUserCount();
         });
       }else{
         coord = [msg.message.latitude, msg.message.longitude]; //Format GPS Coordinates for Payload
@@ -180,11 +183,11 @@ export default class App extends Component {
           }else if(oldUser){
             newUser.message = oldUser.message
           }
-          this.updateUserCount();
           users.set(newUser.uuid, newUser);
-  
           this.setState({
             users
+          },()=>{
+            this.updateUserCount();
           });
         }
       }
@@ -241,7 +244,6 @@ export default class App extends Component {
     else {
       console.log( "ACCESS_FINE_LOCATION permission denied" )
     }
-    
   }
 
   componentWillUnmount() {
@@ -309,6 +311,8 @@ export default class App extends Component {
             });
           }
         );
+        
+
       } else {
         let users = this.state.users;
         let uuid = this.pubnub.getUUID();
@@ -325,38 +329,18 @@ export default class App extends Component {
           channel: "global"
         });
       }
+      this.updateUserCount();
     }
   }
 
-  asyncfunc = async () => {
-    let newUsers = await this.getOnlineInfo().then(
-      result => {
-        let oldUsers = this.state.users;
-        for(i in oldUsers.keys()){
-          result.set(i, oldUser.get(i))
-        }
-        // let newMap = new Map([...oldUsers, ...result]);
-        this.setState({
-            users: result
-          },()=>{
-            this.updateUserCount();
-          });
-      },
-      error => alert(error) // doesn't run
-    );
-  }
 
    getOnlineInfo = () => {
 
-    return new Promise( (resolve, reject) => {
-      //let this = this;
-      let newUsers = new Map();
       this.pubnub.hereNow({
         includeUUIDs: true,
       },
       (status, response) => {
         let uuids = [];
-        
         for(i in response.channels){
           let online = response.channels[i].occupants;
           for( i in online){
@@ -391,7 +375,7 @@ export default class App extends Component {
                         username: u.username,
                       };
                       delete uuids[index];
-                      newUsers.set(newUser.uuid, newUser);
+                      users.set(newUser.uuid, newUser);
                     }
                   }
                 }
@@ -403,14 +387,13 @@ export default class App extends Component {
             })
             loopCount = loopCount + 1;
           }
-          // this.setState({
-          //   users
-          // });
+          this.setState({
+            users
+          }, () =>{
+            this.updateUserCount();
+          });
         }
       });
-      resolve(newUsers);
-    })
-    // return promise;
   }
   
 
@@ -625,13 +608,14 @@ export default class App extends Component {
     this.pubnub.hereNow({
         includeUUIDs: true,
     },
-    function (status, response) {
-        // handle status, response
-        presenceUsers = response.totalOccupancy;
+     (status, response) => {
+      // handle status, response
+      presenceUsers = response.totalOccupancy;
+      console.log(presenceUsers, this.state.users.size)
+      var totalUsers = Math.min(presenceUsers, this.state.users.size)
+      this.setState({userCount: totalUsers})
     });
-    console.log(presenceUsers, this.state.users.size)
-    var totalUsers = Math.max(presenceUsers, this.state.users.size)
-    this.setState({userCount: totalUsers})
+    
 
   };
 
