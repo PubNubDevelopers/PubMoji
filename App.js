@@ -15,6 +15,7 @@ import {
   PermissionsAndroid,
   AppState,
 } from "react-native";import MapView, {Marker} from 'react-native-maps';
+import Geolocation from 'react-native-geolocation-service';
 import {widthPercentageToDP as wp, heightPercentageToDP as hp} from 'react-native-responsive-screen';
 import PubNubReact from 'pubnub-react';
 import * as Animatable from 'react-native-animatable';
@@ -69,6 +70,9 @@ export default class App extends Component {
     };
 
     this.pubnub.init(this);
+    this.storedUUID;
+    this.storeProfilePic;
+    this.username_key;
   }
 
   async componentDidMount() {
@@ -78,6 +82,9 @@ export default class App extends Component {
       this.setState({visibleModalStart: true, wasShown});
     }else{
       this.setState({visibleModalStart: false, wasShown});
+      this.storedUUID = await AsyncStorage.getItem('uuid');
+      this.storeProfilePic =  await AsyncStorage.getItem('profile_pic_key');
+      this.username_key =  await AsyncStorage.getItem('username_key');
       this.setUpApp();
     }
     this.setState({ splashLoading: false});    
@@ -95,6 +102,33 @@ export default class App extends Component {
       });
     }
   };
+
+  hasLocationPermission = async () => {
+    if (Platform.OS === 'ios' ||
+        (Platform.OS === 'android' && Platform.Version < 23)) {
+      return true;
+    }
+    const hasPermission = await PermissionsAndroid.check(
+      PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION
+    );
+
+    if (hasPermission) return true;
+
+    const status = await PermissionsAndroid.request(
+      PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION
+    );
+
+    if (status === PermissionsAndroid.RESULTS.GRANTED) return true;
+
+    if (status === PermissionsAndroid.RESULTS.DENIED) {
+      ToastAndroid.show('Location permission denied by user.', ToastAndroid.LONG);
+    } else if (status === PermissionsAndroid.RESULTS.NEVER_ASK_AGAIN) {
+      ToastAndroid.show('Location permission revoked by user.', ToastAndroid.LONG);
+    }
+
+    return false;
+  }
+
   async setUpApp(){
     let keyEvent1 = 'keyboardWillShow'
     let keyEvent2 = 'keyboardWillHide'
@@ -109,26 +143,71 @@ export default class App extends Component {
 
 
     // get uuid if available
-    const storedUUID =  await AsyncStorage.getItem('uuid');
-    if(storedUUID !=  null){
-      this.pubnub.setUUID(storedUUID);
+    if(this.storedUUID !=  null){
+      this.pubnub.setUUID(this.storedUUID);
     }else{
       await AsyncStorage.setItem('uuid', this.pubnub.getUUID());
     }
 
     // get profile pic if available
-    const storeProfilePic =  await AsyncStorage.getItem('profile_pic_key');
-    if(storeProfilePic !=  null){
-      this.setState({currentPicture: parseInt(storeProfilePic)});
+    if(this.storeProfilePic !=  null){
+      this.setState({currentPicture: parseInt(this.storeProfilePic)});
     }
+
     //Get the username if availible
-    const username =  await AsyncStorage.getItem('username_key');
-    if(username !=  null){
+    if(this.username_key !=  null){
+      const username = this.username_key;
       this.setState({username});
     }
+
+    const granted =  await this.hasLocationPermission();
+
+    if (granted) {
+      Geolocation.getCurrentPosition(
+        position => {
+          addUserLocation(position);
+        },
+        error => console.log("Maps Error: ", error),
+        {
+          enableHighAccuracy: false,
+          distanceFilter: 100
+        }
+      );
+
+      Geolocation.watchPosition((position) => {
+        addUserLocation(position);
+      },
+      error => console.log("Maps Error: ", error),
+      {
+        enableHighAccuracy: false,
+        distanceFilter: 100
+      });
+    }
+    else {
+      console.log( "ACCESS_FINE_LOCATION permission denied" )
+    }
+
+    addUserLocation = (position) =>{
+      this.setState({
+        currentLoc: position.coords
+      });
+      this.pubnub.publish({
+        message: {
+          uuid: this.pubnub.getUUID(),
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude,
+          image: this.state.currentPicture,
+          username: this.state.username
+        },
+        channel: "global"
+      });
+      if (this.state.focusOnMe) {
+        this.animateToCurrent(position.coords, 1000);
+      }
+    }
+
     this.getOnlineInfo();
     
-
     this.pubnub.getMessage("global", msg => {
       let users = this.state.users;
       if (msg.message.hideUser) {
@@ -198,57 +277,10 @@ export default class App extends Component {
       withPresence: true
     });
 
-    let granted;
-
-    // Get user's permission to access their location
-    if (Platform.OS === "android"){
-      granted = await PermissionsAndroid.request( PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION ,
-        {
-          title: 'Location Permission',
-          message:
-            'PubMoji needs to access your location',
-          buttonNegative: 'No',
-          buttonPositive: 'Yes',
-        });
-    }
-
-    if (granted === PermissionsAndroid.RESULTS.GRANTED || Platform.OS === "ios") {
-      navigator.geolocation.watchPosition(
-        position => {
-          this.setState({
-            currentLoc: position.coords
-          });
-          if (this.state.allowGPS) {
-            this.pubnub.publish({
-              message: {
-                uuid: this.pubnub.getUUID(),
-                latitude: position.coords.latitude,
-                longitude: position.coords.longitude,
-                image: this.state.currentPicture,
-                username: this.state.username
-              },
-              channel: "global"
-            });
-            if (this.state.focusOnMe) {
-              this.animateToCurrent(position.coords, 1000);
-            }
-          }
-          
-        },
-        error => console.log("Maps Error: ", error),
-        {
-          enableHighAccuracy: false,
-          distanceFilter: 100
-        }
-      );
-    }
-    else {
-      console.log( "ACCESS_FINE_LOCATION permission denied" )
-    }
+    
   }
 
   componentWillUnmount() {
-    console.log("unmounting")
     this.pubnub.unsubscribeAll();
     AppState.removeEventListener('change', this.handleAppState);
 
@@ -278,9 +310,7 @@ export default class App extends Component {
       },function(status,response){
         console.log(status)
       });
-      //this.pubnub.unsubscribeAll();
-      navigator.geolocation.clearWatch(this.watchID);
-
+      Geolocation.clearWatch(this.watchId);
     }
     this.setState({appState: nextAppState});
   }
