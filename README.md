@@ -47,13 +47,13 @@ All user data is handled [securely](https://www.pubnub.com/developers/tech/secur
     - [ ] ```Google_Maps_ApiKey="YOUR_API_KEY"``` into 'gradle.properties', replacing the placeholder with your Google Maps API key. 
     - [ ] ```sdk.dir = /Users/USERNAME/Library/Android/sdk``` into 'local.properties', replacing USERNAME with your computer username. Check out [this stackoverflow question](https://stackoverflow.com/questions/32634352/react-native-android-build-failed-sdk-location-not-found) for help with other operating systems besides MacOS. 
 
-- [ ] Next install all the required packages by typing in ```npm i``` into your terminal.
+- [ ] Next, install all the required packages by typing in ```npm i``` into your terminal.
 
 - [ ] Link packages to your project with ```react-native link```
     - [ ] Some packages may need to be manually linked if the above command does not do so.
     - [ ] Run the following ```react-native link @react-native-community/geolocation``` to manually link the Google Geolocation API.
  
-- [ ] Either run ```react-native run-ios``` or ```react-native run-android```. Your Android emulator needs to be running, or an Android device needs to be plugged in for ADB to see it. 
+- [ ] Either run ```react-native run-ios``` or ```react-native run-android```. If you are testing the app on Android, make sure that the Android emulator is running before running the above command. You can also use an Android device to test the app, but it needs to be plugged in for ADB to see it. 
  
       
 # What is PubNub?
