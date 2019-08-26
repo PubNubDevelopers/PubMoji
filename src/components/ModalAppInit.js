@@ -225,7 +225,7 @@ export default class ModalAppInit extends Component {
                           activeOpacity={1}
                           underlayColor={'white'}
                           style={
-                            ((this.state.selectedIndexRowOne === -1 || this.state.selectedIndexRowTwo === -1)  && this.state.text != '' 
+                            ((this.state.selectedIndexRowOne != -1 || this.state.selectedIndexRowTwo != -1)  && this.state.text != '' 
                             && this.state.checked === true) 
                             ? (this.state.pressStatus
                                 ? styles.buttonPressed
@@ -235,7 +235,7 @@ export default class ModalAppInit extends Component {
                             onHideUnderlay={this.onHideUnderlay}
                             onShowUnderlay={this.onShowUnderlay}
                             disabled={
-                              ((this.state.selectedIndexRowOne === -1 || this.state.selectedIndexRowTwo === -1)  && 
+                              ((this.state.selectedIndexRowOne != -1 || this.state.selectedIndexRowTwo != -1)  && 
                               this.state.text != '' && this.state.checked === true) ? false : true
                             }
                             onPress={this.confirmProfile}
