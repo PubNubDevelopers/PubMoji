@@ -25,16 +25,21 @@ All user data is handled [securely](https://www.pubnub.com/developers/tech/secur
   ```
 
 - [ ] Replace the placeholder keys in App.js with your own PubNub keys through the link below!
+
+<a href="https://dashboard.pubnub.com/signup?devrel_gh=PubMoji">
+    <img alt="PubNub Signup" src="https://i.imgur.com/og5DDjf.png" width=260 height=97/>
+</a>
+<br>
+
 ```javascript
    this.pubnub = new PubNubReact({
       publishKey: "INSERT-PUB-KEY-HERE",
       subscribeKey: "INSERT-SUB-KEY-HERE"
     });
 ```
+- [ ] Enable Presence and Storage & Playback in your key settings for features of the app to work.
 
-<a href="https://dashboard.pubnub.com/signup?devrel_gh=PubMoji">
-    <img alt="PubNub Signup" src="https://i.imgur.com/og5DDjf.png" width=260 height=97/>
-</a>
+
 
 - [ ] These next steps need to be completed if you would like to run PubMoji on Android
     - [ ] [Get a Google Maps API](https://developers.google.com/maps/documentation/javascript/get-api-key) 
@@ -42,12 +47,13 @@ All user data is handled [securely](https://www.pubnub.com/developers/tech/secur
     - [ ] ```Google_Maps_ApiKey="YOUR_API_KEY"``` into 'gradle.properties', replacing the placeholder with your Google Maps API key. 
     - [ ] ```sdk.dir = /Users/USERNAME/Library/Android/sdk``` into 'local.properties', replacing USERNAME with your computer username. Check out [this stackoverflow question](https://stackoverflow.com/questions/32634352/react-native-android-build-failed-sdk-location-not-found) for help with other operating systems besides MacOS. 
 
-- [ ] Next install all the required packages using ```npm i```
+- [ ] Next install all the required packages by typing in ```npm i``` into your terminal.
 
 - [ ] Link packages to your project with ```react-native link```
     - [ ] Some packages may need to be manually linked if the above command does not do so.
+    - [ ] Run the following ```react-native link @react-native-community/geolocation``` to manually link the Google Geolocation API.
  
-- [ ] Either run ```react-native run-ios``` or ```react-native run-android```. Your Android emulator needs to be running for ADB to see it. 
+- [ ] Either run ```react-native run-ios``` or ```react-native run-android```. Your Android emulator needs to be running, or an Android device needs to be plugged in for ADB to see it. 
  
       
 # What is PubNub?
