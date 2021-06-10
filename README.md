@@ -37,9 +37,8 @@ All user data is handled [securely](https://www.pubnub.com/developers/tech/secur
       subscribeKey: "INSERT-SUB-KEY-HERE"
     });
 ```
-- [ ] Enable Presence and Storage & Playback in your key settings for features of the app to work.
-
-
+- [ ] Enable Presence and be sure the "Global Here Now" property is enabled. NOTE: The "Global Here Now" feature is deprecated but is required for this sample app. We do not recommend using this feature in your production applications.
+- [ ] Enable Storage & Playback in your key settings for features of the app to work.
 
 - [ ] These next steps need to be completed if you would like to run PubMoji on Android
     - [ ] [Get a Google Maps API](https://developers.google.com/maps/documentation/javascript/get-api-key) 
