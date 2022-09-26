@@ -11,7 +11,7 @@
     "@react-native-community/async-storage": "^1.4.2",
     "exponent": "^10.0.0",
     "native-base": "^2.12.1",
-    "pubnub": "^4.24.0",
+    "pubnub": "^4.37.0",
     "pubnub-react": "^1.2.0",
     "react": "16.8.3",
     "react-native": "0.59.8",
