@@ -1,3 +1,7 @@
+## Please note that this project is no longer actively maintained or accepting Pull Requests.  For Real-Time collaboration demos please visit http://www.pubnub.com/demos/
+
+----------------------
+
 # Welcome to PubMoji!
 
 Pubmoji is an interactive app designed to demonstrate PubNub's realtime capabilities. You will see how easy it is to integrate [Pub/Sub](https://www.pubnub.com/features/pub-sub-messaging/?devrel_gh=PubMoji), [Presence](https://www.pubnub.com/features/presence/?devrel_gh=PubMoji), and other keystone multi-user features into a phone application.
